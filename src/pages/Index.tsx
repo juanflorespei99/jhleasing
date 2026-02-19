@@ -329,7 +329,7 @@ export default function Index() {
 
         {/* TESTIMONIALS */}
         <section className="mb-20">
-          <div className="flex gap-6 overflow-x-auto pb-6" style={{ scrollbarWidth: "none" }}>
+          <div className="flex gap-6 overflow-x-auto pb-10 pt-4 -mt-4 px-4 -mx-4" style={{ scrollbarWidth: "none" }}>
             {testimonials.map((t) => (
               <div key={t.name} className="neu-card flex-shrink-0" style={{ minWidth: 340 }}>
                 <div className="p-10">
