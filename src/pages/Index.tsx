@@ -1,7 +1,8 @@
 import { useState } from "react";
+import heroVideo from "@/assets/hero-video.mp4";
 import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
 import logoIcon from "@/assets/logo-jhl-icon.png";
-import carHero from "@/assets/car-hero.jpg";
+
 import carTesla from "@/assets/car-tesla.jpg";
 import carAudi from "@/assets/car-audi.jpg";
 import carBmw from "@/assets/car-bmw.jpg";
@@ -108,10 +109,15 @@ export default function Index() {
         {/* HERO */}
         <section className="grid grid-cols-12 gap-6 mb-20">
           {/* Hero Image */}
-          <div
-            className="col-span-12 lg:col-span-8 neu-card min-h-[500px]"
-            style={{ backgroundImage: `url(${carHero})`, backgroundSize: "cover", backgroundPosition: "center" }}
-          >
+          <div className="col-span-12 lg:col-span-8 neu-card min-h-[500px] overflow-hidden relative">
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
+              src={heroVideo}
+            />
             <div className="relative z-10 p-10 h-full flex flex-col justify-end" style={{ minHeight: 500 }}>
               <span className="label-micro mb-2">Flota Destacada</span>
             </div>
