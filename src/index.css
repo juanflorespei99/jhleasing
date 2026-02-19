@@ -2,95 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* JH Leasing Neumorphic Design System */
+    --background: 0 0% 91.8%;        /* #EAEAEA */
+    --foreground: 0 0% 10.2%;        /* #1A1A1A */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 87.8%;              /* #E0E0E0 */
+    --card-foreground: 0 0% 10.2%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 87.8%;
+    --popover-foreground: 0 0% 10.2%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 16 100% 67%;          /* #FF7F56 coral/orange */
+    --primary-foreground: 0 0% 10.2%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 0 0% 87.8%;
+    --secondary-foreground: 0 0% 10.2%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 0 0% 40%;               /* #666666 */
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 16 100% 67%;
+    --accent-foreground: 0 0% 10.2%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 0 0% 85%;
+    --input: 0 0% 91.8%;
+    --ring: 16 100% 67%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Neumorphic shadows */
+    --shadow-raised: -12px -12px 24px #FFFFFF, 12px 12px 24px #CFCFCF;
+    --shadow-inset: inset 10px 10px 20px #CFCFCF, inset -10px -10px 20px #FFFFFF;
+    --shadow-inset-sm: inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff;
+    --shadow-tag: 4px 4px 8px #d1d1d1, -4px -4px 8px #ffffff;
+    --shadow-inner-glow: inset 0 0 80px rgba(255,255,255,0.5);
+    --shadow-accent: 0 20px 40px rgba(255,127,86,0.3);
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 87.8%;
+    --sidebar-foreground: 0 0% 10.2%;
+    --sidebar-primary: 16 100% 67%;
+    --sidebar-primary-foreground: 0 0% 10.2%;
+    --sidebar-accent: 0 0% 91.8%;
+    --sidebar-accent-foreground: 0 0% 10.2%;
+    --sidebar-border: 0 0% 85%;
+    --sidebar-ring: 16 100% 67%;
   }
 }
 
@@ -101,5 +61,95 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+@layer utilities {
+  /* Neumorphic card */
+  .neu-card {
+    background: linear-gradient(145deg, #e6e6e6, #dedede);
+    box-shadow: var(--shadow-raised);
+    border-radius: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .neu-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: var(--shadow-inner-glow);
+    pointer-events: none;
+    border-radius: 32px;
+  }
+
+  /* Neumorphic accent card */
+  .neu-accent {
+    background-color: hsl(var(--primary));
+    box-shadow: var(--shadow-accent);
+    border-radius: 32px;
+    color: hsl(var(--primary-foreground));
+  }
+
+  /* Inset (pressed) effect */
+  .neu-inset {
+    box-shadow: var(--shadow-inset);
+    background: hsl(var(--background));
+    border-radius: 12px;
+  }
+
+  .neu-inset-sm {
+    box-shadow: var(--shadow-inset-sm);
+    background: hsl(var(--background));
+  }
+
+  /* Raised tag */
+  .neu-tag {
+    box-shadow: var(--shadow-tag);
+    background: hsl(var(--background));
+  }
+
+  .neu-tag-active {
+    box-shadow: var(--shadow-inset-sm);
+    background: hsl(var(--background));
+    color: hsl(var(--primary));
+  }
+
+  /* Nav pill */
+  .neu-nav {
+    background: linear-gradient(145deg, #e6e6e6, #dedede);
+    box-shadow: var(--shadow-raised);
+    border-radius: 50px;
+  }
+
+  .label-micro {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: hsl(var(--muted-foreground));
+    font-weight: 600;
+  }
+
+  .heading-xl {
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    line-height: 0.95;
+  }
+
+  .heading-lg {
+    font-size: clamp(24px, 2.5vw, 32px);
+    font-weight: 400;
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+
+  .heading-md {
+    font-size: 24px;
+    font-weight: 400;
+    text-transform: uppercase;
   }
 }
