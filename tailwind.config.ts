@@ -74,7 +74,7 @@ export default {
         inset: "inset 10px 10px 20px #CFCFCF, inset -10px -10px 20px #FFFFFF",
         "inset-sm": "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff",
         tag: "4px 4px 8px #d1d1d1, -4px -4px 8px #ffffff",
-        accent: "0 20px 40px rgba(255,127,86,0.3)",
+        accent: "0 20px 40px rgba(252,155,98,0.3)",
       },
       keyframes: {
         "accordion-down": {
