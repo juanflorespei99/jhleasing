@@ -1,4 +1,6 @@
 import { useState } from "react";
+import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
+import logoIcon from "@/assets/logo-jhl-icon.png";
 import carHero from "@/assets/car-hero.jpg";
 import carTesla from "@/assets/car-tesla.jpg";
 import carAudi from "@/assets/car-audi.jpg";
@@ -82,7 +84,7 @@ export default function Index() {
 
         {/* NAV */}
         <nav className="flex justify-between items-center mb-16 px-3">
-          <span className="text-2xl font-bold uppercase tracking-tight">JH Leasing</span>
+          <img src={logoHorizontal} alt="JH Leasing" className="h-10 w-auto" />
           <div className="neu-nav hidden md:flex gap-2 p-2">
             {navItems.map((item) => (
               <button
@@ -381,7 +383,10 @@ export default function Index() {
         <footer className="border-t pt-16 mb-8" style={{ borderColor: "rgba(0,0,0,0.05)" }}>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <p className="text-xl font-bold uppercase tracking-tight mb-3">JH Leasing</p>
+            <div className="flex items-center gap-3 mb-3">
+                <img src={logoIcon} alt="JH Leasing icon" className="h-8 w-auto" />
+                <img src={logoHorizontal} alt="JH Leasing" className="h-7 w-auto" />
+              </div>
               <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Soluciones de flota corporativa para la fuerza laboral moderna.</p>
             </div>
             <div>
