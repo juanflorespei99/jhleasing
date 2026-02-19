@@ -84,7 +84,7 @@ export default function Index() {
 
         {/* NAV */}
         <nav className="flex justify-between items-center mb-16 px-3">
-          <img src={logoHorizontal} alt="JH Leasing" className="h-10 w-auto" />
+          <img src={logoHorizontal} alt="JH Leasing" className="h-20 w-auto" />
           <div className="neu-nav hidden md:flex gap-2 p-2">
             {navItems.map((item) => (
               <button
