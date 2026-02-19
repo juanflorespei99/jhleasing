@@ -44,6 +44,7 @@ export default function Index() {
   const [activeNav, setActiveNav] = useState("Vehículos");
   const [activeType, setActiveType] = useState("Todos");
   const [activeBrand, setActiveBrand] = useState<string[]>([]);
+  const [maxPrice, setMaxPrice] = useState(1200);
   const [term, setTerm] = useState("36");
   const [vehicleValue, setVehicleValue] = useState("35000");
   const [downPayment, setDownPayment] = useState("5000");
@@ -58,6 +59,13 @@ export default function Index() {
       prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
     );
   };
+
+  const filteredVehicles = vehicles.filter((v) => {
+    const matchesType = activeType === "Todos" || v.type === activeType;
+    const matchesBrand = activeBrand.length === 0 || activeBrand.some((b) => v.name.includes(b));
+    const matchesPrice = v.price <= maxPrice;
+    return matchesType && matchesBrand && matchesPrice;
+  });
 
   const monthly = (() => {
     const P = parseFloat(vehicleValue) - parseFloat(downPayment);
@@ -161,10 +169,20 @@ export default function Index() {
 
               {/* Price Range */}
               <div className="mb-8">
-                <span className="label-micro mb-3 block">Rango de Precio</span>
-                <div className="relative mt-4 h-3 rounded-full" style={{ background: "hsl(var(--background))", boxShadow: "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff" }}>
-                  <div className="absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded-full cursor-pointer" style={{ left: "60%", transform: "translate(-50%, -50%)", background: "hsl(var(--primary))", boxShadow: "0 4px 8px rgba(0,0,0,0.2)" }} />
-                </div>
+                <span className="label-micro mb-3 block">Rango de Precio — hasta ${maxPrice}</span>
+                <input
+                  type="range"
+                  min={300}
+                  max={1200}
+                  step={10}
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(Number(e.target.value))}
+                  className="w-full mt-4 appearance-none h-3 rounded-full outline-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${((maxPrice - 300) / 900) * 100}%, hsl(var(--background)) ${((maxPrice - 300) / 900) * 100}%, hsl(var(--background)) 100%)`,
+                    boxShadow: "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff",
+                  }}
+                />
                 <div className="flex justify-between text-xs mt-3" style={{ color: "hsl(var(--muted-foreground))" }}>
                   <span>$300</span>
                   <span>$1200</span>
@@ -194,7 +212,13 @@ export default function Index() {
 
           {/* Vehicle Grid */}
           <div className="col-span-12 lg:col-span-9 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {vehicles.map((v) => (
+            {filteredVehicles.length === 0 && (
+              <div className="col-span-3 flex flex-col items-center justify-center py-24 text-center" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-2xl mb-2 uppercase font-light">Sin resultados</p>
+                <p className="text-sm">Prueba ajustando los filtros</p>
+              </div>
+            )}
+            {filteredVehicles.map((v) => (
               <div key={v.name} className="neu-card transition-transform duration-300 hover:-translate-y-2 cursor-pointer">
                 <div className="p-8 h-full flex flex-col" style={{ minHeight: 400 }}>
                   <span className="label-micro mb-2">{v.type}</span>
