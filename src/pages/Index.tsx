@@ -1,4 +1,6 @@
 import { useState } from "react";
+
+const fmt = (n: number) => n.toLocaleString("en-US");
 import heroVideo from "@/assets/hero-video.mp4";
 import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
 import logoIcon from "@/assets/logo-jhl-icon.png";
@@ -76,7 +78,7 @@ export default function Index() {
     const n = parseInt(term);
     if (!P || !r || !n) return "—";
     const m = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-    return isNaN(m) ? "—" : `$${Math.round(m)}`;
+    return isNaN(m) ? "—" : `$${fmt(Math.round(m))}`;
   })();
 
   return (
@@ -177,7 +179,7 @@ export default function Index() {
 
               {/* Price Range */}
               <div className="mb-8">
-                <span className="label-micro mb-3 block">Rango de Precio — hasta ${maxPrice}</span>
+                <span className="label-micro mb-3 block">Rango de Precio — hasta ${fmt(maxPrice)}</span>
                 <input
                   type="range"
                   min={300}
@@ -242,7 +244,7 @@ export default function Index() {
                   <div className="grid grid-cols-2 gap-4 border-t mt-auto pt-5" style={{ borderColor: "rgba(0,0,0,0.05)" }}>
                     <div>
                       <span className="label-micro">Mensual</span>
-                      <p className="text-2xl font-light">${v.price}</p>
+                      <p className="text-2xl font-light">${fmt(v.price)}</p>
                     </div>
                     <div>
                       <span className="label-micro">Kilometraje</span>
