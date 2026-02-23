@@ -194,8 +194,8 @@ export default function Index() {
                   }}
                 />
                 <div className="flex justify-between text-xs mt-3" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  <span>$300</span>
-                  <span>$1200</span>
+                  <span>${fmt(300)}</span>
+                  <span>${fmt(1200)}</span>
                 </div>
               </div>
 
@@ -299,9 +299,9 @@ export default function Index() {
                   <div className="mb-6">
                     <label className="label-micro mb-2 block">Valor del Vehículo</label>
                     <input
-                      type="number"
-                      value={vehicleValue}
-                      onChange={(e) => setVehicleValue(e.target.value)}
+                      type="text"
+                      value={fmt(Number(vehicleValue) || 0)}
+                      onChange={(e) => setVehicleValue(e.target.value.replace(/,/g, ""))}
                       className="w-full px-4 py-4 rounded-xl border-none outline-none text-sm"
                       style={{ background: "hsl(var(--background))", boxShadow: "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff", fontFamily: "inherit" }}
                     />
@@ -309,9 +309,9 @@ export default function Index() {
                   <div>
                     <label className="label-micro mb-2 block">Enganche</label>
                     <input
-                      type="number"
-                      value={downPayment}
-                      onChange={(e) => setDownPayment(e.target.value)}
+                      type="text"
+                      value={fmt(Number(downPayment) || 0)}
+                      onChange={(e) => setDownPayment(e.target.value.replace(/,/g, ""))}
                       className="w-full px-4 py-4 rounded-xl border-none outline-none text-sm"
                       style={{ background: "hsl(var(--background))", boxShadow: "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff", fontFamily: "inherit" }}
                     />
