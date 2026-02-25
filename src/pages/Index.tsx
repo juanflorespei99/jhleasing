@@ -33,7 +33,7 @@ interface VehicleRow {
 
 export default function Index() {
   const { user, isEmployee, isLoading, signOut } = useAuth();
-  const [activeNav, setActiveNav] = useState("Vehículos");
+  
   const [activeType, setActiveType] = useState("Todos");
   const [activeBrand, setActiveBrand] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState(1200000);
@@ -42,7 +42,7 @@ export default function Index() {
 
   const typeFilters = ["Todos", "Sedán", "SUV", "Blindada"];
   const brandFilters = ["Chevrolet", "Hyundai", "Nissan", "GMC", "MG", "Dodge"];
-  const navItems = ["Vehículos", "Ofertas", "Historias", "Contacto"];
+  
 
   useEffect(() => {
     fetchVehicles();
@@ -94,19 +94,6 @@ export default function Index() {
         {/* NAV */}
         <nav className="flex justify-between items-center mb-16 px-3">
           <img src={logoHorizontal} alt="JH Leasing" className="h-20 w-auto" />
-          <div className="neu-nav hidden md:flex gap-2 p-2">
-            {navItems.map((item) => (
-              <button
-                key={item}
-                onClick={() => setActiveNav(item)}
-                className={`px-6 py-3 rounded-full text-xs uppercase tracking-widest font-semibold transition-all duration-200 ${
-                  activeNav === item ? "neu-inset-sm" : "hover:opacity-70"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
           <div className="flex items-center gap-3">
             {user ? (
               <>
