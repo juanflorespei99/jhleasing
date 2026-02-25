@@ -13,6 +13,7 @@ export interface Vehicle {
   price: number;
   mileage: string;
   img: string;
+  images: string[];
   status: "Disponible" | "Vendido";
   vin: string;
   location: string;
@@ -28,6 +29,7 @@ export const vehicles: Vehicle[] = [
     price: 485000,
     mileage: "32,000 km",
     img: carTesla,
+    images: [carTesla, carAudi, carBmw],
     status: "Disponible",
     vin: "5YJ3E1EA3PF000123",
     location: "Ciudad de México, CDMX",
@@ -41,6 +43,7 @@ export const vehicles: Vehicle[] = [
     price: 620000,
     mileage: "45,000 km",
     img: carAudi,
+    images: [carAudi, carTesla, carMercedes],
     status: "Disponible",
     vin: "WAUZZZ8R7NA012345",
     location: "Monterrey, NL",
@@ -54,6 +57,7 @@ export const vehicles: Vehicle[] = [
     price: 540000,
     mileage: "28,000 km",
     img: carBmw,
+    images: [carBmw, carVw, carAudi],
     status: "Disponible",
     vin: "WBA5R1C50PFH00456",
     location: "Guadalajara, JAL",
@@ -67,6 +71,7 @@ export const vehicles: Vehicle[] = [
     price: 320000,
     mileage: "51,000 km",
     img: carVw,
+    images: [carVw, carBmw, carMini],
     status: "Disponible",
     vin: "WVWZZZ3CZNE789012",
     location: "Puebla, PUE",
@@ -80,6 +85,7 @@ export const vehicles: Vehicle[] = [
     price: 390000,
     mileage: "38,000 km",
     img: carMini,
+    images: [carMini, carVw, carTesla],
     status: "Disponible",
     vin: "WMWXP5C58N2T34567",
     location: "Ciudad de México, CDMX",
@@ -93,6 +99,7 @@ export const vehicles: Vehicle[] = [
     price: 720000,
     mileage: "22,000 km",
     img: carMercedes,
+    images: [carMercedes, carAudi, carBmw],
     status: "Disponible",
     vin: "W1KZF8DB1PA890123",
     location: "Monterrey, NL",

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { vehicles, fmt } from "@/data/vehicles";
 import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
@@ -5,6 +6,7 @@ import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
 export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
   const vehicle = vehicles.find((v) => v.id === id);
+  const [activeImage, setActiveImage] = useState(0);
 
   if (!vehicle) {
     return (
@@ -55,15 +57,60 @@ export default function VehicleDetail() {
         {/* MAIN */}
         <div className="grid grid-cols-12 gap-6 mb-16">
 
-          {/* IMAGE */}
-          <div className="col-span-12 lg:col-span-7">
-            <div className="neu-card overflow-hidden">
+          {/* IMAGE GALLERY */}
+          <div className="col-span-12 lg:col-span-7 flex flex-col gap-4">
+            <div className="neu-card overflow-hidden relative">
               <img
-                src={vehicle.img}
-                alt={vehicle.name}
-                className="w-full object-cover"
+                src={vehicle.images[activeImage]}
+                alt={`${vehicle.name} - imagen ${activeImage + 1}`}
+                className="w-full object-cover transition-opacity duration-300"
                 style={{ height: "clamp(320px, 40vw, 520px)" }}
               />
+              {/* Prev / Next arrows */}
+              {vehicle.images.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setActiveImage((p) => (p === 0 ? vehicle.images.length - 1 : p - 1))}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-opacity hover:opacity-100 opacity-70"
+                    style={{ background: "rgba(234,234,234,0.85)", boxShadow: "var(--shadow-tag)" }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" /></svg>
+                  </button>
+                  <button
+                    onClick={() => setActiveImage((p) => (p === vehicle.images.length - 1 ? 0 : p + 1))}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-opacity hover:opacity-100 opacity-70"
+                    style={{ background: "rgba(234,234,234,0.85)", boxShadow: "var(--shadow-tag)" }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+                  </button>
+                </>
+              )}
+              {/* Counter */}
+              <span
+                className="absolute bottom-4 right-4 text-[11px] uppercase tracking-widest font-bold px-4 py-2 rounded-full"
+                style={{ background: "rgba(234,234,234,0.85)", boxShadow: "var(--shadow-tag)" }}
+              >
+                {activeImage + 1} / {vehicle.images.length}
+              </span>
+            </div>
+
+            {/* Thumbnails */}
+            <div className="flex gap-3">
+              {vehicle.images.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveImage(i)}
+                  className={`flex-1 rounded-2xl overflow-hidden transition-all duration-200 ${
+                    i === activeImage ? "neu-inset-sm ring-2" : "neu-card opacity-60 hover:opacity-100"
+                  }`}
+                  style={{
+                    height: 80,
+                    ...(i === activeImage ? { ringColor: "hsl(var(--primary))" } : {}),
+                  }}
+                >
+                  <img src={img} alt={`${vehicle.name} miniatura ${i + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
             </div>
           </div>
 
