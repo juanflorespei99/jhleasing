@@ -30,7 +30,7 @@ export default function VehicleDetail() {
     { label: "Kilometraje", value: vehicle.mileage },
     { label: "Tipo", value: vehicle.type },
     { label: "Ubicación", value: vehicle.location },
-    { label: "VIN", value: vehicle.vin },
+    
     { label: "Estatus", value: vehicle.status },
   ];
 
