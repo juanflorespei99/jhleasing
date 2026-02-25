@@ -1,25 +1,9 @@
 import { useState } from "react";
-
-const fmt = (n: number) => n.toLocaleString("en-US");
+import { Link } from "react-router-dom";
+import { vehicles, fmt } from "@/data/vehicles";
 import heroVideo from "@/assets/hero-video.mp4";
 import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
 import logoIcon from "@/assets/logo-jhl-icon.png";
-
-import carTesla from "@/assets/car-tesla.jpg";
-import carAudi from "@/assets/car-audi.jpg";
-import carBmw from "@/assets/car-bmw.jpg";
-import carVw from "@/assets/car-vw.jpg";
-import carMini from "@/assets/car-mini.jpg";
-import carMercedes from "@/assets/car-mercedes.jpg";
-
-const vehicles = [
-  { type: "Eléctrico", name: "Tesla Model 3", year: 2023, price: 485000, mileage: "32,000 km", img: carTesla, status: "Disponible" },
-  { type: "SUV", name: "Audi Q5", year: 2022, price: 620000, mileage: "45,000 km", img: carAudi, status: "Disponible" },
-  { type: "Sedán", name: "BMW 3 Series", year: 2023, price: 540000, mileage: "28,000 km", img: carBmw, status: "Disponible" },
-  { type: "Sedán", name: "VW Passat", year: 2021, price: 320000, mileage: "51,000 km", img: carVw, status: "Disponible" },
-  { type: "Compacto", name: "Mini Cooper", year: 2022, price: 390000, mileage: "38,000 km", img: carMini, status: "Disponible" },
-  { type: "Lujo", name: "Mercedes C", year: 2023, price: 720000, mileage: "22,000 km", img: carMercedes, status: "Disponible" },
-];
 
 const testimonials = [
   {
@@ -211,7 +195,7 @@ export default function Index() {
               </div>
             )}
             {filteredVehicles.map((v) => (
-              <div key={v.name} className="neu-card transition-transform duration-300 hover:-translate-y-2 cursor-pointer">
+              <Link key={v.id} to={`/vehiculo/${v.id}`} className="neu-card transition-transform duration-300 hover:-translate-y-2 cursor-pointer block">
                 <div className="p-8 h-full flex flex-col" style={{ minHeight: 440 }}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="label-micro">{v.type}</span>
@@ -243,20 +227,14 @@ export default function Index() {
                     </div>
                   </div>
 
-                  <button
-                    className="mt-5 w-full py-4 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200 hover:opacity-90 hover:scale-[1.02]"
+                  <span
+                    className="mt-5 w-full py-4 rounded-full text-xs uppercase tracking-widest font-bold text-center block"
                     style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
                   >
-                    Solicitar Vehículo
-                  </button>
-                  <button
-                    className="mt-3 w-full py-4 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200"
-                    style={{ boxShadow: "6px 6px 12px #d1d1d1, -6px -6px 12px #ffffff", background: "transparent" }}
-                  >
                     Ver Detalles
-                  </button>
+                  </span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
