@@ -14,16 +14,170 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      allowed_domains: {
+        Row: {
+          created_at: string
+          domain: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vehicles: {
+        Row: {
+          brand: string
+          created_at: string
+          description: string
+          id: string
+          images: string[]
+          img: string
+          is_public: boolean
+          location: string
+          mileage: string
+          name: string
+          price_employee: number
+          price_public: number
+          slug: string
+          status: string
+          type: string
+          vin: string
+          year: number
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          description?: string
+          id?: string
+          images?: string[]
+          img?: string
+          is_public?: boolean
+          location?: string
+          mileage?: string
+          name: string
+          price_employee: number
+          price_public: number
+          slug: string
+          status?: string
+          type: string
+          vin?: string
+          year: number
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          description?: string
+          id?: string
+          images?: string[]
+          img?: string
+          is_public?: boolean
+          location?: string
+          mileage?: string
+          name?: string
+          price_employee?: number
+          price_public?: number
+          slug?: string
+          status?: string
+          type?: string
+          vin?: string
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      vehicles_public: {
+        Row: {
+          brand: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          images: string[] | null
+          img: string | null
+          is_public: boolean | null
+          location: string | null
+          mileage: string | null
+          name: string | null
+          price_public: number | null
+          slug: string | null
+          status: string | null
+          type: string | null
+          year: number | null
+        }
+        Insert: {
+          brand?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          images?: string[] | null
+          img?: string | null
+          is_public?: boolean | null
+          location?: string | null
+          mileage?: string | null
+          name?: string | null
+          price_public?: number | null
+          slug?: string | null
+          status?: string | null
+          type?: string | null
+          year?: number | null
+        }
+        Update: {
+          brand?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          images?: string[] | null
+          img?: string | null
+          is_public?: boolean | null
+          location?: string | null
+          mileage?: string | null
+          name?: string | null
+          price_public?: number | null
+          slug?: string | null
+          status?: string | null
+          type?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "employee" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +304,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "employee", "user"],
+    },
   },
 } as const
