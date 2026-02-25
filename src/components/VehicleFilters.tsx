@@ -9,12 +9,16 @@ interface Props {
   toggleBrand: (b: string) => void;
   maxPrice: number;
   setMaxPrice: (p: number) => void;
+  priceMin: number;
+  priceMax: number;
 }
 
 export default function VehicleFilters({
   typeFilters, brandFilters, activeType, setActiveType,
   activeBrand, toggleBrand, maxPrice, setMaxPrice,
+  priceMin, priceMax,
 }: Props) {
+  const range = priceMax - priceMin || 1;
   return (
     <div className="col-span-12 lg:col-span-3 neu-card h-fit">
       <div className="p-10">
@@ -40,20 +44,20 @@ export default function VehicleFilters({
           <span className="label-micro mb-3 block">Precio Máximo — ${fmt(maxPrice)}</span>
           <input
             type="range"
-            min={100000}
-            max={1200000}
+            min={priceMin}
+            max={priceMax}
             step={10000}
             value={maxPrice}
             onChange={(e) => setMaxPrice(Number(e.target.value))}
             className="w-full mt-4 appearance-none h-3 rounded-full outline-none cursor-pointer"
             style={{
-              background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${((maxPrice - 100000) / 1100000) * 100}%, hsl(var(--background)) ${((maxPrice - 100000) / 1100000) * 100}%, hsl(var(--background)) 100%)`,
+              background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${((maxPrice - priceMin) / range) * 100}%, hsl(var(--background)) ${((maxPrice - priceMin) / range) * 100}%, hsl(var(--background)) 100%)`,
               boxShadow: "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff",
             }}
           />
           <div className="flex justify-between text-xs mt-3" style={{ color: "hsl(var(--muted-foreground))" }}>
-            <span>${fmt(100000)}</span>
-            <span>${fmt(1200000)}</span>
+            <span>${fmt(priceMin)}</span>
+            <span>${fmt(priceMax)}</span>
           </div>
         </div>
 

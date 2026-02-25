@@ -36,7 +36,7 @@ export default function Index() {
   
   const [activeType, setActiveType] = useState("Todos");
   const [activeBrand, setActiveBrand] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState(1200000);
+  const [maxPrice, setMaxPrice] = useState(Infinity);
   const [vehicles, setVehicles] = useState<VehicleRow[]>([]);
   const [loadingVehicles, setLoadingVehicles] = useState(true);
 
@@ -79,6 +79,10 @@ export default function Index() {
   };
 
   const displayPrice = (v: VehicleRow) => isEmployee && v.price_employee ? v.price_employee : v.price_public;
+
+  const prices = vehicles.map(displayPrice);
+  const priceMin = prices.length ? Math.floor(Math.min(...prices) / 10000) * 10000 : 100000;
+  const priceMax = prices.length ? Math.ceil(Math.max(...prices) / 10000) * 10000 : 1200000;
 
   const filteredVehicles = vehicles.filter((v) => {
     const matchesType = activeType === "Todos" || v.type === activeType;
@@ -135,8 +139,10 @@ export default function Index() {
             setActiveType={setActiveType}
             activeBrand={activeBrand}
             toggleBrand={toggleBrand}
-            maxPrice={maxPrice}
+            maxPrice={maxPrice > priceMax ? priceMax : maxPrice}
             setMaxPrice={setMaxPrice}
+            priceMin={priceMin}
+            priceMax={priceMax}
           />
 
           {/* Vehicle Grid */}
