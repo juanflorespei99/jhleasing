@@ -1,45 +1,130 @@
 
 
-# Reemplazar vehículos de prueba con inventario real
+# Implementar sistema de usuarios y visibilidad de inventario
 
 ## Resumen
-Se reemplazaran los 6 vehiculos de prueba por los 9 vehiculos reales del archivo Excel "Unidades_en_Venta_1.xlsx". Se usaran imagenes de referencia obtenidas de la web para cada modelo.
+Se creara un sistema completo con autenticacion, base de datos de vehiculos en Supabase con Row Level Security (RLS), y logica de doble pricing. Los usuarios publicos solo veran vehiculos publicos con precios publicos. Los empleados autenticados veran todo el inventario con precios preferenciales.
 
-## Datos del inventario real
+## Arquitectura
 
-| # | Marca | Modelo | Ano | KM | Ubicacion | Precio Publico | Precio Empleado |
-|---|-------|--------|-----|-----|-----------|---------------|-----------------|
-| 1 | Chevrolet | Aveo 1.5LS B AT | 2024 | 54,000 | Jalisco | $157,275 | $125,820 |
-| 2 | Hyundai | Grand i10 Sedan GL MID | 2026 | 22,000 | Sonora | $200,300 | $160,240 |
-| 3 | Nissan | Versa Advance CVT | 2024 | 40,000 | CDMX | $218,650 | $174,920 |
-| 4 | GMC | Yukon XL Blindada | 2025 | 38,618 | CDMX | $1,195,700 | $956,560 |
-| 5 | GMC | Suburban 4X2 Blindaje | 2015 | 90,000 | Morelos | $320,325 | $256,260 |
-| 6 | Chevrolet | Tahoe High Country | 2023 | 87,312 | Morelos | $815,775 | $652,620 |
-| 7 | MG | HS Excite TA | 2024 | 70,000 | CDMX | $224,175 | $179,340 |
-| 8 | Dodge | Durango Limited | 2017 | 170,000 | CDMX | $227,250 | $181,800 |
-| 9 | MG | RX8 SUV Elegance | 2024 | 42,300 | N/A | $339,600 | $271,680 |
+```text
++------------------+       +-------------------+       +------------------+
+|  Usuario publico |------>| Supabase RLS      |------>| Solo vehiculos   |
+|  (no logueado)   |       | (anon role)       |       | is_public = true |
++------------------+       +-------------------+       | precio_publico   |
+                                                       +------------------+
 
-## Cambios a realizar
++------------------+       +-------------------+       +------------------+
+|  Empleado        |------>| Supabase RLS      |------>| TODOS los        |
+|  (logueado)      |       | (authenticated)   |       | vehiculos        |
++------------------+       +-------------------+       | precio_empleado  |
+                                                       +------------------+
+```
 
-### 1. Actualizar `src/data/vehicles.ts`
-- Reemplazar los 6 vehiculos de prueba por los 9 del inventario real
-- Usar URLs de imagenes de Wikimedia Commons y otras fuentes libres como imagenes de referencia
-- Cada vehiculo tendra una imagen principal y 1-2 imagenes adicionales para la galeria
-- Se eliminaran las importaciones de las imagenes locales de prueba (car-tesla.jpg, car-audi.jpg, etc.)
-- Se agregara el campo `brand` (marca) para facilitar los filtros
-- El precio mostrado sera el precio publico por ahora (el doble pricing se implementara despues)
+## Paso 1: Base de datos en Supabase
 
-### 2. Actualizar filtros en `src/pages/Index.tsx`
-- **Tipos**: Cambiar de `["Todos", "Sedan", "SUV", "Electrico"]` a `["Todos", "Sedan", "SUV", "Blindada"]` para reflejar las categorias reales
-- **Marcas**: Cambiar de `["Tesla", "Audi", "BMW", "VW"]` a `["Chevrolet", "Hyundai", "Nissan", "GMC", "MG", "Dodge"]`
-- **Precio maximo**: Ajustar el rango del slider de $100,000 - $1,200,000 para cubrir la Yukon XL ($1,195,700)
+### Tabla `vehicles`
+Migrar el inventario actual (hardcoded en `src/data/vehicles.ts`) a una tabla en Supabase:
 
-### 3. Imagenes
-Se usaran URLs publicas de Wikimedia Commons para los modelos disponibles. Para modelos sin imagenes libres disponibles, se usara la misma imagen placeholder del proyecto. Las imagenes se referenciaran como URLs externas en lugar de imports locales.
+| Columna | Tipo | Descripcion |
+|---------|------|-------------|
+| id | uuid (PK) | Identificador unico |
+| slug | text (unique) | URL-friendly ID (ej. "chevrolet-aveo-2024") |
+| brand | text | Marca |
+| name | text | Nombre completo del modelo |
+| type | text | Tipo: Sedan, SUV, Blindada |
+| year | integer | Ano del modelo |
+| price_public | integer | Precio publico en MXN |
+| price_employee | integer | Precio preferencial empleado |
+| mileage | text | Kilometraje |
+| img | text | URL imagen principal |
+| images | text[] | Array de URLs de imagenes |
+| status | text | Disponible / Vendido |
+| vin | text | Numero de serie |
+| location | text | Ubicacion |
+| description | text | Descripcion del vehiculo |
+| is_public | boolean (default true) | Visible para usuarios publicos |
+| created_at | timestamptz | Fecha de creacion |
 
-## Detalles tecnicos
-- Se modificaran 2 archivos: `src/data/vehicles.ts` y `src/pages/Index.tsx`
-- La interfaz `Vehicle` se mantiene igual, solo se agregan datos reales
-- Los archivos de imagen anteriores (car-tesla.jpg, etc.) se dejaran en el proyecto pero no se usaran
-- El `VehicleDetail.tsx` no necesita cambios ya que consume los datos de `vehicles.ts`
+### Tabla `allowed_domains`
+Para gestionar los dominios de correo autorizados:
 
+| Columna | Tipo |
+|---------|------|
+| id | uuid (PK) |
+| domain | text (unique) | 
+| created_at | timestamptz |
+
+### Tabla `user_roles`
+Siguiendo las mejores practicas de seguridad:
+
+| Columna | Tipo |
+|---------|------|
+| id | uuid (PK) |
+| user_id | uuid (FK auth.users) |
+| role | app_role enum (admin, employee, user) |
+
+### Politicas RLS en `vehicles`
+
+- **SELECT para todos (anon + authenticated)**: Donde `is_public = true` -- usuarios publicos ven solo inventario publico
+- **SELECT para empleados autenticados**: Todos los vehiculos -- usando funcion `has_role()` que verifica rol `employee` o `admin`
+
+### Vista `vehicles_public`
+Una vista con `security_invoker=on` que excluye `price_employee` y `vin` para usuarios no autenticados. Los usuarios publicos consultaran esta vista.
+
+### Funcion de validacion de dominio
+Un trigger en `auth.users` (via webhook o edge function) que al registrarse un usuario, verifica si su dominio de correo esta en `allowed_domains` y le asigna el rol `employee` automaticamente.
+
+## Paso 2: Edge Function para registro
+
+Se creara una edge function `on-signup` que:
+1. Se activa como webhook cuando un usuario se registra
+2. Verifica si el dominio del correo esta en `allowed_domains`
+3. Si es un dominio permitido, asigna rol `employee` en `user_roles`
+4. Si no, asigna rol `user` (acceso publico solamente)
+
+## Paso 3: Autenticacion en el frontend
+
+### Nuevos archivos:
+- **`src/pages/Login.tsx`**: Pagina de login con correo y contrasena
+- **`src/pages/Register.tsx`**: Pagina de registro
+- **`src/hooks/useAuth.ts`**: Hook para manejar estado de autenticacion y rol del usuario
+- **`src/components/AuthGuard.tsx`**: Componente para proteger rutas (si se necesita)
+
+### Cambios en archivos existentes:
+- **`src/App.tsx`**: Agregar rutas `/login` y `/registro`, envolver con contexto de autenticacion
+- **`src/pages/Index.tsx`**: 
+  - Reemplazar datos hardcoded por consulta a Supabase
+  - Mostrar precio segun tipo de usuario
+  - Agregar boton de login/logout en la navegacion
+  - Usuarios publicos: consultan vista `vehicles_public` (sin precio empleado)
+  - Empleados: consultan tabla `vehicles` directamente (ven ambos precios)
+- **`src/pages/VehicleDetail.tsx`**: Misma logica de precios y visibilidad
+- **`src/data/vehicles.ts`**: Se mantendra como fallback/seed pero la fuente principal sera Supabase
+
+## Paso 4: UX de precios para empleados
+
+Cuando un empleado ve un vehiculo publico:
+- Se muestra el **precio empleado** como precio principal
+- Se muestra el precio publico tachado como referencia
+- Etiqueta "Precio preferencial" visible
+
+Cuando un empleado ve un vehiculo exclusivo (no publico):
+- Solo se muestra el precio empleado
+- Etiqueta "Exclusivo empleados" visible
+
+## Paso 5: Navegacion actualizada
+
+- Agregar boton "Iniciar Sesion" en la barra de navegacion para usuarios no logueados
+- Mostrar nombre/avatar del usuario y boton "Cerrar Sesion" para usuarios logueados
+- Badge o indicador visual cuando el usuario tiene acceso de empleado
+
+## Orden de implementacion
+
+1. Migracion SQL: crear tablas `vehicles`, `allowed_domains`, `user_roles`, enum `app_role`, funcion `has_role()`, politicas RLS, vista `vehicles_public`
+2. Insertar los 9 vehiculos actuales en la tabla `vehicles`
+3. Crear edge function `on-signup` para asignacion automatica de roles
+4. Implementar hook `useAuth` y contexto de autenticacion
+5. Crear paginas de Login y Registro
+6. Actualizar Index.tsx y VehicleDetail.tsx para consumir datos de Supabase
+7. Actualizar navegacion con login/logout
