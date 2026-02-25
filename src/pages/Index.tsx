@@ -1,43 +1,76 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { vehicles, fmt } from "@/data/vehicles";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { fmt } from "@/data/vehicles";
 import heroVideo from "@/assets/hero-video.mp4";
 import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
 import logoIcon from "@/assets/logo-jhl-icon.png";
+import HeroSection from "@/components/HeroSection";
+import VehicleFilters from "@/components/VehicleFilters";
+import VehicleCard from "@/components/VehicleCard";
+import TestimonialsSection from "@/components/TestimonialsSection";
+import FooterSection from "@/components/FooterSection";
 
-const testimonials = [
-  {
-    role: "Director Comercial",
-    quote: '"Proceso impecable."',
-    body: '"Compré mi vehículo de flotilla directamente desde el portal. El proceso fue rápido y transparente."',
-    name: "Mark S.",
-    initials: "MS",
-  },
-  {
-    role: "Gerente de RRHH",
-    quote: '"Ideal para el equipo."',
-    body: '"Implementar JH Leasing para nuestros empleados fue la mejor decisión. Precios preferenciales y sin complicaciones."',
-    name: "Sarah J.",
-    initials: "SJ",
-  },
-  {
-    role: "Desarrollador",
-    quote: '"Me encanta mi nuevo EV."',
-    body: '"La selección de vehículos eléctricos es impresionante. La entrega fue más rápida de lo esperado."',
-    name: "David L.",
-    initials: "DL",
-  },
-];
+interface VehicleRow {
+  id: string;
+  slug: string;
+  brand: string;
+  name: string;
+  type: string;
+  year: number;
+  price_public: number;
+  price_employee?: number;
+  mileage: string;
+  img: string;
+  images: string[];
+  status: string;
+  vin?: string;
+  location: string;
+  description: string;
+  is_public: boolean;
+}
 
 export default function Index() {
+  const { user, isEmployee, isLoading, signOut } = useAuth();
   const [activeNav, setActiveNav] = useState("Vehículos");
   const [activeType, setActiveType] = useState("Todos");
   const [activeBrand, setActiveBrand] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState(1200000);
+  const [vehicles, setVehicles] = useState<VehicleRow[]>([]);
+  const [loadingVehicles, setLoadingVehicles] = useState(true);
 
   const typeFilters = ["Todos", "Sedán", "SUV", "Blindada"];
   const brandFilters = ["Chevrolet", "Hyundai", "Nissan", "GMC", "MG", "Dodge"];
   const navItems = ["Vehículos", "Ofertas", "Historias", "Contacto"];
+
+  useEffect(() => {
+    fetchVehicles();
+  }, [isEmployee, isLoading]);
+
+  const fetchVehicles = async () => {
+    setLoadingVehicles(true);
+    try {
+      if (isEmployee) {
+        // Employees see all vehicles with all fields
+        const { data, error } = await supabase
+          .from("vehicles")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (!error && data) setVehicles(data as unknown as VehicleRow[]);
+      } else {
+        // Public users see only public vehicles via the view (no price_employee, no vin)
+        const { data, error } = await supabase
+          .from("vehicles_public" as any)
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (!error && data) setVehicles(data as unknown as VehicleRow[]);
+      }
+    } catch (e) {
+      console.error("Error fetching vehicles:", e);
+    }
+    setLoadingVehicles(false);
+  };
 
   const toggleBrand = (brand: string) => {
     setActiveBrand((prev) =>
@@ -45,10 +78,12 @@ export default function Index() {
     );
   };
 
+  const displayPrice = (v: VehicleRow) => isEmployee && v.price_employee ? v.price_employee : v.price_public;
+
   const filteredVehicles = vehicles.filter((v) => {
     const matchesType = activeType === "Todos" || v.type === activeType;
     const matchesBrand = activeBrand.length === 0 || activeBrand.includes(v.brand);
-    const matchesPrice = v.price <= maxPrice;
+    const matchesPrice = displayPrice(v) <= maxPrice;
     return matchesType && matchesBrand && matchesPrice;
   });
 
@@ -72,170 +107,67 @@ export default function Index() {
               </button>
             ))}
           </div>
-          <button className="w-12 h-12 rounded-full flex items-center justify-center shadow-raised" style={{ background: "linear-gradient(145deg, #e6e6e6, #dedede)" }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-3">
+            {user ? (
+              <>
+                {isEmployee && (
+                  <span
+                    className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full"
+                    style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+                  >
+                    Empleado
+                  </span>
+                )}
+                <button
+                  onClick={() => signOut()}
+                  className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity"
+                >
+                  Salir
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90"
+                style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+              >
+                Iniciar Sesión
+              </Link>
+            )}
+          </div>
         </nav>
 
-        {/* HERO */}
-        <section className="grid grid-cols-12 gap-6 mb-20">
-          <div className="col-span-12 lg:col-span-8 neu-card min-h-[500px] overflow-hidden relative">
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="absolute inset-0 w-full h-full object-cover"
-              src={heroVideo}
-            />
-            <div className="relative z-10 p-10 h-full flex flex-col justify-end" style={{ minHeight: 500 }}>
-              <span className="label-micro mb-2">Inventario Destacado</span>
-            </div>
-          </div>
-
-          <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-            <div className="neu-card flex-1">
-              <div className="p-10 h-full flex flex-col justify-between" style={{ minHeight: 280 }}>
-                <div>
-                  <span className="label-micro mb-3 block">Venta Directa</span>
-                  <h1 className="heading-xl mb-6">Vehículos de flotilla a precio preferencial</h1>
-                </div>
-                <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))", maxWidth: "48ch" }}>
-                  Adquiere vehículos usados de flotilla corporativa con precios transparentes y sin intermediarios.
-                </p>
-              </div>
-            </div>
-
-            <div
-              className="neu-accent cursor-pointer transition-transform duration-200 hover:-translate-y-1"
-            >
-              <div className="p-10 flex flex-col items-center justify-center text-center gap-3" style={{ minHeight: 200 }}>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-                <span className="text-xs uppercase tracking-widest font-bold">Explorar</span>
-                <span className="heading-md">Ver Inventario</span>
-              </div>
-            </div>
-          </div>
-        </section>
+        <HeroSection heroVideo={heroVideo} />
 
         {/* FILTER + VEHICLES */}
         <section className="grid grid-cols-12 gap-6 mb-24">
-          {/* Filter Sidebar */}
-          <div className="col-span-12 lg:col-span-3 neu-card h-fit">
-            <div className="p-10">
-              <div className="mb-8">
-                <span className="label-micro mb-3 block">Tipo de Vehículo</span>
-                <div className="flex flex-wrap gap-3 mt-3">
-                  {typeFilters.map((f) => (
-                    <button
-                      key={f}
-                      onClick={() => setActiveType(f)}
-                      className={`px-4 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold transition-all ${
-                        activeType === f ? "neu-inset-sm" : "neu-tag"
-                      }`}
-                      style={activeType === f ? { color: "hsl(var(--primary))" } : {}}
-                    >
-                      {f}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mb-8">
-                <span className="label-micro mb-3 block">Precio Máximo — ${fmt(maxPrice)}</span>
-                <input
-                  type="range"
-                  min={100000}
-                  max={1200000}
-                  step={10000}
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(Number(e.target.value))}
-                  className="w-full mt-4 appearance-none h-3 rounded-full outline-none cursor-pointer"
-                  style={{
-                    background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${((maxPrice - 100000) / 1100000) * 100}%, hsl(var(--background)) ${((maxPrice - 100000) / 1100000) * 100}%, hsl(var(--background)) 100%)`,
-                    boxShadow: "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff",
-                  }}
-                />
-                <div className="flex justify-between text-xs mt-3" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  <span>${fmt(100000)}</span>
-                  <span>${fmt(1200000)}</span>
-                </div>
-              </div>
-
-              <div>
-                <span className="label-micro mb-3 block">Marca</span>
-                <div className="flex flex-wrap gap-3 mt-3">
-                  {brandFilters.map((b) => (
-                    <button
-                      key={b}
-                      onClick={() => toggleBrand(b)}
-                      className={`px-4 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold transition-all ${
-                        activeBrand.includes(b) ? "neu-inset-sm" : "neu-tag"
-                      }`}
-                      style={activeBrand.includes(b) ? { color: "hsl(var(--primary))" } : {}}
-                    >
-                      {b}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          <VehicleFilters
+            typeFilters={typeFilters}
+            brandFilters={brandFilters}
+            activeType={activeType}
+            setActiveType={setActiveType}
+            activeBrand={activeBrand}
+            toggleBrand={toggleBrand}
+            maxPrice={maxPrice}
+            setMaxPrice={setMaxPrice}
+          />
 
           {/* Vehicle Grid */}
           <div className="col-span-12 lg:col-span-9 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredVehicles.length === 0 && (
+            {loadingVehicles ? (
+              <div className="col-span-3 flex items-center justify-center py-24">
+                <p className="text-sm uppercase tracking-widest" style={{ color: "hsl(var(--muted-foreground))" }}>Cargando inventario...</p>
+              </div>
+            ) : filteredVehicles.length === 0 ? (
               <div className="col-span-3 flex flex-col items-center justify-center py-24 text-center" style={{ color: "hsl(var(--muted-foreground))" }}>
                 <p className="text-2xl mb-2 uppercase font-light">Sin resultados</p>
                 <p className="text-sm">Prueba ajustando los filtros</p>
               </div>
+            ) : (
+              filteredVehicles.map((v) => (
+                <VehicleCard key={v.id} vehicle={v} isEmployee={isEmployee} displayPrice={displayPrice(v)} />
+              ))
             )}
-            {filteredVehicles.map((v) => (
-              <Link key={v.id} to={`/vehiculo/${v.id}`} className="neu-card transition-transform duration-300 hover:-translate-y-2 cursor-pointer block">
-                <div className="p-8 h-full flex flex-col" style={{ minHeight: 440 }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="label-micro">{v.type}</span>
-                    <span
-                      className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full"
-                      style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-                    >
-                      {v.status}
-                    </span>
-                  </div>
-                  <h3 className="heading-md mb-1">{v.name}</h3>
-                  <p className="text-xs mb-4" style={{ color: "hsl(var(--muted-foreground))" }}>{v.year}</p>
-
-                  <div
-                    className="rounded-3xl mb-6 overflow-hidden"
-                    style={{ height: 160, boxShadow: "inset 0 0 20px rgba(0,0,0,0.05)" }}
-                  >
-                    <img src={v.img} alt={v.name} className="w-full h-full object-cover" />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 border-t mt-auto pt-5" style={{ borderColor: "rgba(0,0,0,0.05)" }}>
-                    <div>
-                      <span className="label-micro">Precio Total</span>
-                      <p className="text-2xl font-light">${fmt(v.price)}</p>
-                    </div>
-                    <div>
-                      <span className="label-micro">Kilometraje</span>
-                      <p className="text-sm font-semibold">{v.mileage}</p>
-                    </div>
-                  </div>
-
-                  <span
-                    className="mt-5 w-full py-4 rounded-full text-xs uppercase tracking-widest font-bold text-center block"
-                    style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-                  >
-                    Ver Detalles
-                  </span>
-                </div>
-              </Link>
-            ))}
           </div>
         </section>
 
@@ -255,71 +187,8 @@ export default function Index() {
           </div>
         </section>
 
-        {/* TESTIMONIALS */}
-        <section className="mb-20">
-          <div className="flex gap-6 overflow-x-auto pb-10 pt-4 -mt-4 px-4 -mx-4" style={{ scrollbarWidth: "none" }}>
-            {testimonials.map((t) => (
-              <div key={t.name} className="neu-card flex-shrink-0" style={{ minWidth: 340 }}>
-                <div className="p-10">
-                  <div
-                    className="w-16 h-16 rounded-full flex items-center justify-center mb-6 text-lg font-bold"
-                    style={{
-                      boxShadow: "-12px -12px 24px #FFFFFF, 12px 12px 24px #CFCFCF",
-                      background: "hsl(var(--primary))",
-                      color: "hsl(var(--primary-foreground))",
-                    }}
-                  >
-                    {t.initials}
-                  </div>
-                  <span className="label-micro mb-2 block">{t.role}</span>
-                  <p className="heading-md mb-4">{t.quote}</p>
-                  <p className="text-sm mb-6" style={{ color: "hsl(var(--muted-foreground))" }}>{t.body}</p>
-                  <p className="text-xs font-bold uppercase tracking-widest">{t.name}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* FOOTER */}
-        <footer className="border-t pt-16 mb-8" style={{ borderColor: "rgba(0,0,0,0.05)" }}>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <img src={logoIcon} alt="JH Leasing icon" className="h-8 w-auto" />
-                <img src={logoHorizontal} alt="JH Leasing" className="h-7 w-auto" />
-              </div>
-              <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Venta directa de vehículos de flotilla corporativa a precios preferenciales.</p>
-            </div>
-            <div>
-              <h4 className="text-xs uppercase tracking-widest mb-6" style={{ color: "hsl(var(--muted-foreground))" }}>Inventario</h4>
-              {["Vehículos", "Ofertas", "Eléctricos"].map((l) => (
-                <a key={l} href="#" className="block text-sm mb-3 hover:opacity-70 transition-opacity">{l}</a>
-              ))}
-            </div>
-            <div>
-              <h4 className="text-xs uppercase tracking-widest mb-6" style={{ color: "hsl(var(--muted-foreground))" }}>Soporte</h4>
-              {["Centro de Ayuda", "Contacto", "Política de Privacidad"].map((l) => (
-                <a key={l} href="#" className="block text-sm mb-3 hover:opacity-70 transition-opacity">{l}</a>
-              ))}
-            </div>
-            <div>
-              <h4 className="text-xs uppercase tracking-widest mb-6" style={{ color: "hsl(var(--muted-foreground))" }}>Contacto</h4>
-              <a href="tel:18005453273" className="block text-sm mb-3 hover:opacity-70 transition-opacity">1-800-JH-LEASE</a>
-              <a href="mailto:support@jhleasing.com" className="block text-sm mb-3 hover:opacity-70 transition-opacity">support@jhleasing.com</a>
-              <button
-                className="mt-2 px-5 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all"
-                style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-              >
-                Chat en Vivo
-              </button>
-            </div>
-          </div>
-          <div className="mt-12 text-xs text-center pb-4" style={{ color: "hsl(var(--muted-foreground))" }}>
-            © 2026 JH Leasing. All rights reserved.
-          </div>
-        </footer>
-
+        <TestimonialsSection />
+        <FooterSection logoIcon={logoIcon} logoHorizontal={logoHorizontal} />
       </div>
     </div>
   );
