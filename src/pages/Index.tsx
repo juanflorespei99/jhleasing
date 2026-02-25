@@ -33,10 +33,10 @@ export default function Index() {
   const [activeNav, setActiveNav] = useState("Vehículos");
   const [activeType, setActiveType] = useState("Todos");
   const [activeBrand, setActiveBrand] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState(800000);
+  const [maxPrice, setMaxPrice] = useState(1200000);
 
-  const typeFilters = ["Todos", "Sedán", "SUV", "Eléctrico"];
-  const brandFilters = ["Tesla", "Audi", "BMW", "VW"];
+  const typeFilters = ["Todos", "Sedán", "SUV", "Blindada"];
+  const brandFilters = ["Chevrolet", "Hyundai", "Nissan", "GMC", "MG", "Dodge"];
   const navItems = ["Vehículos", "Ofertas", "Historias", "Contacto"];
 
   const toggleBrand = (brand: string) => {
@@ -47,7 +47,7 @@ export default function Index() {
 
   const filteredVehicles = vehicles.filter((v) => {
     const matchesType = activeType === "Todos" || v.type === activeType;
-    const matchesBrand = activeBrand.length === 0 || activeBrand.some((b) => v.name.includes(b));
+    const matchesBrand = activeBrand.length === 0 || activeBrand.includes(v.brand);
     const matchesPrice = v.price <= maxPrice;
     return matchesType && matchesBrand && matchesPrice;
   });
@@ -149,20 +149,20 @@ export default function Index() {
                 <span className="label-micro mb-3 block">Precio Máximo — ${fmt(maxPrice)}</span>
                 <input
                   type="range"
-                  min={200000}
-                  max={800000}
+                  min={100000}
+                  max={1200000}
                   step={10000}
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
                   className="w-full mt-4 appearance-none h-3 rounded-full outline-none cursor-pointer"
                   style={{
-                    background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${((maxPrice - 200000) / 600000) * 100}%, hsl(var(--background)) ${((maxPrice - 200000) / 600000) * 100}%, hsl(var(--background)) 100%)`,
+                    background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${((maxPrice - 100000) / 1100000) * 100}%, hsl(var(--background)) ${((maxPrice - 100000) / 1100000) * 100}%, hsl(var(--background)) 100%)`,
                     boxShadow: "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff",
                   }}
                 />
                 <div className="flex justify-between text-xs mt-3" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  <span>${fmt(200000)}</span>
-                  <span>${fmt(800000)}</span>
+                  <span>${fmt(100000)}</span>
+                  <span>${fmt(1200000)}</span>
                 </div>
               </div>
 
