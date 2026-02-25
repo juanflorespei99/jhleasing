@@ -13,26 +13,26 @@ import carMini from "@/assets/car-mini.jpg";
 import carMercedes from "@/assets/car-mercedes.jpg";
 
 const vehicles = [
-  { type: "Eléctrico", name: "Tesla Model 3", price: 499, mileage: "10k / año", img: carTesla, category: "Electric" },
-  { type: "SUV", name: "Audi Q5", price: 540, mileage: "12k / año", img: carAudi, category: "SUV" },
-  { type: "Híbrido", name: "BMW 3 Series", price: 580, mileage: "15k / año", img: carBmw, category: "Sedan" },
-  { type: "Sedán", name: "VW Passat", price: 320, mileage: "10k / año", img: carVw, category: "Sedan" },
-  { type: "Compacto", name: "Mini Cooper", price: 390, mileage: "10k / año", img: carMini, category: "Sedan" },
-  { type: "Lujo", name: "Mercedes C", price: 620, mileage: "12k / año", img: carMercedes, category: "Sedan" },
+  { type: "Eléctrico", name: "Tesla Model 3", year: 2023, price: 485000, mileage: "32,000 km", img: carTesla, status: "Disponible" },
+  { type: "SUV", name: "Audi Q5", year: 2022, price: 620000, mileage: "45,000 km", img: carAudi, status: "Disponible" },
+  { type: "Sedán", name: "BMW 3 Series", year: 2023, price: 540000, mileage: "28,000 km", img: carBmw, status: "Disponible" },
+  { type: "Sedán", name: "VW Passat", year: 2021, price: 320000, mileage: "51,000 km", img: carVw, status: "Disponible" },
+  { type: "Compacto", name: "Mini Cooper", year: 2022, price: 390000, mileage: "38,000 km", img: carMini, status: "Disponible" },
+  { type: "Lujo", name: "Mercedes C", year: 2023, price: 720000, mileage: "22,000 km", img: carMercedes, status: "Disponible" },
 ];
 
 const testimonials = [
   {
     role: "Director Comercial",
     quote: '"Proceso impecable."',
-    body: '"Pedí mi vehículo de flota directamente desde el portal. La simulación de financiamiento fue exacta."',
+    body: '"Compré mi vehículo de flotilla directamente desde el portal. El proceso fue rápido y transparente."',
     name: "Mark S.",
     initials: "MS",
   },
   {
     role: "Gerente de RRHH",
     quote: '"Ideal para el equipo."',
-    body: '"Implementar JH Leasing para nuestros empleados fue la mejor decisión de beneficios que tomamos este año."',
+    body: '"Implementar JH Leasing para nuestros empleados fue la mejor decisión. Precios preferenciales y sin complicaciones."',
     name: "Sarah J.",
     initials: "SJ",
   },
@@ -49,15 +49,11 @@ export default function Index() {
   const [activeNav, setActiveNav] = useState("Vehículos");
   const [activeType, setActiveType] = useState("Todos");
   const [activeBrand, setActiveBrand] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState(1200);
-  const [term, setTerm] = useState("36");
-  const [vehicleValue, setVehicleValue] = useState("35000");
-  const [downPayment, setDownPayment] = useState("5000");
-  const [interestRate, setInterestRate] = useState("4.5");
+  const [maxPrice, setMaxPrice] = useState(800000);
 
   const typeFilters = ["Todos", "Sedán", "SUV", "Eléctrico"];
   const brandFilters = ["Tesla", "Audi", "BMW", "VW"];
-  const navItems = ["Vehículos", "Ofertas", "Financiamiento", "Historias", "Contacto"];
+  const navItems = ["Vehículos", "Ofertas", "Historias", "Contacto"];
 
   const toggleBrand = (brand: string) => {
     setActiveBrand((prev) =>
@@ -71,15 +67,6 @@ export default function Index() {
     const matchesPrice = v.price <= maxPrice;
     return matchesType && matchesBrand && matchesPrice;
   });
-
-  const monthly = (() => {
-    const P = parseFloat(vehicleValue) - parseFloat(downPayment);
-    const r = parseFloat(interestRate) / 100 / 12;
-    const n = parseInt(term);
-    if (!P || !r || !n) return "—";
-    const m = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-    return isNaN(m) ? "—" : `$${fmt(Math.round(m))}`;
-  })();
 
   return (
     <div className="min-h-screen bg-background p-6" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
@@ -110,7 +97,6 @@ export default function Index() {
 
         {/* HERO */}
         <section className="grid grid-cols-12 gap-6 mb-20">
-          {/* Hero Image */}
           <div className="col-span-12 lg:col-span-8 neu-card min-h-[500px] overflow-hidden relative">
             <video
               autoPlay
@@ -121,20 +107,19 @@ export default function Index() {
               src={heroVideo}
             />
             <div className="relative z-10 p-10 h-full flex flex-col justify-end" style={{ minHeight: 500 }}>
-              <span className="label-micro mb-2">Flota Destacada</span>
+              <span className="label-micro mb-2">Inventario Destacado</span>
             </div>
           </div>
 
-          {/* Hero Content */}
           <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
             <div className="neu-card flex-1">
               <div className="p-10 h-full flex flex-col justify-between" style={{ minHeight: 280 }}>
                 <div>
-                  <span className="label-micro mb-3 block">Nuevo Ingreso</span>
-                  <h1 className="heading-xl mb-6">Tu próximo auto al mejor precio</h1>
+                  <span className="label-micro mb-3 block">Venta Directa</span>
+                  <h1 className="heading-xl mb-6">Vehículos de flotilla a precio preferencial</h1>
                 </div>
                 <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))", maxWidth: "48ch" }}>
-                  Leasing corporativo simplificado. Acceso a flota premium para empleados con mantenimiento incluido.
+                  Adquiere vehículos usados de flotilla corporativa con precios transparentes y sin intermediarios.
                 </p>
               </div>
             </div>
@@ -146,8 +131,8 @@ export default function Index() {
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
-                <span className="text-xs uppercase tracking-widest font-bold">Comenzar</span>
-                <span className="heading-md">Cotizar Ahora</span>
+                <span className="text-xs uppercase tracking-widest font-bold">Explorar</span>
+                <span className="heading-md">Ver Inventario</span>
               </div>
             </div>
           </div>
@@ -158,7 +143,6 @@ export default function Index() {
           {/* Filter Sidebar */}
           <div className="col-span-12 lg:col-span-3 neu-card h-fit">
             <div className="p-10">
-              {/* Type */}
               <div className="mb-8">
                 <span className="label-micro mb-3 block">Tipo de Vehículo</span>
                 <div className="flex flex-wrap gap-3 mt-3">
@@ -177,29 +161,27 @@ export default function Index() {
                 </div>
               </div>
 
-              {/* Price Range */}
               <div className="mb-8">
-                <span className="label-micro mb-3 block">Rango de Precio — hasta ${fmt(maxPrice)}</span>
+                <span className="label-micro mb-3 block">Precio Máximo — ${fmt(maxPrice)}</span>
                 <input
                   type="range"
-                  min={300}
-                  max={1200}
-                  step={10}
+                  min={200000}
+                  max={800000}
+                  step={10000}
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
                   className="w-full mt-4 appearance-none h-3 rounded-full outline-none cursor-pointer"
                   style={{
-                    background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${((maxPrice - 300) / 900) * 100}%, hsl(var(--background)) ${((maxPrice - 300) / 900) * 100}%, hsl(var(--background)) 100%)`,
+                    background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${((maxPrice - 200000) / 600000) * 100}%, hsl(var(--background)) ${((maxPrice - 200000) / 600000) * 100}%, hsl(var(--background)) 100%)`,
                     boxShadow: "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff",
                   }}
                 />
                 <div className="flex justify-between text-xs mt-3" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  <span>${fmt(300)}</span>
-                  <span>${fmt(1200)}</span>
+                  <span>${fmt(200000)}</span>
+                  <span>${fmt(800000)}</span>
                 </div>
               </div>
 
-              {/* Brand */}
               <div>
                 <span className="label-micro mb-3 block">Marca</span>
                 <div className="flex flex-wrap gap-3 mt-3">
@@ -230,9 +212,18 @@ export default function Index() {
             )}
             {filteredVehicles.map((v) => (
               <div key={v.name} className="neu-card transition-transform duration-300 hover:-translate-y-2 cursor-pointer">
-                <div className="p-8 h-full flex flex-col" style={{ minHeight: 400 }}>
-                  <span className="label-micro mb-2">{v.type}</span>
-                  <h3 className="heading-md mb-4">{v.name}</h3>
+                <div className="p-8 h-full flex flex-col" style={{ minHeight: 440 }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="label-micro">{v.type}</span>
+                    <span
+                      className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full"
+                      style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+                    >
+                      {v.status}
+                    </span>
+                  </div>
+                  <h3 className="heading-md mb-1">{v.name}</h3>
+                  <p className="text-xs mb-4" style={{ color: "hsl(var(--muted-foreground))" }}>{v.year}</p>
 
                   <div
                     className="rounded-3xl mb-6 overflow-hidden"
@@ -243,7 +234,7 @@ export default function Index() {
 
                   <div className="grid grid-cols-2 gap-4 border-t mt-auto pt-5" style={{ borderColor: "rgba(0,0,0,0.05)" }}>
                     <div>
-                      <span className="label-micro">Mensual</span>
+                      <span className="label-micro">Precio Total</span>
                       <p className="text-2xl font-light">${fmt(v.price)}</p>
                     </div>
                     <div>
@@ -256,13 +247,13 @@ export default function Index() {
                     className="mt-5 w-full py-4 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200 hover:opacity-90 hover:scale-[1.02]"
                     style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
                   >
-                    Simular
+                    Solicitar Vehículo
                   </button>
                   <button
                     className="mt-3 w-full py-4 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200"
                     style={{ boxShadow: "6px 6px 12px #d1d1d1, -6px -6px 12px #ffffff", background: "transparent" }}
                   >
-                    Detalles
+                    Ver Detalles
                   </button>
                 </div>
               </div>
@@ -276,86 +267,11 @@ export default function Index() {
             <div className="p-16 flex flex-col md:flex-row justify-between items-center gap-8">
               <div>
                 <span className="label-micro mb-3 block" style={{ color: "rgba(0,0,0,0.6)" }}>Tiempo Limitado</span>
-                <h2 className="heading-lg">Oferta Especial<br />de Verano</h2>
+                <h2 className="heading-lg">Oferta Especial<br />de Temporada</h2>
               </div>
               <div className="text-center md:text-right">
                 <span className="label-micro mb-3 block" style={{ color: "rgba(0,0,0,0.6)" }}>Termina</span>
-                <p className="text-5xl font-light uppercase">31 Ago</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* FINANCING SIMULATOR */}
-        <section className="mb-20">
-          <div className="neu-card">
-            <div className="p-16">
-              <span className="label-micro mb-3 block">Herramientas</span>
-              <h2 className="heading-lg mb-12">Simulador de Financiamiento</h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                {/* Column 1 */}
-                <div>
-                  <div className="mb-6">
-                    <label className="label-micro mb-2 block">Valor del Vehículo</label>
-                    <input
-                      type="text"
-                      value={fmt(Number(vehicleValue) || 0)}
-                      onChange={(e) => setVehicleValue(e.target.value.replace(/,/g, ""))}
-                      className="w-full px-4 py-4 rounded-xl border-none outline-none text-sm"
-                      style={{ background: "hsl(var(--background))", boxShadow: "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff", fontFamily: "inherit" }}
-                    />
-                  </div>
-                  <div>
-                    <label className="label-micro mb-2 block">Enganche</label>
-                    <input
-                      type="text"
-                      value={fmt(Number(downPayment) || 0)}
-                      onChange={(e) => setDownPayment(e.target.value.replace(/,/g, ""))}
-                      className="w-full px-4 py-4 rounded-xl border-none outline-none text-sm"
-                      style={{ background: "hsl(var(--background))", boxShadow: "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff", fontFamily: "inherit" }}
-                    />
-                  </div>
-                </div>
-
-                {/* Column 2 */}
-                <div>
-                  <div className="mb-6">
-                    <label className="label-micro mb-2 block">Plazo (Meses)</label>
-                    <div className="flex gap-3 mt-2">
-                      {["24", "36", "48"].map((t) => (
-                        <button
-                          key={t}
-                          onClick={() => setTerm(t)}
-                          className={`flex-1 py-4 rounded-xl text-sm font-semibold transition-all ${
-                            term === t ? "neu-inset-sm" : "neu-tag"
-                          }`}
-                          style={term === t ? { color: "hsl(var(--primary))" } : {}}
-                        >
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="label-micro mb-2 block">Tasa de Interés (%)</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={interestRate}
-                      onChange={(e) => setInterestRate(e.target.value)}
-                      className="w-full px-4 py-4 rounded-xl border-none outline-none text-sm"
-                      style={{ background: "hsl(var(--background))", boxShadow: "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff", fontFamily: "inherit" }}
-                    />
-                  </div>
-                </div>
-
-                {/* Column 3 — Result */}
-                <div className="flex flex-col items-center justify-center neu-accent rounded-3xl p-10 text-center">
-                  <span className="label-micro mb-4 block" style={{ color: "rgba(0,0,0,0.6)" }}>Mensualidad Estimada</span>
-                  <p className="text-6xl font-light mb-2">{monthly}</p>
-                  <span className="text-xs uppercase tracking-widest" style={{ color: "rgba(0,0,0,0.5)" }}>Sin IVA</span>
-                </div>
+                <p className="text-5xl font-light uppercase">31 Mar</p>
               </div>
             </div>
           </div>
@@ -391,15 +307,15 @@ export default function Index() {
         <footer className="border-t pt-16 mb-8" style={{ borderColor: "rgba(0,0,0,0.05)" }}>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-            <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-3 mb-3">
                 <img src={logoIcon} alt="JH Leasing icon" className="h-8 w-auto" />
                 <img src={logoHorizontal} alt="JH Leasing" className="h-7 w-auto" />
               </div>
-              <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Soluciones de flota corporativa para la fuerza laboral moderna.</p>
+              <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>Venta directa de vehículos de flotilla corporativa a precios preferenciales.</p>
             </div>
             <div>
-              <h4 className="text-xs uppercase tracking-widest mb-6" style={{ color: "hsl(var(--muted-foreground))" }}>Flota</h4>
-              {["Vehículos", "Ofertas", "Eléctrico"].map((l) => (
+              <h4 className="text-xs uppercase tracking-widest mb-6" style={{ color: "hsl(var(--muted-foreground))" }}>Inventario</h4>
+              {["Vehículos", "Ofertas", "Eléctricos"].map((l) => (
                 <a key={l} href="#" className="block text-sm mb-3 hover:opacity-70 transition-opacity">{l}</a>
               ))}
             </div>
