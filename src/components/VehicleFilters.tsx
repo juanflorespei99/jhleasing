@@ -1,4 +1,19 @@
 import { fmt } from "@/data/vehicles";
+import chevroletLogo from "@/assets/brands/chevrolet.svg";
+import hyundaiLogo from "@/assets/brands/hyundai.svg";
+import nissanLogo from "@/assets/brands/nissan.svg";
+import gmcLogo from "@/assets/brands/gmc.svg";
+import mgLogo from "@/assets/brands/mg.svg";
+import dodgeLogo from "@/assets/brands/dodge.svg";
+
+const brandLogos: Record<string, string> = {
+  Chevrolet: chevroletLogo,
+  Hyundai: hyundaiLogo,
+  Nissan: nissanLogo,
+  GMC: gmcLogo,
+  MG: mgLogo,
+  Dodge: dodgeLogo,
+};
 
 interface Props {
   typeFilters: string[];
@@ -68,12 +83,21 @@ export default function VehicleFilters({
               <button
                 key={b}
                 onClick={() => toggleBrand(b)}
-                className={`px-4 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold transition-all ${
+                className={`p-3 rounded-xl transition-all flex items-center justify-center ${
                   activeBrand.includes(b) ? "neu-inset-sm" : "neu-tag"
                 }`}
-                style={activeBrand.includes(b) ? { color: "hsl(var(--primary))" } : {}}
+                title={b}
               >
-                {b}
+                {brandLogos[b] ? (
+                  <img
+                    src={brandLogos[b]}
+                    alt={b}
+                    className="h-6 w-auto object-contain"
+                    style={activeBrand.includes(b) ? { filter: "none" } : { filter: "grayscale(100%) opacity(0.5)" }}
+                  />
+                ) : (
+                  <span className="text-[11px] uppercase tracking-widest font-semibold">{b}</span>
+                )}
               </button>
             ))}
           </div>
