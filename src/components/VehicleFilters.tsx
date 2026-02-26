@@ -83,7 +83,7 @@ export default function VehicleFilters({
               <button
                 key={b}
                 onClick={() => toggleBrand(b)}
-                className={`p-3 rounded-xl transition-all flex items-center justify-center ${
+                className={`p-3 rounded-xl transition-all flex items-center justify-center w-16 h-16 ${
                   activeBrand.includes(b) ? "neu-inset-sm" : "neu-tag"
                 }`}
                 title={b}
