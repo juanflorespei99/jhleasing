@@ -96,30 +96,27 @@ export default function Index() {
       <div className="max-w-screen-2xl mx-auto">
 
         {/* NAV */}
-        <nav className="flex justify-between items-center mb-16 px-3">
-          <img src={logoHorizontal} alt="JH Leasing" className="h-20 w-auto" />
+        <nav className="flex justify-between items-center mb-16 px-5 py-4 rounded-2xl bg-secondary">
+          <img src={logoHorizontal} alt="JH Leasing" className="h-16 w-auto" />
           <div className="flex items-center gap-3">
             {user ? (
               <>
                 {role === "admin" && (
                   <Link
                     to="/admin"
-                    className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity"
+                    className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-semibold bg-secondary-foreground/10 text-secondary-foreground hover:bg-secondary-foreground/20 transition-colors"
                   >
                     Admin
                   </Link>
                 )}
                 {isEmployee && (
-                  <span
-                    className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full"
-                    style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-                  >
+                  <span className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-primary text-primary-foreground">
                     Empleado
                   </span>
                 )}
                 <button
                   onClick={() => signOut()}
-                  className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity"
+                  className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-semibold bg-secondary-foreground/10 text-secondary-foreground hover:bg-secondary-foreground/20 transition-colors"
                 >
                   Salir
                 </button>
@@ -127,8 +124,7 @@ export default function Index() {
             ) : (
               <Link
                 to="/login"
-                className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90"
-                style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+                className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90 bg-primary text-primary-foreground"
               >
                 Iniciar Sesión
               </Link>
