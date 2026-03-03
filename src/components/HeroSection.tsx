@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 interface Props {
   heroVideo: string;
 }
@@ -29,7 +31,7 @@ export default function HeroSection({ heroVideo }: Props) {
           </div>
         </div>
 
-        <div className="bg-secondary text-secondary-foreground rounded-[32px] cursor-pointer transition-transform duration-200 hover:-translate-y-1 shadow-lg">
+        <Link to="/inventario" className="bg-secondary text-secondary-foreground rounded-[32px] cursor-pointer transition-transform duration-200 hover:-translate-y-1 shadow-lg block">
           <div className="p-10 flex flex-col items-center justify-center text-center gap-3" style={{ minHeight: 200 }}>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M5 12h14M12 5l7 7-7 7" />
@@ -37,7 +39,7 @@ export default function HeroSection({ heroVideo }: Props) {
             <span className="text-xs uppercase tracking-widest font-bold">Explorar</span>
             <span className="heading-md">Ver Inventario</span>
           </div>
-        </div>
+        </Link>
       </div>
     </section>
   );
