@@ -158,7 +158,7 @@ export default function VehicleDetail() {
               />
               {/* Zoom hint overlay */}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-4" style={{ boxShadow: "var(--shadow-raised)" }}>
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-sm rounded-full p-4">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /><path d="M11 8v6M8 11h6" />
                   </svg>
@@ -169,15 +169,15 @@ export default function VehicleDetail() {
                 <>
                   <button
                     onClick={(e) => { e.stopPropagation(); setActiveImage((p) => (p === 0 ? galleryImages.length - 1 : p - 1)); }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-80 hover:!opacity-100 hover:scale-110"
-                    style={{ background: "rgba(255,255,255,0.9)", boxShadow: "var(--shadow-raised)" }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-80 hover:!opacity-100 hover:scale-110 backdrop-blur-sm"
+                    style={{ background: "rgba(255,255,255,0.2)" }}
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" /></svg>
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setActiveImage((p) => (p === galleryImages.length - 1 ? 0 : p + 1)); }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-80 hover:!opacity-100 hover:scale-110"
-                    style={{ background: "rgba(255,255,255,0.9)", boxShadow: "var(--shadow-raised)" }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-80 hover:!opacity-100 hover:scale-110 backdrop-blur-sm"
+                    style={{ background: "rgba(255,255,255,0.2)" }}
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
                   </button>
@@ -186,7 +186,7 @@ export default function VehicleDetail() {
               {/* Counter badge */}
               <span
                 className="absolute bottom-4 right-4 text-[11px] uppercase tracking-widest font-bold px-4 py-2 rounded-full"
-                style={{ background: "rgba(255,255,255,0.9)", boxShadow: "var(--shadow-tag)" }}
+                style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(4px)" }}
               >
                 {activeImage + 1} / {galleryImages.length}
               </span>
