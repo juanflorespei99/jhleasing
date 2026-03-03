@@ -209,6 +209,16 @@ export default function VehicleDetail() {
                 </button>
               ))}
             </div>
+
+            {/* Description - directly under gallery */}
+            <div className="neu-card">
+              <div className="p-10">
+                <span className="label-micro block mb-4">Descripción</span>
+                <p className="text-base leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  {vehicle.description}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* INFO SIDEBAR */}
@@ -290,23 +300,8 @@ export default function VehicleDetail() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* DESCRIPTION */}
-        <section className="grid grid-cols-12 gap-6 mb-16">
-          <div className="col-span-12 lg:col-span-7">
-            <div className="neu-card">
-              <div className="p-10">
-                <span className="label-micro block mb-4">Descripción</span>
-                <p className="text-base leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  {vehicle.description}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-span-12 lg:col-span-5">
+            {/* Contact */}
             <div className="neu-accent">
               <div className="p-10 flex flex-col items-center justify-center text-center gap-4" style={{ minHeight: 200 }}>
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -318,7 +313,7 @@ export default function VehicleDetail() {
               </div>
             </div>
           </div>
-        </section>
+        </div>
 
       </div>
 
