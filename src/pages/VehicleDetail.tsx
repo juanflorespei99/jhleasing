@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { fmt } from "@/data/vehicles";
 import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
+import ImageLightbox from "@/components/ImageLightbox";
 
 interface VehicleRow {
   id: string;
@@ -30,6 +31,17 @@ export default function VehicleDetail() {
   const [vehicle, setVehicle] = useState<VehicleRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  // Ensure at least 4 gallery images by repeating
+  const galleryImages = useMemo(() => {
+    if (!vehicle?.images?.length) return [];
+    const imgs = [...vehicle.images];
+    while (imgs.length < 4) {
+      imgs.push(...vehicle.images);
+    }
+    return imgs.slice(0, Math.max(4, vehicle.images.length));
+  }, [vehicle?.images]);
 
   useEffect(() => {
     if (!id) return;
@@ -133,49 +145,65 @@ export default function VehicleDetail() {
 
           {/* IMAGE GALLERY */}
           <div className="col-span-12 lg:col-span-7 flex flex-col gap-4">
-            <div className="neu-card overflow-hidden relative">
+            {/* Main image */}
+            <div
+              className="neu-card overflow-hidden relative group cursor-pointer"
+              onClick={() => setLightboxOpen(true)}
+            >
               <img
-                src={vehicle.images[activeImage]}
+                src={galleryImages[activeImage]}
                 alt={`${vehicle.name} - imagen ${activeImage + 1}`}
-                className="w-full object-cover transition-opacity duration-300"
+                className="w-full object-cover transition-all duration-500"
                 style={{ height: "clamp(320px, 40vw, 520px)" }}
               />
-              {vehicle.images.length > 1 && (
+              {/* Zoom hint overlay */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-4" style={{ boxShadow: "var(--shadow-raised)" }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /><path d="M11 8v6M8 11h6" />
+                  </svg>
+                </div>
+              </div>
+              {/* Nav arrows */}
+              {galleryImages.length > 1 && (
                 <>
                   <button
-                    onClick={() => setActiveImage((p) => (p === 0 ? vehicle.images.length - 1 : p - 1))}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-opacity hover:opacity-100 opacity-70"
-                    style={{ background: "rgba(234,234,234,0.85)", boxShadow: "var(--shadow-tag)" }}
+                    onClick={(e) => { e.stopPropagation(); setActiveImage((p) => (p === 0 ? galleryImages.length - 1 : p - 1)); }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-80 hover:!opacity-100 hover:scale-110"
+                    style={{ background: "rgba(255,255,255,0.9)", boxShadow: "var(--shadow-raised)" }}
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" /></svg>
                   </button>
                   <button
-                    onClick={() => setActiveImage((p) => (p === vehicle.images.length - 1 ? 0 : p + 1))}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-opacity hover:opacity-100 opacity-70"
-                    style={{ background: "rgba(234,234,234,0.85)", boxShadow: "var(--shadow-tag)" }}
+                    onClick={(e) => { e.stopPropagation(); setActiveImage((p) => (p === galleryImages.length - 1 ? 0 : p + 1)); }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-80 hover:!opacity-100 hover:scale-110"
+                    style={{ background: "rgba(255,255,255,0.9)", boxShadow: "var(--shadow-raised)" }}
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
                   </button>
                 </>
               )}
+              {/* Counter badge */}
               <span
                 className="absolute bottom-4 right-4 text-[11px] uppercase tracking-widest font-bold px-4 py-2 rounded-full"
-                style={{ background: "rgba(234,234,234,0.85)", boxShadow: "var(--shadow-tag)" }}
+                style={{ background: "rgba(255,255,255,0.9)", boxShadow: "var(--shadow-tag)" }}
               >
-                {activeImage + 1} / {vehicle.images.length}
+                {activeImage + 1} / {galleryImages.length}
               </span>
             </div>
 
             {/* Thumbnails */}
-            <div className="flex gap-3">
-              {vehicle.images.map((img, i) => (
+            <div className="grid grid-cols-4 gap-3">
+              {galleryImages.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImage(i)}
-                  className={`flex-1 rounded-2xl overflow-hidden transition-all duration-200 ${
-                    i === activeImage ? "neu-inset-sm ring-2" : "neu-card opacity-60 hover:opacity-100"
+                  className={`rounded-2xl overflow-hidden transition-all duration-300 ${
+                    i === activeImage
+                      ? "ring-2 ring-primary scale-[1.03] shadow-lg"
+                      : "opacity-50 hover:opacity-90 hover:scale-[1.02]"
                   }`}
-                  style={{ height: 80, ...(i === activeImage ? { ringColor: "hsl(var(--primary))" } : {}) }}
+                  style={{ height: 80 }}
                 >
                   <img src={img} alt={`${vehicle.name} miniatura ${i + 1}`} className="w-full h-full object-cover" />
                 </button>
@@ -293,6 +321,16 @@ export default function VehicleDetail() {
         </section>
 
       </div>
+
+      {/* Lightbox */}
+      {lightboxOpen && (
+        <ImageLightbox
+          images={galleryImages}
+          initialIndex={activeImage}
+          alt={vehicle.name}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
     </div>
   );
 }
