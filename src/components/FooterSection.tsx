@@ -30,12 +30,6 @@ export default function FooterSection({ logoIcon, logoHorizontal }: Props) {
           <h4 className="text-xs uppercase tracking-widest mb-6" style={{ color: "hsl(var(--muted-foreground))" }}>Contacto</h4>
           <a href="tel:18005453273" className="block text-sm mb-3 hover:opacity-70 transition-opacity">1-800-JH-LEASE</a>
           <a href="mailto:support@jhleasing.com" className="block text-sm mb-3 hover:opacity-70 transition-opacity">support@jhleasing.com</a>
-          <button
-            className="mt-2 px-5 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all"
-            style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-          >
-            Chat en Vivo
-          </button>
         </div>
       </div>
       <div className="mt-12 text-xs text-center pb-4" style={{ color: "hsl(var(--muted-foreground))" }}>
