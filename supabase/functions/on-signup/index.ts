@@ -38,7 +38,20 @@ Deno.serve(async (req) => {
       .eq("domain", domain)
       .maybeSingle();
 
-    const role = allowedDomain ? "employee" : "user";
+    if (!allowedDomain) {
+      console.log(`Rejected signup: domain '${domain}' not allowed`);
+      // Delete the user since domain is not allowed
+      await supabaseAdmin.auth.admin.deleteUser(user.id);
+      return new Response(
+        JSON.stringify({ error: "Acceso restringido a colaboradores autorizados" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const role = "employee";
 
     // Insert role
     const { error } = await supabaseAdmin.from("user_roles").insert({

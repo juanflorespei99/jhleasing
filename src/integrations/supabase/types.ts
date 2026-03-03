@@ -54,16 +54,19 @@ export type Database = {
         Row: {
           brand: string
           created_at: string
+          created_by: string | null
           description: string
           id: string
           images: string[]
           img: string
+          is_active: boolean
           is_public: boolean
           location: string
           mileage: string
           name: string
           price_employee: number
           price_public: number
+          release_at_public: string | null
           slug: string
           status: string
           type: string
@@ -73,16 +76,19 @@ export type Database = {
         Insert: {
           brand: string
           created_at?: string
+          created_by?: string | null
           description?: string
           id?: string
           images?: string[]
           img?: string
+          is_active?: boolean
           is_public?: boolean
           location?: string
           mileage?: string
           name: string
           price_employee: number
           price_public: number
+          release_at_public?: string | null
           slug: string
           status?: string
           type: string
@@ -92,16 +98,19 @@ export type Database = {
         Update: {
           brand?: string
           created_at?: string
+          created_by?: string | null
           description?: string
           id?: string
           images?: string[]
           img?: string
+          is_active?: boolean
           is_public?: boolean
           location?: string
           mileage?: string
           name?: string
           price_employee?: number
           price_public?: number
+          release_at_public?: string | null
           slug?: string
           status?: string
           type?: string
