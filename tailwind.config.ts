@@ -58,10 +58,15 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         neu: {
-          body: "#EAEAEA",
-          card: "#E0E0E0",
+          body: "#F4F5F0",
+          card: "#E8E9E4",
           light: "#FFFFFF",
-          dark: "#CFCFCF",
+          dark: "#D5D6D1",
+        },
+        brand: {
+          euphorbia: "#F4906B",
+          spellbound: "#273544",
+          white: "#F4F5F0",
         },
       },
       borderRadius: {
@@ -70,11 +75,11 @@ export default {
         "4xl": "2rem",
       },
       boxShadow: {
-        raised: "-12px -12px 24px #FFFFFF, 12px 12px 24px #CFCFCF",
-        inset: "inset 10px 10px 20px #CFCFCF, inset -10px -10px 20px #FFFFFF",
-        "inset-sm": "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff",
-        tag: "4px 4px 8px #d1d1d1, -4px -4px 8px #ffffff",
-        accent: "0 20px 40px rgba(252,155,98,0.3)",
+        raised: "-12px -12px 24px #FFFFFF, 12px 12px 24px #D5D6D1",
+        inset: "inset 10px 10px 20px #D5D6D1, inset -10px -10px 20px #FFFFFF",
+        "inset-sm": "inset 4px 4px 8px #D5D6D1, inset -4px -4px 8px #FFFFFF",
+        tag: "4px 4px 8px #D5D6D1, -4px -4px 8px #FFFFFF",
+        accent: "0 20px 40px rgba(244,144,107,0.3)",
       },
       keyframes: {
         "accordion-down": {
