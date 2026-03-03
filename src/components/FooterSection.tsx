@@ -8,8 +8,7 @@ export default function FooterSection({ logoIcon, logoHorizontal }: Props) {
     <footer className="rounded-2xl bg-secondary text-secondary-foreground pt-16 pb-8 px-10 mb-8">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
-          <div className="flex items-center gap-3 mb-3">
-            <img src={logoIcon} alt="JH Leasing icon" className="h-8 w-auto" />
+          <div className="mb-3">
             <img src={logoHorizontal} alt="JH Leasing" className="h-7 w-auto" />
           </div>
           <p className="text-sm text-secondary-foreground/60">Venta directa de vehículos de flotilla corporativa a precios preferenciales.</p>
