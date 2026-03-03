@@ -32,7 +32,7 @@ interface VehicleRow {
 }
 
 export default function Index() {
-  const { user, isEmployee, isLoading, signOut } = useAuth();
+  const { user, role, isEmployee, isLoading, signOut } = useAuth();
   
   const [activeType, setActiveType] = useState("Todos");
   const [activeBrand, setActiveBrand] = useState<string[]>([]);
@@ -101,6 +101,14 @@ export default function Index() {
           <div className="flex items-center gap-3">
             {user ? (
               <>
+                {role === "admin" && (
+                  <Link
+                    to="/admin"
+                    className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity"
+                  >
+                    Admin
+                  </Link>
+                )}
                 {isEmployee && (
                   <span
                     className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full"
