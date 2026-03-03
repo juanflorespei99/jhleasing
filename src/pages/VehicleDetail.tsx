@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { fmt } from "@/data/vehicles";
-import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
+import logoDark from "@/assets/logo-jhl-dark.png";
 import ImageLightbox from "@/components/ImageLightbox";
 
 interface VehicleRow {
@@ -109,7 +109,7 @@ export default function VehicleDetail() {
         {/* NAV */}
         <nav className="flex justify-between items-center mb-12 px-3">
           <Link to="/">
-            <img src={logoHorizontal} alt="JH Leasing" className="h-20 w-auto" />
+            <img src={logoDark} alt="JH Leasing" className="h-20 w-auto" />
           </Link>
           <div className="flex items-center gap-3">
             <Link
