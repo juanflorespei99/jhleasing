@@ -1,130 +1,109 @@
 
 
-# Implementar sistema de usuarios y visibilidad de inventario
+# Plan: Panel de Administración JH Leasing
 
-## Resumen
-Se creara un sistema completo con autenticacion, base de datos de vehiculos en Supabase con Row Level Security (RLS), y logica de doble pricing. Los usuarios publicos solo veran vehiculos publicos con precios publicos. Los empleados autenticados veran todo el inventario con precios preferenciales.
+## 1. Migración de Base de Datos
 
-## Arquitectura
+Agregar 3 columnas nuevas a `vehicles`:
+- `release_at_public` (timestamptz, nullable) — fecha de liberación pública
+- `is_active` (boolean, default true) — pausar sin borrar
+- `created_by` (uuid, nullable) — referencia al admin creador
+
+Agregar RLS policies para INSERT/UPDATE/DELETE en `vehicles` solo para admins.
+
+Actualizar la vista `vehicles_public` para incluir `release_at_public <= NOW()` y `is_active = true`.
+
+Insertar dominios `jhl.mx` y `creditoexpresss.com` en `allowed_domains`.
+
+## 2. Restricción de Registro
+
+Actualizar `Register.tsx` para validar el dominio del correo en el frontend antes de llamar `signUp()`. Si no es `@jhl.mx` o `@creditoexpresss.com`, mostrar error "Acceso restringido a colaboradores autorizados".
+
+Actualizar la Edge Function `on-signup` para también rechazar dominios no permitidos (doble validación server-side).
+
+## 3. Panel de Administración `/admin`
+
+### Archivos nuevos:
+- `src/pages/Admin.tsx` — layout principal con sidebar usando componentes de shadcn
+- `src/components/admin/VehicleTable.tsx` — tabla con inventario completo, badges de estado (Público/Exclusivo/Inactivo), margen de beneficio empleado
+- `src/components/admin/VehicleForm.tsx` — formulario para crear/editar vehículos con:
+  - Select de Marca y Tipo (shadcn Select)
+  - Inputs numéricos para `price_public` y `price_employee`
+  - Cálculo visual del margen de beneficio (diferencia y %)
+  - DatePicker para `release_at_public` (shadcn Calendar + Popover)
+  - Upload de imágenes al bucket `vehicle-images`
+  - Toggle para `is_public` e `is_active`
+
+### Ruta protegida:
+- Agregar `/admin` en `App.tsx`
+- Componente `AdminGuard` que verifica `role === 'admin'` vía `useAuth()`, redirige a `/` si no
+
+### Funcionalidades de la tabla:
+- Columnas: Imagen, Nombre, Marca, Tipo, Año, Precio Público, Precio Empleado, Margen, Estado, Acciones
+- Badges: verde "Público", azul "Exclusivo Empleado", gris "Inactivo"
+- Botones de editar/desactivar por fila
+- Barra superior con botón "Nuevo Vehículo" que abre dialog/modal con el formulario
+
+### Upload de imágenes:
+- Usar el bucket existente `vehicle-images` (ya público)
+- Subir vía `supabase.storage.from('vehicle-images').upload()`
+- Obtener URL pública con `getPublicUrl()`
+- Permitir múltiples imágenes, primera = thumbnail (`img`)
+
+## 4. Lógica de Precios (Margen)
+
+En la tabla y formulario del admin:
+- Mostrar columna "Margen" = `price_public - price_employee`
+- Mostrar porcentaje: `((price_public - price_employee) / price_public * 100).toFixed(1)%`
+- Destacar con color primario (Euphorbia)
+
+## 5. Actualizar Catálogo Público
+
+Modificar `fetchVehicles` en `Index.tsx` para la vista pública: filtrar por `is_active = true` y `release_at_public <= now()` (esto se manejará desde la vista SQL actualizada).
+
+## Orden de implementación:
+
+1. Migración SQL (columnas + RLS + vista actualizada + dominios)
+2. Actualizar Edge Function `on-signup`
+3. Actualizar `Register.tsx` con validación de dominio
+4. Crear componentes admin (`AdminGuard`, `VehicleTable`, `VehicleForm`)
+5. Crear página `Admin.tsx` y agregar ruta en `App.tsx`
+6. Actualizar tipos TypeScript (automático tras migración)
+
+## Detalle técnico de la migración SQL
 
 ```text
-+------------------+       +-------------------+       +------------------+
-|  Usuario publico |------>| Supabase RLS      |------>| Solo vehiculos   |
-|  (no logueado)   |       | (anon role)       |       | is_public = true |
-+------------------+       +-------------------+       | precio_publico   |
-                                                       +------------------+
+ALTER TABLE vehicles
+  ADD COLUMN release_at_public timestamptz,
+  ADD COLUMN is_active boolean NOT NULL DEFAULT true,
+  ADD COLUMN created_by uuid;
 
-+------------------+       +-------------------+       +------------------+
-|  Empleado        |------>| Supabase RLS      |------>| TODOS los        |
-|  (logueado)      |       | (authenticated)   |       | vehiculos        |
-+------------------+       +-------------------+       | precio_empleado  |
-                                                       +------------------+
+-- Admin CRUD policies
+CREATE POLICY "Admins can insert vehicles"
+  ON vehicles FOR INSERT TO authenticated
+  WITH CHECK (has_role(auth.uid(), 'admin'));
+
+CREATE POLICY "Admins can update vehicles"
+  ON vehicles FOR UPDATE TO authenticated
+  USING (has_role(auth.uid(), 'admin'));
+
+CREATE POLICY "Admins can delete vehicles"
+  ON vehicles FOR DELETE TO authenticated
+  USING (has_role(auth.uid(), 'admin'));
+
+-- Recrear vista pública con filtros de visibilidad
+CREATE OR REPLACE VIEW vehicles_public
+  WITH (security_invoker = on) AS
+  SELECT id, slug, brand, name, type, year, price_public,
+         img, images, status, mileage, location, description,
+         is_public, created_at
+  FROM vehicles
+  WHERE is_public = true
+    AND is_active = true
+    AND (release_at_public IS NULL OR release_at_public <= NOW());
+
+-- Insertar dominios permitidos
+INSERT INTO allowed_domains (domain) VALUES ('jhl.mx'), ('creditoexpresss.com')
+  ON CONFLICT DO NOTHING;
 ```
 
-## Paso 1: Base de datos en Supabase
-
-### Tabla `vehicles`
-Migrar el inventario actual (hardcoded en `src/data/vehicles.ts`) a una tabla en Supabase:
-
-| Columna | Tipo | Descripcion |
-|---------|------|-------------|
-| id | uuid (PK) | Identificador unico |
-| slug | text (unique) | URL-friendly ID (ej. "chevrolet-aveo-2024") |
-| brand | text | Marca |
-| name | text | Nombre completo del modelo |
-| type | text | Tipo: Sedan, SUV, Blindada |
-| year | integer | Ano del modelo |
-| price_public | integer | Precio publico en MXN |
-| price_employee | integer | Precio preferencial empleado |
-| mileage | text | Kilometraje |
-| img | text | URL imagen principal |
-| images | text[] | Array de URLs de imagenes |
-| status | text | Disponible / Vendido |
-| vin | text | Numero de serie |
-| location | text | Ubicacion |
-| description | text | Descripcion del vehiculo |
-| is_public | boolean (default true) | Visible para usuarios publicos |
-| created_at | timestamptz | Fecha de creacion |
-
-### Tabla `allowed_domains`
-Para gestionar los dominios de correo autorizados:
-
-| Columna | Tipo |
-|---------|------|
-| id | uuid (PK) |
-| domain | text (unique) | 
-| created_at | timestamptz |
-
-### Tabla `user_roles`
-Siguiendo las mejores practicas de seguridad:
-
-| Columna | Tipo |
-|---------|------|
-| id | uuid (PK) |
-| user_id | uuid (FK auth.users) |
-| role | app_role enum (admin, employee, user) |
-
-### Politicas RLS en `vehicles`
-
-- **SELECT para todos (anon + authenticated)**: Donde `is_public = true` -- usuarios publicos ven solo inventario publico
-- **SELECT para empleados autenticados**: Todos los vehiculos -- usando funcion `has_role()` que verifica rol `employee` o `admin`
-
-### Vista `vehicles_public`
-Una vista con `security_invoker=on` que excluye `price_employee` y `vin` para usuarios no autenticados. Los usuarios publicos consultaran esta vista.
-
-### Funcion de validacion de dominio
-Un trigger en `auth.users` (via webhook o edge function) que al registrarse un usuario, verifica si su dominio de correo esta en `allowed_domains` y le asigna el rol `employee` automaticamente.
-
-## Paso 2: Edge Function para registro
-
-Se creara una edge function `on-signup` que:
-1. Se activa como webhook cuando un usuario se registra
-2. Verifica si el dominio del correo esta en `allowed_domains`
-3. Si es un dominio permitido, asigna rol `employee` en `user_roles`
-4. Si no, asigna rol `user` (acceso publico solamente)
-
-## Paso 3: Autenticacion en el frontend
-
-### Nuevos archivos:
-- **`src/pages/Login.tsx`**: Pagina de login con correo y contrasena
-- **`src/pages/Register.tsx`**: Pagina de registro
-- **`src/hooks/useAuth.ts`**: Hook para manejar estado de autenticacion y rol del usuario
-- **`src/components/AuthGuard.tsx`**: Componente para proteger rutas (si se necesita)
-
-### Cambios en archivos existentes:
-- **`src/App.tsx`**: Agregar rutas `/login` y `/registro`, envolver con contexto de autenticacion
-- **`src/pages/Index.tsx`**: 
-  - Reemplazar datos hardcoded por consulta a Supabase
-  - Mostrar precio segun tipo de usuario
-  - Agregar boton de login/logout en la navegacion
-  - Usuarios publicos: consultan vista `vehicles_public` (sin precio empleado)
-  - Empleados: consultan tabla `vehicles` directamente (ven ambos precios)
-- **`src/pages/VehicleDetail.tsx`**: Misma logica de precios y visibilidad
-- **`src/data/vehicles.ts`**: Se mantendra como fallback/seed pero la fuente principal sera Supabase
-
-## Paso 4: UX de precios para empleados
-
-Cuando un empleado ve un vehiculo publico:
-- Se muestra el **precio empleado** como precio principal
-- Se muestra el precio publico tachado como referencia
-- Etiqueta "Precio preferencial" visible
-
-Cuando un empleado ve un vehiculo exclusivo (no publico):
-- Solo se muestra el precio empleado
-- Etiqueta "Exclusivo empleados" visible
-
-## Paso 5: Navegacion actualizada
-
-- Agregar boton "Iniciar Sesion" en la barra de navegacion para usuarios no logueados
-- Mostrar nombre/avatar del usuario y boton "Cerrar Sesion" para usuarios logueados
-- Badge o indicador visual cuando el usuario tiene acceso de empleado
-
-## Orden de implementacion
-
-1. Migracion SQL: crear tablas `vehicles`, `allowed_domains`, `user_roles`, enum `app_role`, funcion `has_role()`, politicas RLS, vista `vehicles_public`
-2. Insertar los 9 vehiculos actuales en la tabla `vehicles`
-3. Crear edge function `on-signup` para asignacion automatica de roles
-4. Implementar hook `useAuth` y contexto de autenticacion
-5. Crear paginas de Login y Registro
-6. Actualizar Index.tsx y VehicleDetail.tsx para consumir datos de Supabase
-7. Actualizar navegacion con login/logout
