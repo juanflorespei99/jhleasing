@@ -1,0 +1,1 @@
+INSERT INTO allowed_domains (domain) VALUES ('scaletechconsulting.mx') ON CONFLICT DO NOTHING;
