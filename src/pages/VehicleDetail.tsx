@@ -275,12 +275,6 @@ export default function VehicleDetail() {
                 >
                   Solicitar Compra
                 </button>
-                <button
-                  className="mt-3 w-full py-4 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200"
-                  style={{ boxShadow: "6px 6px 12px #d1d1d1, -6px -6px 12px #ffffff", background: "transparent" }}
-                >
-                  Solicitar Información
-                </button>
               </div>
             </div>
 
