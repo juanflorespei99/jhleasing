@@ -152,10 +152,9 @@ export default function Inventory() {
                 key={f}
                 onClick={() => setActiveType(f)}
                 className={`px-5 py-2.5 rounded-full text-[11px] uppercase tracking-widest font-semibold transition-all ${
-                  activeType === f
-                    ? "bg-secondary text-secondary-foreground shadow-md"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  activeType === f ? "neu-inset-sm" : "neu-tag"
                 }`}
+                style={activeType === f ? { color: "hsl(var(--primary))" } : {}}
               >
                 {f}
               </button>
