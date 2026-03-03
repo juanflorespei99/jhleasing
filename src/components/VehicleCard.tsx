@@ -49,8 +49,8 @@ export default function VehicleCard({ vehicle: v, isEmployee, displayPrice }: Pr
         <p className="text-xs mb-4" style={{ color: "hsl(var(--muted-foreground))" }}>{v.year}</p>
 
         <div
-          className="rounded-3xl mb-6 overflow-hidden"
-          style={{ height: 160, boxShadow: "inset 0 0 20px rgba(0,0,0,0.05)" }}
+          className="rounded-3xl mb-6 overflow-hidden flex-grow"
+          style={{ minHeight: 160, boxShadow: "inset 0 0 20px rgba(0,0,0,0.05)" }}
         >
           <img src={v.img} alt={v.name} className="w-full h-full object-cover" />
         </div>
