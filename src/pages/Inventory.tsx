@@ -169,9 +169,7 @@ export default function Inventory() {
                 key={b}
                 onClick={() => toggleBrand(b)}
                 className={`p-2 rounded-xl transition-all flex items-center justify-center w-12 h-12 ${
-                  activeBrand.includes(b)
-                    ? "bg-secondary shadow-md ring-2 ring-primary"
-                    : "bg-muted hover:bg-muted/80"
+                  activeBrand.includes(b) ? "neu-inset-sm" : "neu-tag"
                 }`}
                 title={b}
               >
@@ -182,7 +180,7 @@ export default function Inventory() {
                     className="h-5 w-auto object-contain"
                     style={
                       activeBrand.includes(b)
-                        ? { filter: "brightness(0) invert(1)" }
+                        ? { filter: "none" }
                         : { filter: "grayscale(100%) opacity(0.5)" }
                     }
                   />
