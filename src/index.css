@@ -4,53 +4,54 @@
 
 @layer base {
   :root {
-    /* JH Leasing Neumorphic Design System */
-    --background: 0 0% 91.8%;        /* #EAEAEA */
-    --foreground: 0 0% 10.2%;        /* #1A1A1A */
+    /* JH Leasing Brand Color System */
+    /* Euphorbia #F4906B | Spellbound #273544 | Bright White #F4F5F0 */
+    --background: 72 20% 95%;          /* #F4F5F0 */
+    --foreground: 211 27% 21%;         /* #273544 */
 
-    --card: 0 0% 87.8%;              /* #E0E0E0 */
-    --card-foreground: 0 0% 10.2%;
+    --card: 72 14% 91%;               /* #E8E9E4 */
+    --card-foreground: 211 27% 21%;
 
-    --popover: 0 0% 87.8%;
-    --popover-foreground: 0 0% 10.2%;
+    --popover: 72 14% 91%;
+    --popover-foreground: 211 27% 21%;
 
-    --primary: 24 96% 68%;           /* #fc9b62 */
-    --primary-foreground: 0 0% 10.2%;
+    --primary: 16 86% 69%;            /* #F4906B */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 87.8%;
-    --secondary-foreground: 0 0% 10.2%;
+    --secondary: 211 27% 21%;         /* #273544 */
+    --secondary-foreground: 72 20% 95%;
 
-    --muted: 0 0% 40%;               /* #666666 */
-    --muted-foreground: 0 0% 40%;
+    --muted: 211 15% 50%;
+    --muted-foreground: 211 15% 45%;
 
-    --accent: 24 96% 68%;
-    --accent-foreground: 0 0% 10.2%;
+    --accent: 16 86% 69%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 85%;
-    --input: 0 0% 91.8%;
-    --ring: 24 96% 68%;
+    --border: 72 10% 87%;
+    --input: 72 20% 95%;
+    --ring: 16 86% 69%;
 
     --radius: 1rem;
 
-    /* Neumorphic shadows */
-    --shadow-raised: -12px -12px 24px #FFFFFF, 12px 12px 24px #CFCFCF;
-    --shadow-inset: inset 10px 10px 20px #CFCFCF, inset -10px -10px 20px #FFFFFF;
-    --shadow-inset-sm: inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff;
-    --shadow-tag: 4px 4px 8px #d1d1d1, -4px -4px 8px #ffffff;
+    /* Neumorphic shadows adapted to Bright White bg */
+    --shadow-raised: -12px -12px 24px #FFFFFF, 12px 12px 24px #D5D6D1;
+    --shadow-inset: inset 10px 10px 20px #D5D6D1, inset -10px -10px 20px #FFFFFF;
+    --shadow-inset-sm: inset 4px 4px 8px #D5D6D1, inset -4px -4px 8px #FFFFFF;
+    --shadow-tag: 4px 4px 8px #D5D6D1, -4px -4px 8px #FFFFFF;
     --shadow-inner-glow: inset 0 0 80px rgba(255,255,255,0.5);
-    --shadow-accent: 0 20px 40px rgba(252,155,98,0.3);
+    --shadow-accent: 0 20px 40px rgba(244,144,107,0.3);
 
-    --sidebar-background: 0 0% 87.8%;
-    --sidebar-foreground: 0 0% 10.2%;
-    --sidebar-primary: 24 96% 68%;
-    --sidebar-primary-foreground: 0 0% 10.2%;
-    --sidebar-accent: 0 0% 91.8%;
-    --sidebar-accent-foreground: 0 0% 10.2%;
-    --sidebar-border: 0 0% 85%;
-    --sidebar-ring: 24 96% 68%;
+    --sidebar-background: 211 27% 21%;
+    --sidebar-foreground: 72 20% 95%;
+    --sidebar-primary: 16 86% 69%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 211 20% 28%;
+    --sidebar-accent-foreground: 72 20% 95%;
+    --sidebar-border: 211 20% 30%;
+    --sidebar-ring: 16 86% 69%;
   }
 }
 
@@ -69,7 +70,7 @@
 @layer utilities {
   /* Neumorphic card */
   .neu-card {
-    background: linear-gradient(145deg, #e6e6e6, #dedede);
+    background: linear-gradient(145deg, #F7F8F3, #EDEEE9);
     box-shadow: var(--shadow-raised);
     border-radius: 32px;
     position: relative;
@@ -119,7 +120,7 @@
 
   /* Nav pill */
   .neu-nav {
-    background: linear-gradient(145deg, #e6e6e6, #dedede);
+    background: linear-gradient(145deg, #F7F8F3, #EDEEE9);
     box-shadow: var(--shadow-raised);
     border-radius: 50px;
   }
