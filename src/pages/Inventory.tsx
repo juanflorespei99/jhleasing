@@ -6,21 +6,7 @@ import { fmt } from "@/data/vehicles";
 import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
 import VehicleCard from "@/components/VehicleCard";
 
-import chevroletLogo from "@/assets/brands/chevrolet.svg";
-import hyundaiLogo from "@/assets/brands/hyundai.svg";
-import nissanLogo from "@/assets/brands/nissan.svg";
-import gmcLogo from "@/assets/brands/gmc.svg";
-import mgLogo from "@/assets/brands/mg.svg";
-import dodgeLogo from "@/assets/brands/dodge.svg";
-
-const brandLogos: Record<string, string> = {
-  Chevrolet: chevroletLogo,
-  Hyundai: hyundaiLogo,
-  Nissan: nissanLogo,
-  GMC: gmcLogo,
-  MG: mgLogo,
-  Dodge: dodgeLogo,
-};
+import { brandLogos } from "@/data/brands";
 
 interface VehicleRow {
   id: string;
@@ -39,7 +25,6 @@ interface VehicleRow {
 }
 
 const typeFilters = ["Todos", "Sedán", "SUV", "Blindada"];
-const brandFilters = ["Chevrolet", "Hyundai", "Nissan", "GMC", "MG", "Dodge"];
 
 export default function Inventory() {
   const { user, role, isEmployee, isLoading, signOut } = useAuth();
@@ -82,6 +67,8 @@ export default function Inventory() {
   const prices = vehicles.map(displayPrice);
   const priceMin = prices.length ? Math.floor(Math.min(...prices) / 10000) * 10000 : 100000;
   const priceMax = prices.length ? Math.ceil(Math.max(...prices) / 10000) * 10000 : 1200000;
+
+  const brandFilters = useMemo(() => [...new Set(vehicles.map(v => v.brand))].sort(), [vehicles]);
 
   const toggleBrand = (brand: string) => {
     setActiveBrand((prev) =>

@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { VehicleRow } from "./VehicleTable";
 import AIImageGenerator from "./AIImageGenerator";
 
-const BRANDS = ["Chevrolet", "Nissan", "Hyundai", "GMC", "Dodge", "MG", "Toyota", "Volkswagen", "KIA"];
+import { BRANDS } from "@/data/brands";
 const TYPES = ["SUV", "Sedán", "Hatchback", "Pick-up", "Van", "Coupé"];
 
 interface Props {
