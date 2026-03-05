@@ -1,19 +1,5 @@
 import { fmt } from "@/data/vehicles";
-import chevroletLogo from "@/assets/brands/chevrolet.svg";
-import hyundaiLogo from "@/assets/brands/hyundai.svg";
-import nissanLogo from "@/assets/brands/nissan.svg";
-import gmcLogo from "@/assets/brands/gmc.svg";
-import mgLogo from "@/assets/brands/mg.svg";
-import dodgeLogo from "@/assets/brands/dodge.svg";
-
-const brandLogos: Record<string, string> = {
-  Chevrolet: chevroletLogo,
-  Hyundai: hyundaiLogo,
-  Nissan: nissanLogo,
-  GMC: gmcLogo,
-  MG: mgLogo,
-  Dodge: dodgeLogo,
-};
+import { brandLogos } from "@/data/brands";
 
 interface Props {
   typeFilters: string[];
