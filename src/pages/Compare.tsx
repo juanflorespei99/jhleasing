@@ -68,7 +68,7 @@ export default function Compare() {
   // Auto-generated insights
   const insights = useMemo(() => {
     if (!vehicleA || !vehicleB) return [];
-    const notes: { icon: string; text: string }[] = [];
+    const notes: { text: string }[] = [];
 
     // Price
     const pA = getPrice(vehicleA);
@@ -76,18 +76,18 @@ export default function Compare() {
     if (pA !== pB) {
       const cheaper = pA < pB ? vehicleA : vehicleB;
       const diff = Math.abs(pA - pB);
-      notes.push({ icon: "💰", text: `${cheaper.name} es $${fmt(diff)} más económico` });
+      notes.push({ text: `${cheaper.name} es $${fmt(diff)} más económico` });
     } else {
-      notes.push({ icon: "💰", text: "Ambos tienen el mismo precio" });
+      notes.push({ text: "Ambos tienen el mismo precio" });
     }
 
     // Year
     if (vehicleA.year !== vehicleB.year) {
       const newer = vehicleA.year > vehicleB.year ? vehicleA : vehicleB;
       const diff = Math.abs(vehicleA.year - vehicleB.year);
-      notes.push({ icon: "📅", text: `${newer.name} es ${diff} año${diff > 1 ? "s" : ""} más reciente` });
+      notes.push({ text: `${newer.name} es ${diff} año${diff > 1 ? "s" : ""} más reciente` });
     } else {
-      notes.push({ icon: "📅", text: `Ambos son modelo ${vehicleA.year}` });
+      notes.push({ text: `Ambos son modelo ${vehicleA.year}` });
     }
 
     // Mileage
@@ -96,23 +96,23 @@ export default function Compare() {
     if (kmA !== null && kmB !== null && kmA !== kmB) {
       const less = kmA < kmB ? vehicleA : vehicleB;
       const diff = Math.abs(kmA - kmB);
-      notes.push({ icon: "🛣️", text: `${less.name} tiene ${fmt(diff)} km menos` });
+      notes.push({ text: `${less.name} tiene ${fmt(diff)} km menos` });
     } else if (kmA !== null && kmB !== null) {
-      notes.push({ icon: "🛣️", text: "Ambos tienen kilometraje similar" });
+      notes.push({ text: "Ambos tienen kilometraje similar" });
     }
 
     // Type
     if (vehicleA.type === vehicleB.type) {
-      notes.push({ icon: "🚗", text: `Ambos son ${vehicleA.type}` });
+      notes.push({ text: `Ambos son ${vehicleA.type}` });
     } else {
-      notes.push({ icon: "🚗", text: `${vehicleA.name} es ${vehicleA.type}, ${vehicleB.name} es ${vehicleB.type}` });
+      notes.push({ text: `${vehicleA.name} es ${vehicleA.type}, ${vehicleB.name} es ${vehicleB.type}` });
     }
 
     // Location
     if (vehicleA.location === vehicleB.location) {
-      notes.push({ icon: "📍", text: `Ambos están en ${vehicleA.location}` });
+      notes.push({ text: `Ambos están en ${vehicleA.location}` });
     } else {
-      notes.push({ icon: "📍", text: `Ubicaciones diferentes: ${vehicleA.location} vs ${vehicleB.location}` });
+      notes.push({ text: `Ubicaciones diferentes: ${vehicleA.location} vs ${vehicleB.location}` });
     }
 
     return notes;
@@ -272,7 +272,7 @@ export default function Compare() {
                     <div className="space-y-4">
                       {insights.map((note, i) => (
                         <div key={i} className="flex items-start gap-3">
-                          <span className="text-xl">{note.icon}</span>
+                          <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ background: "hsl(var(--foreground))" }} />
                           <p className="text-sm leading-relaxed">{note.text}</p>
                         </div>
                       ))}
