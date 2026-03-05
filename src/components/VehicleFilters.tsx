@@ -102,6 +102,27 @@ export default function VehicleFilters({
             ))}
           </div>
         </div>
+
+        {/* 4 Steps Process */}
+        <div className="mt-10 pt-8 border-t border-border">
+          <span className="label-micro mb-5 block">Cómo Comprar</span>
+          <div className="space-y-5">
+            {[
+              { step: "01", title: "Selección", desc: "Elige tu vehículo del inventario disponible" },
+              { step: "02", title: "Cotización", desc: "Recibe precio final sin sorpresas" },
+              { step: "03", title: "Aprobación", desc: "Valida documentación y forma de pago" },
+              { step: "04", title: "Entrega", desc: "Recoge tu vehículo listo para rodar" },
+            ].map((s) => (
+              <div key={s.step} className="flex gap-4 items-start">
+                <span className="text-2xl font-extralight text-primary leading-none mt-0.5">{s.step}</span>
+                <div>
+                  <p className="text-xs uppercase tracking-widest font-bold text-foreground">{s.title}</p>
+                  <p className="text-[11px] mt-1 text-muted-foreground leading-relaxed">{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
