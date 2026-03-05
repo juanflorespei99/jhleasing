@@ -1,43 +1,60 @@
 
 
-# Plan: Centralizar logos de marcas y agregar las 20+ marcas principales de México
+# Plan: Comparador de Vehículos
 
-## Situación actual
-- Solo hay 6 logos SVG en `src/assets/brands/` (Chevrolet, Hyundai, Nissan, GMC, MG, Dodge)
-- El mapeo `brandLogos` está duplicado en 3 archivos: `VehicleFilters.tsx`, `Inventory.tsx`, y `Index.tsx`
-- La lista `BRANDS` del admin (`VehicleForm.tsx`) tiene 9 marcas pero no coincide con los logos disponibles
-- La lista `brandFilters` está hardcodeada con solo 6 marcas
+## Resumen
+Crear una página `/comparar` donde el usuario selecciona 2 vehículos del inventario y ve una tabla comparativa lado a lado con todos los datos disponibles (año, precio, kilometraje, tipo, ubicación, estatus).
 
-## Cambios propuestos
+## Arquitectura
 
-### 1. Crear SVGs para las marcas faltantes (~15 nuevos archivos)
-Agregar a `src/assets/brands/`:
-- `volkswagen.svg`, `toyota.svg`, `honda.svg`, `land-rover.svg`, `audi.svg`, `bmw.svg`, `mercedes.svg`, `chrysler.svg`, `ford.svg`, `chirey.svg`, `mazda.svg`, `volvo.svg`, `kia.svg`, `renault.svg`, `suzuki.svg`, `jac.svg`
+```text
+VehicleDetail.tsx
+  └─ Botón "Comparar" → navega a /comparar?a={slug}
 
-Cada SVG será un logo vectorial limpio y simple, monocromático para que funcione con el filtro grayscale existente.
+/comparar?a={slug}&b={slug}
+  ├─ Selector de vehículos (dropdown con búsqueda)
+  ├─ Tabla comparativa lado a lado
+  │   ├─ Imagen principal
+  │   ├─ Nombre / Marca / Año
+  │   ├─ Precio (público o empleado según rol)
+  │   ├─ Kilometraje
+  │   ├─ Tipo (SUV, Sedán, etc.)
+  │   ├─ Ubicación
+  │   └─ Estatus
+  └─ Anotaciones automáticas
+      ├─ "X es $Y más económico"
+      ├─ "X tiene menos kilometraje"
+      └─ "Ambos son SUV" / "X es SUV, Y es Sedán"
+```
 
-### 2. Crear archivo centralizado `src/data/brands.ts`
-Un solo lugar con:
-- Lista completa de marcas ordenadas alfabéticamente
-- Mapeo `brandLogos: Record<string, string>` con todos los imports
-- Exportar `BRANDS` para el admin form y `brandLogos` para los filtros
+## Implementación
 
-Esto elimina la duplicación actual en 3 archivos.
+### 1. Nueva página `src/pages/Compare.tsx`
+- Recibe query params `?a=slug&b=slug` (uno o ambos opcionales)
+- Carga vehículos desde Supabase (vista pública o tabla completa según rol)
+- Dos selectores tipo dropdown para elegir vehículos del inventario
+- Tabla comparativa con las métricas lado a lado
+- Sección de "Conclusiones" auto-generadas comparando precio, km, tipo
 
-### 3. Actualizar los consumidores
-- **`VehicleFilters.tsx`**: Importar `brandLogos` desde `@/data/brands`
-- **`Inventory.tsx`**: Importar `brandLogos` desde `@/data/brands`
-- **`Index.tsx`**: Importar desde `@/data/brands`
-- **`VehicleForm.tsx`**: Importar `BRANDS` desde `@/data/brands`
+### 2. Componente `src/components/VehicleCompareSelector.tsx`
+- Dropdown con búsqueda que lista los vehículos disponibles
+- Muestra imagen miniatura + nombre + año en cada opción
+- Permite cambiar la selección en cualquier momento
 
-### 4. Hacer `brandFilters` dinámico
-En vez de hardcodear las 6 marcas en los filtros, derivarlos de las marcas que realmente existen en el inventario cargado de Supabase. Solo mostrar logos de marcas que tengan al menos un vehículo activo.
+### 3. Botón en `VehicleDetail.tsx`
+- Agregar botón "Comparar" junto al botón "Solicitar Compra"
+- Al hacer click, navega a `/comparar?a={slug-actual}` con el vehículo actual pre-seleccionado
 
-## Lista completa de marcas (22)
-Audi, BMW, Chevrolet, Chirey, Chrysler, Dodge, Ford, GMC, Honda, Hyundai, JAC, KIA, Land Rover, Mazda, Mercedes, MG, Nissan, Renault, Suzuki, Toyota, Volkswagen, Volvo
+### 4. Ruta en `App.tsx`
+- Agregar `<Route path="/comparar" element={<Compare />} />`
 
-## Notas
-- No se requieren cambios en la base de datos
-- Los logos SVG se crearán con diseños vectoriales simples y reconocibles
-- El filtro `grayscale(100%) opacity(0.5)` existente se aplicará automáticamente a los logos inactivos
+### 5. Conclusiones automáticas
+Lógica simple que compara los valores y genera frases como:
+- Diferencia de precio: "El Chevrolet Aveo es $45,000 más económico"
+- Kilometraje: parsear el string de km y comparar
+- Tipo: indicar si son del mismo segmento o diferente
+- Año: "El GMC Yukon es 2 años más reciente"
+
+## Datos comparados
+Todos los campos disponibles: año, precio, kilometraje, tipo, ubicación, estatus, marca, descripción. El diseño sigue el estilo `neu-card` existente.
 
