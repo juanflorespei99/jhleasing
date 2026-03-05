@@ -9,7 +9,7 @@ import logoIcon from "@/assets/logo-jhl-icon.png";
 import HeroSection from "@/components/HeroSection";
 import VehicleFilters from "@/components/VehicleFilters";
 import VehicleCard from "@/components/VehicleCard";
-import TestimonialsSection from "@/components/TestimonialsSection";
+
 import FooterSection from "@/components/FooterSection";
 
 interface VehicleRow {
@@ -184,7 +184,7 @@ export default function Index() {
           </div>
         </section>
 
-        <TestimonialsSection />
+        
         <FooterSection logoIcon={logoIcon} logoHorizontal={logoHorizontal} />
       </div>
     </div>
