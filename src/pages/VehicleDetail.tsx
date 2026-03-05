@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { fmt } from "@/data/vehicles";
@@ -27,6 +27,7 @@ interface VehicleRow {
 
 export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { isEmployee, user, signOut } = useAuth();
   const [vehicle, setVehicle] = useState<VehicleRow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -274,6 +275,13 @@ export default function VehicleDetail() {
                   style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
                 >
                   Solicitar Compra
+                </button>
+                <button
+                  onClick={() => navigate(`/comparar?a=${vehicle.slug}`)}
+                  className="w-full py-5 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200 hover:opacity-90 hover:scale-[1.02] mt-3"
+                  style={{ background: "hsl(var(--secondary))", color: "hsl(var(--secondary-foreground))" }}
+                >
+                  Comparar con otro vehículo
                 </button>
               </div>
             </div>
