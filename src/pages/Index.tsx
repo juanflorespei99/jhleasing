@@ -168,21 +168,8 @@ export default function Index() {
           </div>
         </section>
 
-        {/* PROMO BANNER */}
-        <section className="mb-20">
-          <div className="neu-accent">
-            <div className="p-16 flex flex-col md:flex-row justify-between items-center gap-8">
-              <div>
-                <span className="label-micro mb-3 block" style={{ color: "rgba(0,0,0,0.6)" }}>Tiempo Limitado</span>
-                <h2 className="heading-lg">Oferta Especial<br />de Temporada</h2>
-              </div>
-              <div className="text-center md:text-right">
-                <span className="label-micro mb-3 block" style={{ color: "rgba(0,0,0,0.6)" }}>Termina</span>
-                <p className="text-5xl font-light uppercase">31 Mar</p>
-              </div>
-            </div>
-          </div>
-        </section>
+
+
 
         
         <FooterSection logoIcon={logoIcon} logoHorizontal={logoHorizontal} />
