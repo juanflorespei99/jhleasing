@@ -1,4 +1,1 @@
 project_id = "rbkqgzairobefrmfdkei"
-
-[functions.on-signup]
-verify_jwt = false
