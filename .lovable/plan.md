@@ -1,65 +1,43 @@
 
 
-# Plan: Generador de Imágenes IA para Vehículos
+# Plan: Centralizar logos de marcas y agregar las 20+ marcas principales de México
 
-## Problema
-Las imágenes actuales de los vehículos son de baja calidad (Wikipedia, genéricas). Se necesita una forma de generar o buscar imágenes profesionales desde el panel de admin.
+## Situación actual
+- Solo hay 6 logos SVG en `src/assets/brands/` (Chevrolet, Hyundai, Nissan, GMC, MG, Dodge)
+- El mapeo `brandLogos` está duplicado en 3 archivos: `VehicleFilters.tsx`, `Inventory.tsx`, y `Index.tsx`
+- La lista `BRANDS` del admin (`VehicleForm.tsx`) tiene 9 marcas pero no coincide con los logos disponibles
+- La lista `brandFilters` está hardcodeada con solo 6 marcas
 
-## Solución Propuesta
+## Cambios propuestos
 
-Integrar el modelo **Nano Banana** (`google/gemini-2.5-flash-image`) disponible a traves de Lovable AI Gateway para generar imágenes de vehículos directamente desde el formulario de admin. El admin escribe un prompt (o se auto-genera uno basado en marca/modelo/año) y recibe imágenes generadas por IA que puede seleccionar y guardar.
+### 1. Crear SVGs para las marcas faltantes (~15 nuevos archivos)
+Agregar a `src/assets/brands/`:
+- `volkswagen.svg`, `toyota.svg`, `honda.svg`, `land-rover.svg`, `audi.svg`, `bmw.svg`, `mercedes.svg`, `chrysler.svg`, `ford.svg`, `chirey.svg`, `mazda.svg`, `volvo.svg`, `kia.svg`, `renault.svg`, `suzuki.svg`, `jac.svg`
 
-## Arquitectura
+Cada SVG será un logo vectorial limpio y simple, monocromático para que funcione con el filtro grayscale existente.
 
-```text
-VehicleForm (admin)
-  ├─ Botón "Generar con IA"
-  │   └─ Dialog con prompt editable
-  │       └─ "Genera una foto profesional de un Chevrolet Aveo 2024..."
-  │
-  ├─ Llama Edge Function: generate-vehicle-image
-  │   └─ POST → Lovable AI Gateway (gemini-2.5-flash-image)
-  │       └─ Retorna base64 image
-  │
-  ├─ Muestra preview de imagen generada
-  │   └─ Admin acepta → sube a Supabase Storage (vehicle-images)
-  │       └─ Se agrega URL a la lista de imágenes del vehículo
-  │
-  └─ Admin puede regenerar o ajustar prompt
-```
+### 2. Crear archivo centralizado `src/data/brands.ts`
+Un solo lugar con:
+- Lista completa de marcas ordenadas alfabéticamente
+- Mapeo `brandLogos: Record<string, string>` con todos los imports
+- Exportar `BRANDS` para el admin form y `brandLogos` para los filtros
 
-## Implementacion
+Esto elimina la duplicación actual en 3 archivos.
 
-### 1. Edge Function `generate-vehicle-image`
-- Recibe: `{ prompt: string }` (ej: "Foto profesional de estudio de un Chevrolet Aveo 2024 sedan plateado, fondo blanco")
-- Usa `LOVABLE_API_KEY` (ya configurado) para llamar al gateway con `modalities: ["image", "text"]`
-- Retorna la imagen base64 al cliente
-- Manejo de errores 429/402
+### 3. Actualizar los consumidores
+- **`VehicleFilters.tsx`**: Importar `brandLogos` desde `@/data/brands`
+- **`Inventory.tsx`**: Importar `brandLogos` desde `@/data/brands`
+- **`Index.tsx`**: Importar desde `@/data/brands`
+- **`VehicleForm.tsx`**: Importar `BRANDS` desde `@/data/brands`
 
-### 2. Componente `AIImageGenerator`
-- Dialog/modal dentro del VehicleForm
-- Auto-genera prompt basado en marca, modelo, año y tipo seleccionados
-- Campo de texto editable para que el admin ajuste el prompt
-- Botón "Generar" → muestra loading → muestra imagen generada
-- Botones: "Usar esta imagen" (sube a storage y agrega), "Regenerar", "Cancelar"
-- Opcion de generar multiples imagenes (una a la vez)
+### 4. Hacer `brandFilters` dinámico
+En vez de hardcodear las 6 marcas en los filtros, derivarlos de las marcas que realmente existen en el inventario cargado de Supabase. Solo mostrar logos de marcas que tengan al menos un vehículo activo.
 
-### 3. Modificaciones al VehicleForm
-- Agregar botón "Generar con IA" junto al botón de subir imágenes
-- Las imágenes generadas y aceptadas se tratan igual que las subidas manualmente
+## Lista completa de marcas (22)
+Audi, BMW, Chevrolet, Chirey, Chrysler, Dodge, Ford, GMC, Honda, Hyundai, JAC, KIA, Land Rover, Mazda, Mercedes, MG, Nissan, Renault, Suzuki, Toyota, Volkswagen, Volvo
 
-## Flujo del Admin
-
-1. Llena marca, modelo, año en el formulario
-2. Click "Generar con IA" → se abre modal con prompt sugerido: *"Fotografía profesional de estudio de un [Marca] [Modelo] [Año], tipo [Tipo], vista frontal 3/4, fondo limpio, iluminación de estudio"*
-3. Puede editar el prompt si quiere otra vista/color/ángulo
-4. Click "Generar" → espera ~5-10s → ve la imagen
-5. Si le gusta → "Usar imagen" (se sube a storage automáticamente)
-6. Si no → "Regenerar" o ajusta el prompt
-7. Puede repetir para obtener varias imágenes (lateral, trasera, interior)
-
-## Notas Técnicas
-- `LOVABLE_API_KEY` ya existe en secrets, no se necesita configurar nada adicional
-- Las imágenes base64 se suben a `vehicle-images` bucket (ya existe, público)
-- El modelo `gemini-2.5-flash-image` es el mas rapido y economico; si la calidad no satisface se puede cambiar a `gemini-3-pro-image-preview` (mas lento pero mejor calidad)
+## Notas
+- No se requieren cambios en la base de datos
+- Los logos SVG se crearán con diseños vectoriales simples y reconocibles
+- El filtro `grayscale(100%) opacity(0.5)` existente se aplicará automáticamente a los logos inactivos
 
