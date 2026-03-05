@@ -8,13 +8,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CalendarIcon, Upload, X } from "lucide-react";
+import { CalendarIcon, Upload, X, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { VehicleRow } from "./VehicleTable";
+import AIImageGenerator from "./AIImageGenerator";
 
 const BRANDS = ["Chevrolet", "Nissan", "Hyundai", "GMC", "Dodge", "MG", "Toyota", "Volkswagen", "KIA"];
 const TYPES = ["SUV", "Sedán", "Hatchback", "Pick-up", "Van", "Coupé"];
@@ -51,6 +52,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [aiOpen, setAiOpen] = useState(false);
 
   useEffect(() => {
     if (vehicle) {
@@ -280,6 +282,19 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
                 <input type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
               </label>
             </div>
+            <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => setAiOpen(true)}>
+              <Sparkles className="h-4 w-4 mr-1" />
+              Generar con IA
+            </Button>
+            <AIImageGenerator
+              open={aiOpen}
+              onOpenChange={setAiOpen}
+              brand={brand}
+              name={name}
+              year={year}
+              type={type}
+              onImageAccepted={(url) => setExistingImages(prev => [...prev, url])}
+            />
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
