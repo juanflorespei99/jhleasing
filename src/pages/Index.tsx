@@ -162,6 +162,29 @@ export default function Index() {
           </div>
         </section>
 
+        {/* Compare CTA */}
+        <section className="mb-12 md:mb-24">
+          <Link
+            to="/comparar"
+            className="neu-card rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-6 md:gap-10 group hover:shadow-lg transition-shadow"
+          >
+            <div className="shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl neu-accent flex items-center justify-center">
+              <Columns2 className="w-8 h-8 md:w-10 md:h-10 text-primary" />
+            </div>
+            <div className="text-center md:text-left flex-1">
+              <h3 className="text-lg md:text-xl uppercase tracking-widest font-bold mb-2">
+                Compara modelos lado a lado
+              </h3>
+              <p className="text-sm text-muted-foreground tracking-wide">
+                Selecciona dos vehículos y compara precio, kilometraje, año y más en una vista clara y detallada.
+              </p>
+            </div>
+            <span className="shrink-0 px-6 py-3 rounded-full text-xs uppercase tracking-widest font-bold bg-primary text-primary-foreground group-hover:opacity-90 transition-opacity">
+              Comparar
+            </span>
+          </Link>
+        </section>
+
         <FooterSection logoIcon={logoIcon} logoHorizontal={logoHorizontal} />
       </div>
     </div>
