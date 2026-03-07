@@ -146,27 +146,27 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl w-[calc(100vw-1.5rem)] max-h-[90vh] overflow-y-auto p-4 md:p-6 rounded-2xl">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Editar Vehículo" : "Nuevo Vehículo"}</DialogTitle>
+          <DialogTitle className="text-base md:text-lg">{isEdit ? "Editar Vehículo" : "Nuevo Vehículo"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Brand + Type */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             <div>
-              <Label>Marca *</Label>
+              <Label className="text-xs">Marca *</Label>
               <Select value={brand} onValueChange={setBrand}>
-                <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                 <SelectContent>
                   {BRANDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Tipo *</Label>
+              <Label className="text-xs">Tipo *</Label>
               <Select value={type} onValueChange={setType}>
-                <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                 <SelectContent>
                   {TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
@@ -175,68 +175,70 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
           </div>
 
           {/* Name + Year */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-3 md:gap-4">
             <div className="col-span-2">
-              <Label>Modelo / Nombre *</Label>
-              <Input value={name} onChange={e => setName(e.target.value)} placeholder="Ej: Aveo LT" />
+              <Label className="text-xs">Modelo / Nombre *</Label>
+              <Input value={name} onChange={e => setName(e.target.value)} placeholder="Ej: Aveo LT" className="mt-1" />
             </div>
             <div>
-              <Label>Año</Label>
-              <Input type="number" value={year} onChange={e => setYear(Number(e.target.value))} />
+              <Label className="text-xs">Año</Label>
+              <Input type="number" value={year} onChange={e => setYear(Number(e.target.value))} className="mt-1" />
             </div>
           </div>
 
           {/* Prices + Margin */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
             <div>
-              <Label>Precio Público</Label>
-              <Input type="number" value={pricePublic} onChange={e => setPricePublic(Number(e.target.value))} />
+              <Label className="text-xs">Precio Público</Label>
+              <Input type="number" value={pricePublic} onChange={e => setPricePublic(Number(e.target.value))} className="mt-1" />
             </div>
             <div>
-              <Label>Precio Empleado</Label>
-              <Input type="number" value={priceEmployee} onChange={e => setPriceEmployee(Number(e.target.value))} />
+              <Label className="text-xs">Precio Empleado</Label>
+              <Input type="number" value={priceEmployee} onChange={e => setPriceEmployee(Number(e.target.value))} className="mt-1" />
             </div>
-            <div>
-              <Label>Margen</Label>
-              <div className="h-10 flex items-center px-3 rounded-md border bg-muted/30">
-                <span className="text-primary font-bold">
+            <div className="col-span-2 sm:col-span-1">
+              <Label className="text-xs">Margen</Label>
+              <div className="h-10 flex items-center px-3 rounded-md border bg-muted/30 mt-1">
+                <span className="text-primary font-bold text-sm">
                   {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(margin)}
                 </span>
-                <span className="text-xs text-muted-foreground ml-1">({marginPct}%)</span>
+                <span className="text-[10px] text-muted-foreground ml-1">({marginPct}%)</span>
               </div>
             </div>
           </div>
 
           {/* Mileage, VIN, Location */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
             <div>
-              <Label>Kilometraje</Label>
-              <Input value={mileage} onChange={e => setMileage(e.target.value)} placeholder="0 km" />
+              <Label className="text-xs">Kilometraje</Label>
+              <Input value={mileage} onChange={e => setMileage(e.target.value)} placeholder="0 km" className="mt-1" />
             </div>
             <div>
-              <Label>VIN</Label>
-              <Input value={vin} onChange={e => setVin(e.target.value)} />
+              <Label className="text-xs">VIN</Label>
+              <Input value={vin} onChange={e => setVin(e.target.value)} className="mt-1" />
             </div>
-            <div>
-              <Label>Ubicación</Label>
-              <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="CDMX" />
+            <div className="col-span-2 sm:col-span-1">
+              <Label className="text-xs">Ubicación</Label>
+              <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="CDMX" className="mt-1" />
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <Label>Descripción</Label>
-            <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} />
+            <Label className="text-xs">Descripción</Label>
+            <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="mt-1" />
           </div>
 
           {/* Release date */}
           <div>
-            <Label>Fecha de Liberación Pública</Label>
+            <Label className="text-xs">Fecha de Liberación Pública</Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !releaseDate && "text-muted-foreground")}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {releaseDate ? format(releaseDate, "PPP", { locale: es }) : "Sin fecha (visible inmediatamente)"}
+                <Button variant="outline" className={cn("w-full justify-start text-left font-normal mt-1 text-xs md:text-sm", !releaseDate && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">
+                    {releaseDate ? format(releaseDate, "PPP", { locale: es }) : "Sin fecha (visible inmediatamente)"}
+                  </span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -246,23 +248,23 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
           </div>
 
           {/* Toggles */}
-          <div className="flex gap-8">
+          <div className="flex gap-6 md:gap-8">
             <div className="flex items-center gap-2">
               <Switch checked={isPublic} onCheckedChange={setIsPublic} />
-              <Label>Público</Label>
+              <Label className="text-xs">Público</Label>
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={isActive} onCheckedChange={setIsActive} />
-              <Label>Activo</Label>
+              <Label className="text-xs">Activo</Label>
             </div>
           </div>
 
           {/* Images */}
           <div>
-            <Label>Imágenes</Label>
-            <div className="flex flex-wrap gap-3 mt-2">
+            <Label className="text-xs">Imágenes</Label>
+            <div className="flex flex-wrap gap-2 md:gap-3 mt-2">
               {existingImages.map((url, i) => (
-                <div key={url} className="relative w-20 h-16 rounded-lg overflow-hidden border">
+                <div key={url} className="relative w-16 h-12 md:w-20 md:h-16 rounded-lg overflow-hidden border">
                   <img src={url} className="w-full h-full object-cover" />
                   <button type="button" onClick={() => removeExistingImage(i)} className="absolute top-0 right-0 bg-destructive text-destructive-foreground rounded-bl p-0.5">
                     <X className="h-3 w-3" />
@@ -270,20 +272,20 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
                 </div>
               ))}
               {imageFiles.map((f, i) => (
-                <div key={i} className="relative w-20 h-16 rounded-lg overflow-hidden border">
+                <div key={i} className="relative w-16 h-12 md:w-20 md:h-16 rounded-lg overflow-hidden border">
                   <img src={URL.createObjectURL(f)} className="w-full h-full object-cover" />
                   <button type="button" onClick={() => removeNewImage(i)} className="absolute top-0 right-0 bg-destructive text-destructive-foreground rounded-bl p-0.5">
                     <X className="h-3 w-3" />
                   </button>
                 </div>
               ))}
-              <label className="w-20 h-16 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center cursor-pointer hover:border-primary transition-colors">
-                <Upload className="h-5 w-5 text-muted-foreground" />
+              <label className="w-16 h-12 md:w-20 md:h-16 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center cursor-pointer hover:border-primary transition-colors">
+                <Upload className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
                 <input type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
               </label>
             </div>
-            <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => setAiOpen(true)}>
-              <Sparkles className="h-4 w-4 mr-1" />
+            <Button type="button" variant="outline" size="sm" className="mt-2 text-xs" onClick={() => setAiOpen(true)}>
+              <Sparkles className="h-3.5 w-3.5 mr-1" />
               Generar con IA
             </Button>
             <AIImageGenerator
@@ -299,9 +301,12 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <div className="flex gap-3 justify-end">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={saving}>
+          {/* Footer buttons - sticky on mobile */}
+          <div className="flex gap-2 md:gap-3 justify-end sticky bottom-0 bg-background pt-3 pb-1 -mx-4 px-4 md:-mx-6 md:px-6 border-t border-border/30">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="text-xs md:text-sm">
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={saving} className="text-xs md:text-sm">
               {saving ? "Guardando..." : isEdit ? "Actualizar" : "Crear Vehículo"}
             </Button>
           </div>
