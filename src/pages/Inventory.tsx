@@ -2,27 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { fmt } from "@/data/vehicles";
+import { fmt } from "@/types/vehicle";
+import type { VehicleRow } from "@/types/vehicle";
 import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
 import VehicleCard from "@/components/VehicleCard";
-
 import { brandLogos } from "@/data/brands";
-
-interface VehicleRow {
-  id: string;
-  slug: string;
-  brand: string;
-  name: string;
-  type: string;
-  year: number;
-  price_public: number;
-  price_employee?: number;
-  mileage: string;
-  img: string;
-  images: string[];
-  status: string;
-  is_public: boolean;
-}
 
 const typeFilters = ["Todos", "Sedán", "SUV", "Blindada"];
 
@@ -139,9 +123,8 @@ export default function Inventory() {
                 key={f}
                 onClick={() => setActiveType(f)}
                 className={`px-5 py-2.5 rounded-full text-[11px] uppercase tracking-widest font-semibold transition-all ${
-                  activeType === f ? "neu-inset-sm" : "neu-tag"
+                  activeType === f ? "neu-inset-sm text-primary" : "neu-tag"
                 }`}
-                style={activeType === f ? { color: "hsl(var(--primary))" } : {}}
               >
                 {f}
               </button>
@@ -164,11 +147,7 @@ export default function Inventory() {
                     src={brandLogos[b]}
                     alt={b}
                     className="h-5 w-auto object-contain"
-                    style={
-                      activeBrand.includes(b)
-                        ? { filter: "none" }
-                        : { filter: "grayscale(100%) opacity(0.5)" }
-                    }
+                    style={activeBrand.includes(b) ? {} : { filter: "grayscale(100%) opacity(0.5)" }}
                   />
                 ) : (
                   <span className="text-[10px] uppercase tracking-widest font-semibold">{b}</span>
@@ -205,13 +184,11 @@ export default function Inventory() {
         </div>
       </div>
 
-      {/* VEHICLE GRID - dense masonry-like layout */}
+      {/* VEHICLE GRID */}
       <div className="max-w-screen-2xl mx-auto px-6 py-8">
         {loadingVehicles ? (
           <div className="flex items-center justify-center py-24">
-            <p className="text-sm uppercase tracking-widest text-muted-foreground">
-              Cargando inventario...
-            </p>
+            <p className="text-sm uppercase tracking-widest text-muted-foreground">Cargando inventario...</p>
           </div>
         ) : filteredVehicles.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
@@ -221,12 +198,7 @@ export default function Inventory() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 items-stretch">
             {filteredVehicles.map((v) => (
-              <VehicleCard
-                key={v.id}
-                vehicle={v}
-                isEmployee={isEmployee}
-                displayPrice={displayPrice(v)}
-              />
+              <VehicleCard key={v.id} vehicle={v} isEmployee={isEmployee} displayPrice={displayPrice(v)} />
             ))}
           </div>
         )}

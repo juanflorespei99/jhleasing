@@ -1,4 +1,4 @@
-import { fmt } from "@/data/vehicles";
+import { fmt } from "@/types/vehicle";
 import { brandLogos } from "@/data/brands";
 
 interface Props {

@@ -1,46 +1,26 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Pause, Play, Trash2, MapPin, Gauge, Calendar, Eye, EyeOff, Tag } from "lucide-react";
+import { Pencil, Pause, Play, Trash2, MapPin, Gauge, Calendar, Tag } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import type { VehicleAdminRow } from "@/types/vehicle";
 
-export interface VehicleRow {
-  id: string;
-  slug: string;
-  brand: string;
-  name: string;
-  type: string;
-  year: number;
-  price_public: number;
-  price_employee: number;
-  img: string;
-  images: string[];
-  status: string;
-  is_public: boolean;
-  is_active: boolean;
-  release_at_public: string | null;
-  created_at: string;
-  mileage: string;
-  vin: string;
-  location: string;
-  description: string;
-  created_by: string | null;
-}
+export type { VehicleAdminRow as VehicleRow } from "@/types/vehicle";
 
 interface Props {
-  vehicles: VehicleRow[];
-  onEdit: (v: VehicleRow) => void;
-  onToggleActive: (v: VehicleRow) => void;
+  vehicles: VehicleAdminRow[];
+  onEdit: (v: VehicleAdminRow) => void;
+  onToggleActive: (v: VehicleAdminRow) => void;
   onDelete: (id: string) => void;
 }
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n);
 
-function getStatusBadge(v: VehicleRow) {
+function getStatusBadge(v: VehicleAdminRow) {
   if (!v.is_active) return <Badge variant="secondary" className="bg-muted text-muted-foreground text-[10px]">Inactivo</Badge>;
   if (!v.is_public) return <Badge className="bg-blue-500/20 text-blue-700 border-blue-300 text-[10px]">Exclusivo</Badge>;
   return <Badge className="bg-green-500/20 text-green-700 border-green-300 text-[10px]">Público</Badge>;
@@ -68,7 +48,6 @@ export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelet
             className={`neu-card transition-all duration-200 hover:-translate-y-0.5 ${!v.is_active ? "opacity-60" : ""}`}
           >
             <div className="p-4 md:p-6">
-              {/* Main layout: image + info + actions */}
               <div className="flex flex-col sm:flex-row gap-4 md:gap-6">
                 {/* Vehicle image */}
                 <div
@@ -76,25 +55,15 @@ export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelet
                   onClick={() => onEdit(v)}
                   style={{ boxShadow: "inset 0 0 20px rgba(0,0,0,0.05)" }}
                 >
-                  <img
-                    src={v.img || "/placeholder.svg"}
-                    alt={v.name}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={v.img || "/placeholder.svg"} alt={v.name} className="w-full h-full object-cover" />
                 </div>
 
                 {/* Info section */}
                 <div className="flex-1 min-w-0">
-                  {/* Top row: name + badges */}
                   <div className="flex flex-wrap items-start gap-2 mb-2">
                     <div className="flex-1 min-w-0">
-                      <button
-                        onClick={() => onEdit(v)}
-                        className="text-left hover:text-primary transition-colors"
-                      >
-                        <h3 className="text-base md:text-lg font-bold text-foreground truncate">
-                          {v.brand} {v.name}
-                        </h3>
+                      <button onClick={() => onEdit(v)} className="text-left hover:text-primary transition-colors">
+                        <h3 className="text-base md:text-lg font-bold text-foreground truncate">{v.brand} {v.name}</h3>
                       </button>
                       <div className="flex flex-wrap items-center gap-2 mt-1">
                         <span className="text-xs text-muted-foreground">{v.year}</span>
@@ -107,35 +76,26 @@ export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelet
 
                   {/* Details grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-3">
-                    {/* Precio Público */}
                     <div className="bg-background/60 rounded-xl p-2.5">
                       <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold block">P. Público</span>
                       <p className="text-sm md:text-base font-bold text-foreground mt-0.5">{fmt(v.price_public)}</p>
                     </div>
-
-                    {/* Precio Empleado */}
                     <div className="bg-background/60 rounded-xl p-2.5">
                       <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold block">P. Empleado</span>
                       <p className="text-sm md:text-base font-bold text-foreground mt-0.5">{fmt(v.price_employee)}</p>
                     </div>
-
-                    {/* Margen */}
                     <div className="bg-primary/5 rounded-xl p-2.5">
                       <span className="text-[9px] uppercase tracking-widest text-primary font-semibold block">Margen</span>
                       <p className="text-sm md:text-base font-bold text-primary mt-0.5">
                         {fmt(margin)} <span className="text-[10px] font-normal text-muted-foreground">({marginPct}%)</span>
                       </p>
                     </div>
-
-                    {/* Kilometraje */}
                     <div className="bg-background/60 rounded-xl p-2.5">
                       <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold flex items-center gap-1 block">
                         <Gauge className="h-3 w-3" /> Km
                       </span>
                       <p className="text-sm font-semibold text-foreground mt-0.5">{v.mileage || "—"}</p>
                     </div>
-
-                    {/* Ubicación */}
                     <div className="bg-background/60 rounded-xl p-2.5">
                       <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold flex items-center gap-1 block">
                         <MapPin className="h-3 w-3" /> Ubicación
@@ -144,15 +104,11 @@ export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelet
                     </div>
                   </div>
 
-                  {/* Bottom: VIN + images count + actions */}
+                  {/* Bottom row */}
                   <div className="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-border/30">
                     <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
-                      {v.vin && (
-                        <span className="font-mono">VIN: {v.vin}</span>
-                      )}
-                      <span className="flex items-center gap-1">
-                        <Tag className="h-3 w-3" /> {v.status}
-                      </span>
+                      {v.vin && <span className="font-mono">VIN: {v.vin}</span>}
+                      <span className="flex items-center gap-1"><Tag className="h-3 w-3" /> {v.status}</span>
                       <span>{v.images?.length || 0} fotos</span>
                       {v.release_at_public && (
                         <span className="flex items-center gap-1">
@@ -162,23 +118,11 @@ export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelet
                       )}
                     </div>
 
-                    {/* Action buttons */}
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onEdit(v)}
-                        className="rounded-full text-[10px] uppercase tracking-widest gap-1 h-8 px-3"
-                      >
+                      <Button variant="outline" size="sm" onClick={() => onEdit(v)} className="rounded-full text-[10px] uppercase tracking-widest gap-1 h-8 px-3">
                         <Pencil className="h-3.5 w-3.5" /> Editar
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onToggleActive(v)}
-                        title={v.is_active ? "Pausar" : "Activar"}
-                        className="h-8 w-8 rounded-full"
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => onToggleActive(v)} title={v.is_active ? "Pausar" : "Activar"} className="h-8 w-8 rounded-full">
                         {v.is_active ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
                       </Button>
                       <AlertDialog>
