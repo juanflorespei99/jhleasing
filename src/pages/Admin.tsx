@@ -6,7 +6,8 @@ import AdminGuard from "@/components/admin/AdminGuard";
 import VehicleTable, { type VehicleRow } from "@/components/admin/VehicleTable";
 import VehicleForm from "@/components/admin/VehicleForm";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, Car } from "lucide-react";
+import { Plus, ArrowLeft, Car, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import logoIcon from "@/assets/logo-jhl-icon.png";
 
@@ -16,6 +17,7 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [editVehicle, setEditVehicle] = useState<VehicleRow | null>(null);
+  const [search, setSearch] = useState("");
 
   const fetchVehicles = useCallback(async () => {
     setLoading(true);
@@ -73,54 +75,80 @@ function AdminDashboard() {
     exclusive: vehicles.filter(v => !v.is_public && v.is_active).length,
   };
 
+  const filtered = vehicles.filter(v => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      v.name.toLowerCase().includes(q) ||
+      v.brand.toLowerCase().includes(q) ||
+      v.type.toLowerCase().includes(q) ||
+      v.vin?.toLowerCase().includes(q) ||
+      v.location?.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="min-h-screen bg-background" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
       {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl border-b border-border/50 px-6 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={logoIcon} alt="JHL" className="h-8 w-auto" />
-            <h1 className="text-lg font-bold text-foreground">Panel de Administración</h1>
+      <header className="sticky top-0 z-40 backdrop-blur-xl border-b border-border/50 px-3 md:px-6 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <img src={logoIcon} alt="JHL" className="h-7 md:h-8 w-auto flex-shrink-0" />
+            <h1 className="text-sm md:text-lg font-bold text-foreground truncate">Admin</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link to="/">
-              <Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-1" /> Catálogo</Button>
+              <Button variant="ghost" size="sm" className="text-xs">
+                <ArrowLeft className="h-4 w-4 md:mr-1" />
+                <span className="hidden md:inline">Catálogo</span>
+              </Button>
             </Link>
-            <Button variant="outline" size="sm" onClick={signOut}>Cerrar sesión</Button>
+            <Button variant="outline" size="sm" onClick={signOut} className="text-xs">
+              <span className="hidden sm:inline">Cerrar sesión</span>
+              <span className="sm:hidden">Salir</span>
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-8 space-y-6 md:space-y-8">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {[
             { label: "Total", value: stats.total, icon: Car },
             { label: "Activos", value: stats.active, color: "text-green-600" },
             { label: "Públicos", value: stats.public, color: "text-primary" },
             { label: "Exclusivos", value: stats.exclusive, color: "text-blue-600" },
           ].map(s => (
-            <div key={s.label} className="neu-card p-5">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">{s.label}</p>
-              <p className={cn("text-3xl font-bold mt-1", s.color || "text-foreground")}>{s.value}</p>
+            <div key={s.label} className="neu-card p-4 md:p-5">
+              <p className="text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground">{s.label}</p>
+              <p className={cn("text-2xl md:text-3xl font-bold mt-1", s.color || "text-foreground")}>{s.value}</p>
             </div>
           ))}
         </div>
 
         {/* Toolbar */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-foreground">Inventario</h2>
-          <Button onClick={handleNew}>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar por nombre, marca, VIN..."
+              className="pl-9 rounded-full"
+            />
+          </div>
+          <Button onClick={handleNew} className="rounded-full flex-shrink-0">
             <Plus className="h-4 w-4 mr-1" /> Nuevo Vehículo
           </Button>
         </div>
 
-        {/* Table */}
+        {/* Vehicle Cards */}
         {loading ? (
           <div className="text-center py-20 text-muted-foreground">Cargando inventario...</div>
         ) : (
           <VehicleTable
-            vehicles={vehicles}
+            vehicles={filtered}
             onEdit={handleEdit}
             onToggleActive={handleToggleActive}
             onDelete={handleDelete}
@@ -138,7 +166,6 @@ function AdminDashboard() {
   );
 }
 
-// cn helper inline for stats
 function cn(...classes: (string | undefined | false)[]) {
   return classes.filter(Boolean).join(" ");
 }
