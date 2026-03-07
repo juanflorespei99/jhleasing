@@ -11,6 +11,16 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Verify webhook signature
+  const webhookSecret = Deno.env.get("WEBHOOK_SECRET");
+  const authHeader = req.headers.get("authorization");
+  if (!webhookSecret || !authHeader || authHeader !== `Bearer ${webhookSecret}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const payload = await req.json();
     const { user } = payload.record
