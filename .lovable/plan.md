@@ -1,60 +1,47 @@
 
 
-# Plan: Comparador de Vehículos
+## Plan: Mini-comparador funcional en la barra lateral
 
-## Resumen
-Crear una página `/comparar` donde el usuario selecciona 2 vehículos del inventario y ve una tabla comparativa lado a lado con todos los datos disponibles (año, precio, kilometraje, tipo, ubicación, estatus).
+### Contexto
+Actualmente el CTA de comparacion es un banner estatico debajo del grid de vehiculos. El usuario quiere moverlo al panel izquierdo (debajo de la linea de tiempo "Como Comprar") y convertirlo en un widget funcional donde se puedan seleccionar dos vehiculos y ver una mini-comparativa inline sin salir de la landing.
 
-## Arquitectura
+### Cambios
+
+#### 1. Nuevo componente `src/components/MiniCompare.tsx`
+Widget compacto que:
+- Muestra dos selectores pequenos (dropdowns) para elegir vehiculo A y B del inventario disponible
+- Al seleccionar ambos, muestra una mini-tabla comparativa con: precio, ano, kilometraje (3 metricas clave)
+- Incluye un boton "Ver comparativa completa" que lleva a `/comparar?a=slugA&b=slugB`
+- Usa estilos `neu-tag`, `neu-inset-sm` consistentes con el sidebar
+- Los selectores seran versiones compactas (thumbnails mas pequenos, texto reducido)
+
+#### 2. Modificar `src/components/VehicleFilters.tsx`
+- Recibir nueva prop `vehicles: VehicleRow[]` para pasarla al mini-comparador
+- Agregar el componente `MiniCompare` debajo del bloque "Como Comprar" (despues de linea 111), separado con `border-t`
+
+#### 3. Modificar `src/pages/Index.tsx`
+- Pasar `vehicles` como prop a `VehicleFilters`
+- Eliminar la seccion "Compare CTA" (lineas 166-187) ya que la funcionalidad ahora vive en el sidebar
+
+### Diseno del mini-comparador
 
 ```text
-VehicleDetail.tsx
-  └─ Botón "Comparar" → navega a /comparar?a={slug}
-
-/comparar?a={slug}&b={slug}
-  ├─ Selector de vehículos (dropdown con búsqueda)
-  ├─ Tabla comparativa lado a lado
-  │   ├─ Imagen principal
-  │   ├─ Nombre / Marca / Año
-  │   ├─ Precio (público o empleado según rol)
-  │   ├─ Kilometraje
-  │   ├─ Tipo (SUV, Sedán, etc.)
-  │   ├─ Ubicación
-  │   └─ Estatus
-  └─ Anotaciones automáticas
-      ├─ "X es $Y más económico"
-      ├─ "X tiene menos kilometraje"
-      └─ "Ambos son SUV" / "X es SUV, Y es Sedán"
+┌─────────────────────────┐
+│ COMPARAR MODELOS        │  <- label-micro
+│                         │
+│ [▼ Seleccionar A...]    │  <- dropdown compacto
+│ [▼ Seleccionar B...]    │  <- dropdown compacto
+│                         │
+│ ┌─────┬───────┬───────┐ │  <- mini tabla (solo si ambos seleccionados)
+│ │     │  A    │  B    │ │
+│ │Precio│$XXX  │$XXX   │ │
+│ │Año   │2024  │2023   │ │
+│ │Km    │70k   │85k    │ │
+│ └─────┴───────┴───────┘ │
+│                         │
+│ [Ver comparativa completa]│ <- Link a /comparar?a=&b=
+└─────────────────────────┘
 ```
 
-## Implementación
-
-### 1. Nueva página `src/pages/Compare.tsx`
-- Recibe query params `?a=slug&b=slug` (uno o ambos opcionales)
-- Carga vehículos desde Supabase (vista pública o tabla completa según rol)
-- Dos selectores tipo dropdown para elegir vehículos del inventario
-- Tabla comparativa con las métricas lado a lado
-- Sección de "Conclusiones" auto-generadas comparando precio, km, tipo
-
-### 2. Componente `src/components/VehicleCompareSelector.tsx`
-- Dropdown con búsqueda que lista los vehículos disponibles
-- Muestra imagen miniatura + nombre + año en cada opción
-- Permite cambiar la selección en cualquier momento
-
-### 3. Botón en `VehicleDetail.tsx`
-- Agregar botón "Comparar" junto al botón "Solicitar Compra"
-- Al hacer click, navega a `/comparar?a={slug-actual}` con el vehículo actual pre-seleccionado
-
-### 4. Ruta en `App.tsx`
-- Agregar `<Route path="/comparar" element={<Compare />} />`
-
-### 5. Conclusiones automáticas
-Lógica simple que compara los valores y genera frases como:
-- Diferencia de precio: "El Chevrolet Aveo es $45,000 más económico"
-- Kilometraje: parsear el string de km y comparar
-- Tipo: indicar si son del mismo segmento o diferente
-- Año: "El GMC Yukon es 2 años más reciente"
-
-## Datos comparados
-Todos los campos disponibles: año, precio, kilometraje, tipo, ubicación, estatus, marca, descripción. El diseño sigue el estilo `neu-card` existente.
+Responsive: en movil, el sidebar se oculta/muestra con el toggle existente, asi que el mini-comparador seguira ese mismo comportamiento.
 
