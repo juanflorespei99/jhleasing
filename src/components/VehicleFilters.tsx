@@ -21,16 +21,16 @@ export default function VehicleFilters({
 }: Props) {
   const range = priceMax - priceMin || 1;
   return (
-    <div className="col-span-12 lg:col-span-3 neu-card h-fit">
-      <div className="p-10">
+    <div className="neu-card h-fit">
+      <div className="p-6 md:p-10">
         <div className="mb-8">
           <span className="label-micro mb-3 block">Tipo de Vehículo</span>
-          <div className="flex flex-wrap gap-3 mt-3">
+          <div className="flex flex-wrap gap-2 md:gap-3 mt-3">
             {typeFilters.map((f) => (
               <button
                 key={f}
                 onClick={() => setActiveType(f)}
-                className={`px-4 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold transition-all ${
+                className={`px-3 md:px-4 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold transition-all ${
                   activeType === f ? "neu-inset-sm" : "neu-tag"
                 }`}
                 style={activeType === f ? { color: "hsl(var(--primary))" } : {}}
@@ -64,12 +64,12 @@ export default function VehicleFilters({
 
         <div>
           <span className="label-micro mb-3 block">Marca</span>
-          <div className="flex flex-wrap gap-3 mt-3">
+          <div className="flex flex-wrap gap-2 md:gap-3 mt-3">
             {brandFilters.map((b) => (
               <button
                 key={b}
                 onClick={() => toggleBrand(b)}
-                className={`p-3 rounded-xl transition-all flex items-center justify-center w-16 h-16 ${
+                className={`p-2 md:p-3 rounded-xl transition-all flex items-center justify-center w-12 h-12 md:w-16 md:h-16 ${
                   activeBrand.includes(b) ? "neu-inset-sm" : "neu-tag"
                 }`}
                 title={b}
@@ -78,11 +78,11 @@ export default function VehicleFilters({
                   <img
                     src={brandLogos[b]}
                     alt={b}
-                    className="h-6 w-auto object-contain"
+                    className="h-5 md:h-6 w-auto object-contain"
                     style={activeBrand.includes(b) ? { filter: "none" } : { filter: "grayscale(100%) opacity(0.5)" }}
                   />
                 ) : (
-                  <span className="text-[11px] uppercase tracking-widest font-semibold">{b}</span>
+                  <span className="text-[10px] md:text-[11px] uppercase tracking-widest font-semibold">{b}</span>
                 )}
               </button>
             ))}
