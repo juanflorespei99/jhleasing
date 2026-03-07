@@ -14,16 +14,15 @@ import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import type { VehicleRow } from "./VehicleTable";
-
-
 import { BRANDS } from "@/data/brands";
+import type { VehicleAdminRow } from "@/types/vehicle";
+
 const TYPES = ["SUV", "Sedán", "Hatchback", "Pick-up", "Van", "Coupé"];
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  vehicle: VehicleRow | null;
+  vehicle: VehicleAdminRow | null;
   onSaved: () => void;
 }
 
@@ -52,7 +51,6 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  
 
   useEffect(() => {
     if (vehicle) {
@@ -288,7 +286,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          {/* Footer buttons - sticky on mobile */}
+          {/* Footer buttons */}
           <div className="flex gap-2 md:gap-3 justify-end sticky bottom-0 bg-background pt-3 pb-1 -mx-4 px-4 md:-mx-6 md:px-6 border-t border-border/30">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="text-xs md:text-sm">
               Cancelar

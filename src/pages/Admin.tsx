@@ -3,20 +3,21 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import AdminGuard from "@/components/admin/AdminGuard";
-import VehicleTable, { type VehicleRow } from "@/components/admin/VehicleTable";
+import VehicleTable from "@/components/admin/VehicleTable";
 import VehicleForm from "@/components/admin/VehicleForm";
 import { Button } from "@/components/ui/button";
 import { Plus, ArrowLeft, Car, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import logoIcon from "@/assets/logo-jhl-icon.png";
+import type { VehicleAdminRow } from "@/types/vehicle";
 
 function AdminDashboard() {
   const { signOut } = useAuth();
-  const [vehicles, setVehicles] = useState<VehicleRow[]>([]);
+  const [vehicles, setVehicles] = useState<VehicleAdminRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
-  const [editVehicle, setEditVehicle] = useState<VehicleRow | null>(null);
+  const [editVehicle, setEditVehicle] = useState<VehicleAdminRow | null>(null);
   const [search, setSearch] = useState("");
 
   const fetchVehicles = useCallback(async () => {
@@ -30,14 +31,14 @@ function AdminDashboard() {
       toast.error("Error cargando inventario");
       console.error(error);
     } else {
-      setVehicles((data as unknown as VehicleRow[]) || []);
+      setVehicles((data as unknown as VehicleAdminRow[]) || []);
     }
     setLoading(false);
   }, []);
 
   useEffect(() => { fetchVehicles(); }, [fetchVehicles]);
 
-  const handleEdit = (v: VehicleRow) => {
+  const handleEdit = (v: VehicleAdminRow) => {
     setEditVehicle(v);
     setFormOpen(true);
   };
@@ -47,7 +48,7 @@ function AdminDashboard() {
     setFormOpen(true);
   };
 
-  const handleToggleActive = async (v: VehicleRow) => {
+  const handleToggleActive = async (v: VehicleAdminRow) => {
     const { error } = await supabase
       .from("vehicles")
       .update({ is_active: !v.is_active })
@@ -122,7 +123,7 @@ function AdminDashboard() {
           ].map(s => (
             <div key={s.label} className="neu-card p-4 md:p-5">
               <p className="text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground">{s.label}</p>
-              <p className={cn("text-2xl md:text-3xl font-bold mt-1", s.color || "text-foreground")}>{s.value}</p>
+              <p className={`text-2xl md:text-3xl font-bold mt-1 ${s.color || "text-foreground"}`}>{s.value}</p>
             </div>
           ))}
         </div>
@@ -164,10 +165,6 @@ function AdminDashboard() {
       />
     </div>
   );
-}
-
-function cn(...classes: (string | undefined | false)[]) {
-  return classes.filter(Boolean).join(" ");
 }
 
 export default function Admin() {

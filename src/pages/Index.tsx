@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { fmt } from "@/data/vehicles";
+import { fmt } from "@/types/vehicle";
+import type { VehicleRow } from "@/types/vehicle";
 import heroVideo from "@/assets/hero-video.mp4";
 import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
 import logoIcon from "@/assets/logo-jhl-icon.png";
@@ -11,28 +12,9 @@ import VehicleFilters from "@/components/VehicleFilters";
 import VehicleCard from "@/components/VehicleCard";
 import FooterSection from "@/components/FooterSection";
 
-interface VehicleRow {
-  id: string;
-  slug: string;
-  brand: string;
-  name: string;
-  type: string;
-  year: number;
-  price_public: number;
-  price_employee?: number;
-  mileage: string;
-  img: string;
-  images: string[];
-  status: string;
-  vin?: string;
-  location: string;
-  description: string;
-  is_public: boolean;
-}
-
 export default function Index() {
   const { user, role, isEmployee, isLoading, signOut } = useAuth();
-  
+
   const [activeType, setActiveType] = useState("Todos");
   const [activeBrand, setActiveBrand] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState(Infinity);
@@ -165,10 +147,10 @@ export default function Index() {
           <div className="col-span-12 lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
             {loadingVehicles ? (
               <div className="col-span-full flex items-center justify-center py-24">
-                <p className="text-sm uppercase tracking-widest" style={{ color: "hsl(var(--muted-foreground))" }}>Cargando inventario...</p>
+                <p className="text-sm uppercase tracking-widest text-muted-foreground">Cargando inventario...</p>
               </div>
             ) : filteredVehicles.length === 0 ? (
-              <div className="col-span-full flex flex-col items-center justify-center py-24 text-center" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <div className="col-span-full flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
                 <p className="text-2xl mb-2 uppercase font-light">Sin resultados</p>
                 <p className="text-sm">Prueba ajustando los filtros</p>
               </div>

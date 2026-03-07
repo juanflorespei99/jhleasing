@@ -1,20 +1,6 @@
 import { Link } from "react-router-dom";
-import { fmt } from "@/data/vehicles";
-
-interface VehicleRow {
-  id: string;
-  slug: string;
-  brand: string;
-  name: string;
-  type: string;
-  year: number;
-  price_public: number;
-  price_employee?: number;
-  mileage: string;
-  img: string;
-  status: string;
-  is_public: boolean;
-}
+import { fmt } from "@/types/vehicle";
+import type { VehicleRow } from "@/types/vehicle";
 
 interface Props {
   vehicle: VehicleRow;
@@ -31,22 +17,20 @@ export default function VehicleCard({ vehicle: v, isEmployee, displayPrice }: Pr
           <div className="flex gap-2">
             {isEmployee && !v.is_public && (
               <span
-                className="text-[9px] md:text-[10px] uppercase tracking-widest font-bold px-2 md:px-3 py-1 rounded-full"
-                style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}
+                className="text-[9px] md:text-[10px] uppercase tracking-widest font-bold px-2 md:px-3 py-1 rounded-full bg-destructive text-destructive-foreground"
               >
                 Exclusivo
               </span>
             )}
             <span
-              className="text-[9px] md:text-[10px] uppercase tracking-widest font-bold px-2 md:px-3 py-1 rounded-full"
-              style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+              className="text-[9px] md:text-[10px] uppercase tracking-widest font-bold px-2 md:px-3 py-1 rounded-full bg-primary text-primary-foreground"
             >
               {v.status}
             </span>
           </div>
         </div>
         <h3 className="text-lg md:text-2xl font-normal uppercase mb-1">{v.name}</h3>
-        <p className="text-xs mb-3 md:mb-4" style={{ color: "hsl(var(--muted-foreground))" }}>{v.year}</p>
+        <p className="text-xs mb-3 md:mb-4 text-muted-foreground">{v.year}</p>
 
         <div
           className="rounded-2xl md:rounded-3xl mb-4 md:mb-6 overflow-hidden flex-grow"
@@ -55,14 +39,14 @@ export default function VehicleCard({ vehicle: v, isEmployee, displayPrice }: Pr
           <img src={v.img} alt={v.name} className="w-full h-full object-cover" />
         </div>
 
-        <div className="grid grid-cols-2 gap-3 md:gap-4 border-t mt-auto pt-4 md:pt-5" style={{ borderColor: "rgba(0,0,0,0.05)" }}>
+        <div className="grid grid-cols-2 gap-3 md:gap-4 border-t border-border/20 mt-auto pt-4 md:pt-5">
           <div>
             {isEmployee && v.price_employee ? (
               <>
-                <span className="label-micro" style={{ color: "hsl(var(--primary))" }}>Precio Preferencial</span>
+                <span className="label-micro text-primary">Precio Preferencial</span>
                 <p className="text-xl md:text-2xl font-light">${fmt(v.price_employee)}</p>
                 {v.is_public && (
-                  <p className="text-xs line-through" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-xs line-through text-muted-foreground">
                     ${fmt(v.price_public)}
                   </p>
                 )}
@@ -80,10 +64,7 @@ export default function VehicleCard({ vehicle: v, isEmployee, displayPrice }: Pr
           </div>
         </div>
 
-        <span
-          className="mt-4 md:mt-5 w-full py-3 md:py-4 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-bold text-center block"
-          style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-        >
+        <span className="mt-4 md:mt-5 w-full py-3 md:py-4 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-bold text-center block bg-primary text-primary-foreground">
           Ver Detalles
         </span>
       </div>

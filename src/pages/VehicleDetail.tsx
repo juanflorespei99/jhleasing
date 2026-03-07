@@ -2,28 +2,10 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { fmt } from "@/data/vehicles";
+import { fmt } from "@/types/vehicle";
+import type { VehicleRow } from "@/types/vehicle";
 import logoDark from "@/assets/logo-jhl-dark.png";
 import ImageLightbox from "@/components/ImageLightbox";
-
-interface VehicleRow {
-  id: string;
-  slug: string;
-  brand: string;
-  name: string;
-  type: string;
-  year: number;
-  price_public: number;
-  price_employee?: number;
-  mileage: string;
-  img: string;
-  images: string[];
-  status: string;
-  vin?: string;
-  location: string;
-  description: string;
-  is_public: boolean;
-}
 
 export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
@@ -34,13 +16,10 @@ export default function VehicleDetail() {
   const [activeImage, setActiveImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  // Ensure at least 4 gallery images by repeating
   const galleryImages = useMemo(() => {
     if (!vehicle?.images?.length) return [];
     const imgs = [...vehicle.images];
-    while (imgs.length < 4) {
-      imgs.push(...vehicle.images);
-    }
+    while (imgs.length < 4) imgs.push(...vehicle.images);
     return imgs.slice(0, Math.max(4, vehicle.images.length));
   }, [vehicle?.images]);
 
@@ -49,18 +28,10 @@ export default function VehicleDetail() {
     const fetchVehicle = async () => {
       setLoading(true);
       if (isEmployee) {
-        const { data } = await supabase
-          .from("vehicles")
-          .select("*")
-          .eq("slug", id)
-          .maybeSingle();
+        const { data } = await supabase.from("vehicles").select("*").eq("slug", id).maybeSingle();
         setVehicle(data as unknown as VehicleRow | null);
       } else {
-        const { data } = await supabase
-          .from("vehicles_public" as any)
-          .select("*")
-          .eq("slug", id)
-          .maybeSingle();
+        const { data } = await supabase.from("vehicles_public" as any).select("*").eq("slug", id).maybeSingle();
         setVehicle(data as unknown as VehicleRow | null);
       }
       setLoading(false);
@@ -71,7 +42,7 @@ export default function VehicleDetail() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-6 flex items-center justify-center">
-        <p className="text-sm uppercase tracking-widest" style={{ color: "hsl(var(--muted-foreground))" }}>Cargando...</p>
+        <p className="text-sm uppercase tracking-widest text-muted-foreground">Cargando...</p>
       </div>
     );
   }
@@ -83,8 +54,7 @@ export default function VehicleDetail() {
           <p className="heading-md mb-4">Vehículo no encontrado</p>
           <Link
             to="/"
-            className="inline-block px-8 py-4 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90"
-            style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+            className="inline-block px-8 py-4 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90 bg-primary text-primary-foreground"
           >
             Volver al catálogo
           </Link>
@@ -92,8 +62,6 @@ export default function VehicleDetail() {
       </div>
     );
   }
-
-  const mainPrice = isEmployee && vehicle.price_employee ? vehicle.price_employee : vehicle.price_public;
 
   const specs = [
     { label: "Año", value: String(vehicle.year) },
@@ -113,30 +81,14 @@ export default function VehicleDetail() {
             <img src={logoDark} alt="JH Leasing" className="h-20 w-auto" />
           </Link>
           <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="flex items-center gap-2 px-6 py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
+            <Link to="/" className="flex items-center gap-2 px-6 py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
               Catálogo
             </Link>
             {user ? (
-              <button
-                onClick={() => signOut()}
-                className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity"
-              >
-                Salir
-              </button>
+              <button onClick={() => signOut()} className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity">Salir</button>
             ) : (
-              <Link
-                to="/login"
-                className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90"
-                style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-              >
-                Iniciar Sesión
-              </Link>
+              <Link to="/login" className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90 bg-primary text-primary-foreground">Iniciar Sesión</Link>
             )}
           </div>
         </nav>
@@ -146,18 +98,13 @@ export default function VehicleDetail() {
 
           {/* IMAGE GALLERY */}
           <div className="col-span-12 lg:col-span-7 flex flex-col gap-4">
-            {/* Main image */}
-            <div
-              className="neu-card overflow-hidden relative group cursor-pointer"
-              onClick={() => setLightboxOpen(true)}
-            >
+            <div className="neu-card overflow-hidden relative group cursor-pointer" onClick={() => setLightboxOpen(true)}>
               <img
                 src={galleryImages[activeImage]}
                 alt={`${vehicle.name} - imagen ${activeImage + 1}`}
                 className="w-full object-cover transition-all duration-500"
                 style={{ height: "clamp(320px, 40vw, 520px)" }}
               />
-              {/* Zoom hint overlay */}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-sm rounded-full p-4">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -165,30 +112,23 @@ export default function VehicleDetail() {
                   </svg>
                 </div>
               </div>
-              {/* Nav arrows */}
               {galleryImages.length > 1 && (
                 <>
                   <button
                     onClick={(e) => { e.stopPropagation(); setActiveImage((p) => (p === 0 ? galleryImages.length - 1 : p - 1)); }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-80 hover:!opacity-100 hover:scale-110 backdrop-blur-sm"
-                    style={{ background: "rgba(255,255,255,0.2)" }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-80 hover:!opacity-100 hover:scale-110 backdrop-blur-sm bg-white/20"
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" /></svg>
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setActiveImage((p) => (p === galleryImages.length - 1 ? 0 : p + 1)); }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-80 hover:!opacity-100 hover:scale-110 backdrop-blur-sm"
-                    style={{ background: "rgba(255,255,255,0.2)" }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-80 hover:!opacity-100 hover:scale-110 backdrop-blur-sm bg-white/20"
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
                   </button>
                 </>
               )}
-              {/* Counter badge */}
-              <span
-                className="absolute bottom-4 right-4 text-[11px] uppercase tracking-widest font-bold px-4 py-2 rounded-full"
-                style={{ background: "rgba(255,255,255,0.2)", backdropFilter: "blur(4px)" }}
-              >
+              <span className="absolute bottom-4 right-4 text-[11px] uppercase tracking-widest font-bold px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm">
                 {activeImage + 1} / {galleryImages.length}
               </span>
             </div>
@@ -200,9 +140,7 @@ export default function VehicleDetail() {
                   key={i}
                   onClick={() => setActiveImage(i)}
                   className={`rounded-2xl overflow-hidden transition-all duration-300 ${
-                    i === activeImage
-                      ? "ring-2 ring-primary scale-[1.03] shadow-lg"
-                      : "opacity-50 hover:opacity-90 hover:scale-[1.02]"
+                    i === activeImage ? "ring-2 ring-primary scale-[1.03] shadow-lg" : "opacity-50 hover:opacity-90 hover:scale-[1.02]"
                   }`}
                   style={{ height: 80 }}
                 >
@@ -211,56 +149,43 @@ export default function VehicleDetail() {
               ))}
             </div>
 
-            {/* Description - directly under gallery */}
+            {/* Description */}
             <div className="neu-card">
               <div className="p-10">
                 <span className="label-micro block mb-4">Descripción</span>
-                <p className="text-base leading-relaxed" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  {vehicle.description}
-                </p>
+                <p className="text-base leading-relaxed text-muted-foreground">{vehicle.description}</p>
               </div>
             </div>
           </div>
 
           {/* INFO SIDEBAR */}
           <div className="col-span-12 lg:col-span-5 flex flex-col gap-6">
-
-            {/* Header + Price */}
             <div className="neu-card">
               <div className="p-10">
                 <div className="flex items-center justify-between mb-2">
                   <span className="label-micro">{vehicle.type}</span>
                   <div className="flex gap-2">
                     {isEmployee && !vehicle.is_public && (
-                      <span
-                        className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full"
-                        style={{ background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }}
-                      >
-                        Exclusivo
-                      </span>
+                      <span className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-destructive text-destructive-foreground">Exclusivo</span>
                     )}
                     <span
-                      className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full"
-                      style={{
-                        background: vehicle.status === "Disponible" ? "hsl(var(--primary))" : "hsl(var(--muted))",
-                        color: vehicle.status === "Disponible" ? "hsl(var(--primary-foreground))" : "hsl(var(--background))",
-                      }}
+                      className={`text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full ${
+                        vehicle.status === "Disponible" ? "bg-primary text-primary-foreground" : "bg-muted text-background"
+                      }`}
                     >
                       {vehicle.status}
                     </span>
                   </div>
                 </div>
                 <h1 className="heading-xl mb-1">{vehicle.name}</h1>
-                <p className="text-sm mb-8" style={{ color: "hsl(var(--muted-foreground))" }}>{vehicle.year}</p>
+                <p className="text-sm mb-8 text-muted-foreground">{vehicle.year}</p>
 
                 {isEmployee && vehicle.price_employee ? (
                   <div className="mb-8">
-                    <span className="label-micro block mb-1" style={{ color: "hsl(var(--primary))" }}>Precio Preferencial</span>
+                    <span className="label-micro block mb-1 text-primary">Precio Preferencial</span>
                     <p className="text-4xl font-light">${fmt(vehicle.price_employee)}</p>
                     {vehicle.is_public && (
-                      <p className="text-sm line-through mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
-                        Precio público: ${fmt(vehicle.price_public)}
-                      </p>
+                      <p className="text-sm line-through mt-1 text-muted-foreground">Precio público: ${fmt(vehicle.price_public)}</p>
                     )}
                   </div>
                 ) : (
@@ -270,16 +195,12 @@ export default function VehicleDetail() {
                   </div>
                 )}
 
-                <button
-                  className="w-full py-5 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200 hover:opacity-90 hover:scale-[1.02]"
-                  style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
-                >
+                <button className="w-full py-5 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200 hover:opacity-90 hover:scale-[1.02] bg-primary text-primary-foreground">
                   Solicitar Compra
                 </button>
                 <button
                   onClick={() => navigate(`/comparar?a=${vehicle.slug}`)}
-                  className="w-full py-5 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200 hover:opacity-90 hover:scale-[1.02] mt-3"
-                  style={{ background: "hsl(var(--secondary))", color: "hsl(var(--secondary-foreground))" }}
+                  className="w-full py-5 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200 hover:opacity-90 hover:scale-[1.02] mt-3 bg-secondary text-secondary-foreground"
                 >
                   Comparar con otro vehículo
                 </button>
@@ -292,10 +213,8 @@ export default function VehicleDetail() {
                 <span className="label-micro block mb-6">Información del Vehículo</span>
                 <div className="space-y-5">
                   {specs.map((s) => (
-                    <div key={s.label} className="flex justify-between items-center border-b pb-4" style={{ borderColor: "rgba(0,0,0,0.05)" }}>
-                      <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>
-                        {s.label}
-                      </span>
+                    <div key={s.label} className="flex justify-between items-center border-b border-border/20 pb-4">
+                      <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">{s.label}</span>
                       <span className="text-sm font-semibold">{s.value}</span>
                     </div>
                   ))}
@@ -311,15 +230,13 @@ export default function VehicleDetail() {
                 </svg>
                 <span className="text-xs uppercase tracking-widest font-bold">¿Tienes preguntas?</span>
                 <span className="heading-md">Contáctanos</span>
-                <p className="text-sm" style={{ opacity: 0.7 }}>1-800-JH-LEASE</p>
+                <p className="text-sm opacity-70">1-800-JH-LEASE</p>
               </div>
             </div>
           </div>
         </div>
-
       </div>
 
-      {/* Lightbox */}
       {lightboxOpen && (
         <ImageLightbox
           images={galleryImages}
