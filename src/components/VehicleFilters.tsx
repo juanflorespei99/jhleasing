@@ -1,5 +1,7 @@
 import { fmt } from "@/types/vehicle";
+import type { VehicleRow } from "@/types/vehicle";
 import { brandLogos } from "@/data/brands";
+import MiniCompare from "@/components/MiniCompare";
 
 interface Props {
   typeFilters: string[];
@@ -12,12 +14,14 @@ interface Props {
   setMaxPrice: (p: number) => void;
   priceMin: number;
   priceMax: number;
+  vehicles: VehicleRow[];
+  isEmployee: boolean;
 }
 
 export default function VehicleFilters({
   typeFilters, brandFilters, activeType, setActiveType,
   activeBrand, toggleBrand, maxPrice, setMaxPrice,
-  priceMin, priceMax,
+  priceMin, priceMax, vehicles, isEmployee,
 }: Props) {
   const range = priceMax - priceMin || 1;
   return (
@@ -108,6 +112,11 @@ export default function VehicleFilters({
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Mini Comparador */}
+        <div className="mt-10 pt-8 border-t border-border">
+          <MiniCompare vehicles={vehicles} isEmployee={isEmployee} />
         </div>
       </div>
     </div>
