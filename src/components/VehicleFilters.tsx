@@ -25,7 +25,7 @@ export default function VehicleFilters({
 }: Props) {
   const range = priceMax - priceMin || 1;
   return (
-    <div className="neu-card h-fit">
+    <div className="neu-card h-fit overflow-visible">
       <div className="p-6 md:p-10">
         <div className="mb-8">
           <span className="label-micro mb-3 block">Tipo de Vehículo</span>
