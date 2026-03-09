@@ -27,8 +27,8 @@ export default function FooterSection({ logoIcon, logoHorizontal }: Props) {
         </div>
         <div className="col-span-2 md:col-span-1">
           <h4 className="text-xs uppercase tracking-widest mb-4 md:mb-6 text-secondary-foreground/50">Contacto</h4>
-          <a href="tel:18005453273" className="block text-sm mb-3 text-secondary-foreground/80 hover:text-primary transition-colors">1-800-JH-LEASE</a>
-          <a href="mailto:support@jhleasing.com" className="block text-sm mb-3 text-secondary-foreground/80 hover:text-primary transition-colors">support@jhleasing.com</a>
+          <a href="tel:+525550048424" className="block text-sm mb-3 text-secondary-foreground/80 hover:text-primary transition-colors">+52 55 5004 8424</a>
+          <a href="mailto:info@jhl.mx" className="block text-sm mb-3 text-secondary-foreground/80 hover:text-primary transition-colors">info@jhl.mx</a>
         </div>
       </div>
       <div className="mt-8 md:mt-12 text-xs text-center text-secondary-foreground/40">
