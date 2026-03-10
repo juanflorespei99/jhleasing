@@ -105,7 +105,7 @@ export default function Inventory() {
           ) : (
             <Link
               to="/login"
-              className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90 bg-primary text-primary-foreground"
+              className="px-4 sm:px-5 py-2 sm:py-3 rounded-full text-[10px] sm:text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90 bg-primary text-primary-foreground whitespace-nowrap"
             >
               Iniciar Sesión
             </Link>
