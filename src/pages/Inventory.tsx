@@ -75,11 +75,11 @@ export default function Inventory() {
   return (
     <div className="min-h-screen bg-background" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
       {/* NAV */}
-      <nav className="flex justify-between items-center px-6 py-4 bg-secondary">
-        <Link to="/">
-          <img src={logoHorizontal} alt="JH Leasing" className="h-14 w-auto" />
+      <nav className="flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 bg-secondary gap-3">
+        <Link to="/" className="shrink-0">
+          <img src={logoHorizontal} alt="JH Leasing" className="h-10 sm:h-14 w-auto" />
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {user ? (
             <>
               {role === "admin" && (
