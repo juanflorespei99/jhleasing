@@ -62,7 +62,7 @@ function MiniSelector({
 
       {open && (
         <div
-          className="absolute z-50 mt-1 w-full rounded-xl overflow-hidden"
+          className="absolute z-50 bottom-full mb-1 w-full rounded-xl overflow-hidden"
           style={{
             background: "hsl(var(--background))",
             boxShadow: "var(--shadow-raised, 0 8px 30px rgba(0,0,0,.12))",
