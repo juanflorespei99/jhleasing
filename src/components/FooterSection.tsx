@@ -19,12 +19,6 @@ export default function FooterSection({ logoIcon, logoHorizontal }: Props) {
             <a key={l} href="#" className="block text-sm mb-3 text-secondary-foreground/80 hover:text-primary transition-colors">{l}</a>
           ))}
         </div>
-        <div>
-          <h4 className="text-xs uppercase tracking-widest mb-4 md:mb-6 text-secondary-foreground/50">Soporte</h4>
-          {["Centro de Ayuda", "Contacto", "Política de Privacidad"].map((l) => (
-            <a key={l} href="#" className="block text-sm mb-3 text-secondary-foreground/80 hover:text-primary transition-colors">{l}</a>
-          ))}
-        </div>
         <div className="col-span-2 md:col-span-1">
           <h4 className="text-xs uppercase tracking-widest mb-4 md:mb-6 text-secondary-foreground/50">Contacto</h4>
           <a href="tel:+525550048424" className="block text-sm mb-3 text-secondary-foreground/80 hover:text-primary transition-colors">+52 55 5004 8424</a>
