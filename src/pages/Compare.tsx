@@ -107,31 +107,31 @@ export default function Compare() {
   }, [vehicleA, vehicleB, isEmployee]);
 
   return (
-    <div className="min-h-screen bg-background p-6" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+    <div className="min-h-screen bg-background px-4 py-5 md:p-6" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
       <div className="max-w-screen-xl mx-auto">
 
         {/* NAV */}
-        <nav className="flex justify-between items-center mb-12 px-3">
+        <nav className="flex justify-between items-center mb-8 md:mb-12 px-1 md:px-3">
           <Link to="/">
-            <img src={logoDark} alt="JH Leasing" className="h-20 w-auto" />
+            <img src={logoDark} alt="JH Leasing" className="h-14 md:h-20 w-auto" />
           </Link>
-          <div className="flex items-center gap-3">
-            <Link to="/inventario" className="flex items-center gap-2 px-6 py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+          <div className="flex items-center gap-2 md:gap-3">
+            <Link to="/inventario" className="flex items-center gap-1.5 md:gap-2 px-4 md:px-6 py-2.5 md:py-3 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
               Inventario
             </Link>
             {user ? (
-              <button onClick={() => signOut()} className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity">Salir</button>
+              <button onClick={() => signOut()} className="px-4 md:px-5 py-2.5 md:py-3 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity">Salir</button>
             ) : (
-              <Link to="/login" className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90 bg-primary text-primary-foreground">Iniciar Sesión</Link>
+              <Link to="/login" className="px-4 md:px-5 py-2.5 md:py-3 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90 bg-primary text-primary-foreground">Iniciar Sesión</Link>
             )}
           </div>
         </nav>
 
         {/* TITLE */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8 md:mb-12">
           <h1 className="heading-xl mb-2">Comparar Vehículos</h1>
-          <p className="text-sm text-muted-foreground">Selecciona dos vehículos para ver una comparativa detallada</p>
+          <p className="text-xs md:text-sm text-muted-foreground">Selecciona dos vehículos para ver una comparativa detallada</p>
         </div>
 
         {loading ? (
@@ -141,24 +141,24 @@ export default function Compare() {
         ) : (
           <>
             {/* SELECTORS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8 md:mb-12">
               <VehicleCompareSelector vehicles={vehicles} selected={slugA} onSelect={(s) => setSlug("a", s)} excludeSlug={slugB} label="Vehículo A" />
               <VehicleCompareSelector vehicles={vehicles} selected={slugB} onSelect={(s) => setSlug("b", s)} excludeSlug={slugA} label="Vehículo B" />
             </div>
 
             {/* COMPARISON */}
             {vehicleA && vehicleB ? (
-              <div className="space-y-8">
+              <div className="space-y-5 md:space-y-8">
                 {/* Images side by side */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-3 md:gap-6">
                   {[vehicleA, vehicleB].map((v) => (
                     <Link key={v.slug} to={`/vehiculo/${v.slug}`} className="block">
                       <div className="neu-card overflow-hidden group">
-                        <img src={v.img} alt={v.name} className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105" />
-                        <div className="p-6">
-                          <span className="label-micro">{v.type}</span>
-                          <h2 className="heading-md mt-1">{v.name}</h2>
-                          <p className="text-sm mt-1 text-muted-foreground">{v.year}</p>
+                        <img src={v.img} alt={v.name} className="w-full h-28 md:h-56 object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <div className="p-3 md:p-6">
+                          <span className="label-micro text-[9px] md:text-[11px]">{v.type}</span>
+                          <h2 className="text-sm md:text-lg font-bold mt-0.5 md:mt-1 leading-tight">{v.name}</h2>
+                          <p className="text-xs md:text-sm mt-0.5 md:mt-1 text-muted-foreground">{v.year}</p>
                         </div>
                       </div>
                     </Link>
@@ -167,19 +167,19 @@ export default function Compare() {
 
                 {/* Specs table */}
                 <div className="neu-card">
-                  <div className="p-8 md:p-10">
-                    <span className="label-micro block mb-6">Comparativa</span>
+                  <div className="p-5 md:p-10">
+                    <span className="label-micro block mb-4 md:mb-6">Comparativa</span>
                     <div>
-                      <div className="grid grid-cols-3 gap-4 pb-4 mb-4 border-b-2 border-border">
-                        <span className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Métrica</span>
-                        <span className="text-xs uppercase tracking-widest font-bold text-center text-primary">{vehicleA.name}</span>
-                        <span className="text-xs uppercase tracking-widest font-bold text-center text-primary">{vehicleB.name}</span>
+                      <div className="grid grid-cols-3 gap-2 md:gap-4 pb-3 md:pb-4 mb-3 md:mb-4 border-b-2 border-border">
+                        <span className="text-[10px] md:text-xs uppercase tracking-widest font-bold text-muted-foreground">Métrica</span>
+                        <span className="text-[10px] md:text-xs uppercase tracking-widest font-bold text-center text-primary truncate">{vehicleA.name}</span>
+                        <span className="text-[10px] md:text-xs uppercase tracking-widest font-bold text-center text-primary truncate">{vehicleB.name}</span>
                       </div>
                       {specRows.map((row) => (
-                        <div key={row.label} className="grid grid-cols-3 gap-4 py-4 border-b border-border/50">
-                          <span className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">{row.label}</span>
-                          <span className="text-sm font-semibold text-center">{row.a}</span>
-                          <span className="text-sm font-semibold text-center">{row.b}</span>
+                        <div key={row.label} className="grid grid-cols-3 gap-2 md:gap-4 py-3 md:py-4 border-b border-border/50">
+                          <span className="text-[10px] md:text-xs uppercase tracking-widest font-semibold text-muted-foreground">{row.label}</span>
+                          <span className="text-xs md:text-sm font-semibold text-center break-words">{row.a}</span>
+                          <span className="text-xs md:text-sm font-semibold text-center break-words">{row.b}</span>
                         </div>
                       ))}
                     </div>
@@ -188,13 +188,13 @@ export default function Compare() {
 
                 {/* Insights */}
                 <div className="neu-accent">
-                  <div className="p-8 md:p-10">
-                    <span className="label-micro block mb-6">Conclusiones</span>
-                    <div className="space-y-4">
+                  <div className="p-5 md:p-10">
+                    <span className="label-micro block mb-4 md:mb-6">Conclusiones</span>
+                    <div className="space-y-3 md:space-y-4">
                       {insights.map((text, i) => (
-                        <div key={i} className="flex items-start gap-3">
+                        <div key={i} className="flex items-start gap-2 md:gap-3">
                           <span className="w-1.5 h-1.5 rounded-full bg-foreground mt-1.5 shrink-0" />
-                          <p className="text-sm leading-relaxed">{text}</p>
+                          <p className="text-xs md:text-sm leading-relaxed">{text}</p>
                         </div>
                       ))}
                     </div>
@@ -202,7 +202,7 @@ export default function Compare() {
                 </div>
               </div>
             ) : (
-              <div className="neu-card p-16 text-center">
+              <div className="neu-card p-10 md:p-16 text-center">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="mx-auto mb-4 text-muted-foreground">
                   <rect x="2" y="3" width="8" height="18" rx="2" />
                   <rect x="14" y="3" width="8" height="18" rx="2" />
