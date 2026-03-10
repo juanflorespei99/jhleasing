@@ -15,7 +15,7 @@ export default function FooterSection({ logoIcon, logoHorizontal }: Props) {
         </div>
         <div>
           <h4 className="text-xs uppercase tracking-widest mb-4 md:mb-6 text-secondary-foreground/50">Inventario</h4>
-          {["Vehículos", "Ofertas", "Eléctricos"].map((l) => (
+          {["Vehículos", "Ofertas"].map((l) => (
             <a key={l} href="#" className="block text-sm mb-3 text-secondary-foreground/80 hover:text-primary transition-colors">{l}</a>
           ))}
         </div>
