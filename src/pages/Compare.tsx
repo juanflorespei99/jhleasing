@@ -111,17 +111,17 @@ export default function Compare() {
       <div className="max-w-screen-xl mx-auto">
 
         {/* NAV */}
-        <nav className="flex justify-between items-center mb-8 md:mb-12 px-1 md:px-3">
-          <Link to="/">
-            <img src={logoDark} alt="JH Leasing" className="h-14 md:h-20 w-auto" />
+        <nav className="flex justify-between items-center mb-8 md:mb-12 px-1 md:px-3 gap-3">
+          <Link to="/" className="shrink-0">
+            <img src={logoDark} alt="JH Leasing" className="h-10 md:h-20 w-auto" />
           </Link>
-          <div className="flex items-center gap-2 md:gap-3">
-            <Link to="/inventario" className="flex items-center gap-1.5 md:gap-2 px-4 md:px-6 py-2.5 md:py-3 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity">
+          <div className="flex items-center gap-2 md:gap-3 shrink-0">
+            <Link to="/inventario" className="flex items-center gap-1.5 md:gap-2 px-3 md:px-6 py-2 md:py-3 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-              Inventario
+              <span className="hidden sm:inline">Inventario</span>
             </Link>
             {user ? (
-              <button onClick={() => signOut()} className="px-4 md:px-5 py-2.5 md:py-3 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity">Salir</button>
+              <button onClick={() => signOut()} className="px-3 md:px-5 py-2 md:py-3 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity">Salir</button>
             ) : (
               <Link to="/login" className="px-4 md:px-5 py-2.5 md:py-3 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90 bg-primary text-primary-foreground">Iniciar Sesión</Link>
             )}
