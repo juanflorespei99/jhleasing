@@ -68,7 +68,7 @@ export default function PurchaseRequestDialog({
         region: "na1",
         portalId: "3393996",
         formId: "9924bd04-591b-4223-91f9-9d024fdf3665",
-        target: containerRef.current,
+        target: "#hubspot-form-container",
         onFormReady: ($form: HTMLFormElement) => {
           // Pre-fill the hidden VIN field
           const vinInput = $form.querySelector(
