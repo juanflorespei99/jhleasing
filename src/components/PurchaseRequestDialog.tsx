@@ -14,6 +14,37 @@ interface PurchaseRequestDialogProps {
   vin: string;
 }
 
+declare global {
+  interface Window {
+    hbspt?: {
+      forms: {
+        create: (opts: Record<string, unknown>) => void;
+      };
+    };
+  }
+}
+
+function loadHubSpotScript(): Promise<void> {
+  return new Promise((resolve) => {
+    if (window.hbspt) {
+      resolve();
+      return;
+    }
+    const existing = document.querySelector(
+      'script[src*="js.hsforms.net"]'
+    );
+    if (existing) {
+      existing.addEventListener("load", () => resolve());
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://js.hsforms.net/forms/v2.js";
+    script.async = true;
+    script.onload = () => resolve();
+    document.head.appendChild(script);
+  });
+}
+
 export default function PurchaseRequestDialog({
   open,
   onOpenChange,
@@ -25,28 +56,34 @@ export default function PurchaseRequestDialog({
   useEffect(() => {
     if (!open || !containerRef.current) return;
 
-    // Clear previous form
-    containerRef.current.innerHTML = "";
+    let cancelled = false;
 
-    // Create the HubSpot form container
-    const formDiv = document.createElement("div");
-    formDiv.className = "hs-form-frame";
-    formDiv.setAttribute("data-region", "na1");
-    formDiv.setAttribute("data-form-id", "9924bd04-591b-4223-91f9-9d024fdf3665");
-    formDiv.setAttribute("data-portal-id", "3393996");
-    formDiv.setAttribute(
-      "data-form-payload",
-      JSON.stringify({ fields: { numero_de_serie: vin } })
-    );
-    containerRef.current.appendChild(formDiv);
+    loadHubSpotScript().then(() => {
+      if (cancelled || !containerRef.current || !window.hbspt) return;
 
-    // Load the HubSpot script
-    const script = document.createElement("script");
-    script.src = "https://js.hsforms.net/forms/embed/3393996.js";
-    script.defer = true;
-    containerRef.current.appendChild(script);
+      // Clear previous render
+      containerRef.current.innerHTML = "";
+
+      window.hbspt.forms.create({
+        region: "na1",
+        portalId: "3393996",
+        formId: "9924bd04-591b-4223-91f9-9d024fdf3665",
+        target: containerRef.current,
+        onFormReady: ($form: HTMLFormElement) => {
+          // Pre-fill the hidden VIN field
+          const vinInput = $form.querySelector(
+            'input[name="numero_de_serie"]'
+          ) as HTMLInputElement | null;
+          if (vinInput) {
+            vinInput.value = vin;
+            vinInput.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        },
+      });
+    });
 
     return () => {
+      cancelled = true;
       if (containerRef.current) {
         containerRef.current.innerHTML = "";
       }
