@@ -250,6 +250,13 @@ export default function VehicleDetail() {
           onClose={() => setLightboxOpen(false)}
         />
       )}
+
+      <PurchaseRequestDialog
+        open={purchaseOpen}
+        onOpenChange={setPurchaseOpen}
+        vehicleName={vehicle.name}
+        vin={vehicle.vin ?? ""}
+      />
     </div>
   );
 }
