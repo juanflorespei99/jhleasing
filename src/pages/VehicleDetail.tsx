@@ -6,6 +6,7 @@ import { fmt } from "@/types/vehicle";
 import type { VehicleRow } from "@/types/vehicle";
 import logoDark from "@/assets/logo-jhl-dark.png";
 import ImageLightbox from "@/components/ImageLightbox";
+import PurchaseRequestDialog from "@/components/PurchaseRequestDialog";
 
 export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +16,7 @@ export default function VehicleDetail() {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [purchaseOpen, setPurchaseOpen] = useState(false);
 
   const galleryImages = useMemo(() => {
     if (!vehicle?.images?.length) return [];
@@ -195,7 +197,10 @@ export default function VehicleDetail() {
                   </div>
                 )}
 
-                <button className="w-full py-5 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200 hover:opacity-90 hover:scale-[1.02] bg-primary text-primary-foreground">
+                <button
+                  onClick={() => setPurchaseOpen(true)}
+                  className="w-full py-5 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200 hover:opacity-90 hover:scale-[1.02] bg-primary text-primary-foreground"
+                >
                   Solicitar Compra
                 </button>
                 <button
@@ -245,6 +250,13 @@ export default function VehicleDetail() {
           onClose={() => setLightboxOpen(false)}
         />
       )}
+
+      <PurchaseRequestDialog
+        open={purchaseOpen}
+        onOpenChange={setPurchaseOpen}
+        vehicleName={vehicle.name}
+        vin={vehicle.vin ?? ""}
+      />
     </div>
   );
 }
