@@ -263,7 +263,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
             <div className="flex flex-wrap gap-2 md:gap-3 mt-2">
               {existingImages.map((url, i) => (
                 <div key={url} className="relative w-16 h-12 md:w-20 md:h-16 rounded-lg overflow-hidden border">
-                  <img src={url} className="w-full h-full object-cover" />
+                  <img src={url} alt={`Imagen ${i + 1}`} className="w-full h-full object-cover" />
                   <button type="button" onClick={() => removeExistingImage(i)} className="absolute top-0 right-0 bg-destructive text-destructive-foreground rounded-bl p-0.5">
                     <X className="h-3 w-3" />
                   </button>
