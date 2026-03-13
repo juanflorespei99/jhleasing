@@ -271,7 +271,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
               ))}
               {imageFiles.map((f, i) => (
                 <div key={i} className="relative w-16 h-12 md:w-20 md:h-16 rounded-lg overflow-hidden border">
-                  <img src={URL.createObjectURL(f)} className="w-full h-full object-cover" />
+                  <img src={URL.createObjectURL(f)} alt={`Nueva imagen ${i + 1}`} className="w-full h-full object-cover" />
                   <button type="button" onClick={() => removeNewImage(i)} className="absolute top-0 right-0 bg-destructive text-destructive-foreground rounded-bl p-0.5">
                     <X className="h-3 w-3" />
                   </button>
