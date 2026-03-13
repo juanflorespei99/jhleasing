@@ -113,8 +113,14 @@ export default function PurchaseRequestDialog({
 
     return () => {
       cancelled = true;
-      if (containerRef.current) {
-        containerRef.current.innerHTML = "";
+      window.clearTimeout(timer);
+
+      const container =
+        containerRef.current ??
+        (document.getElementById("hubspot-form-container") as HTMLDivElement | null);
+
+      if (container) {
+        container.innerHTML = "";
       }
     };
   }, [open, vin]);
