@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
+import logoDark from "@/assets/logo-jhl-dark.png";
 
 export default function Register() {
   const { signUp } = useAuth();
@@ -50,7 +50,7 @@ export default function Register() {
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-10">
           <Link to="/">
-            <img src={logoHorizontal} alt="JH Leasing" className="h-16 w-auto" />
+            <img src={logoDark} alt="JH Leasing" className="h-16 w-auto" />
           </Link>
         </div>
 
