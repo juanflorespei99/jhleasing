@@ -59,16 +59,23 @@ export default function PurchaseRequestDialog({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!open || !containerRef.current) return;
+    if (!open) return;
 
     let cancelled = false;
 
-    loadHubSpotScript()
-      .then(() => {
-        if (cancelled || !containerRef.current || !window.hbspt) return;
+    const mountHubspotForm = async () => {
+      try {
+        await loadHubSpotScript();
+        if (cancelled || !window.hbspt) return;
+
+        const container =
+          containerRef.current ??
+          (document.getElementById("hubspot-form-container") as HTMLDivElement | null);
+
+        if (!container) return;
 
         // Clear previous render
-        containerRef.current.innerHTML = "";
+        container.innerHTML = "";
 
         window.hbspt.forms.create({
           region: "na1",
@@ -96,10 +103,13 @@ export default function PurchaseRequestDialog({
             }
           },
         });
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error cargando formulario de HubSpot:", error);
-      });
+      }
+    };
+
+    const timer = window.setTimeout(mountHubspotForm, 0);
+
 
     return () => {
       cancelled = true;
