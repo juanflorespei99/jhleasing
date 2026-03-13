@@ -197,7 +197,10 @@ export default function VehicleDetail() {
                   </div>
                 )}
 
-                <button className="w-full py-5 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200 hover:opacity-90 hover:scale-[1.02] bg-primary text-primary-foreground">
+                <button
+                  onClick={() => setPurchaseOpen(true)}
+                  className="w-full py-5 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200 hover:opacity-90 hover:scale-[1.02] bg-primary text-primary-foreground"
+                >
                   Solicitar Compra
                 </button>
                 <button
