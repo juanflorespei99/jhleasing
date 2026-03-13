@@ -6,6 +6,7 @@ import { fmt } from "@/types/vehicle";
 import type { VehicleRow } from "@/types/vehicle";
 import logoDark from "@/assets/logo-jhl-dark.png";
 import ImageLightbox from "@/components/ImageLightbox";
+import PurchaseRequestDialog from "@/components/PurchaseRequestDialog";
 
 export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
