@@ -103,7 +103,7 @@ export default function PurchaseRequestDialog({
             dar seguimiento.
           </DialogDescription>
         </DialogHeader>
-        <div ref={containerRef} className="min-h-[200px]" />
+        <div id="hubspot-form-container" ref={containerRef} className="min-h-[200px]" />
       </DialogContent>
     </Dialog>
   );
