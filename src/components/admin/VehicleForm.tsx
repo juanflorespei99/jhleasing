@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { BRANDS } from "@/data/brands";
 import type { VehicleAdminRow } from "@/types/vehicle";
 
-const TYPES = ["SUV", "Sedán", "Hatchback", "Pick-up", "Van", "Coupé"];
+const TYPES = ["SUV", "Sedán", "Hatchback", "Pick-up", "Van", "Coupé", "Blindada"];
 
 interface Props {
   open: boolean;
