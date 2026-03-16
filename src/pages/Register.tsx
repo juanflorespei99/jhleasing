@@ -39,7 +39,12 @@ export default function Register() {
     setLoading(false);
 
     if (error) {
-      setError(error.message);
+      const msg = error.message?.toLowerCase() || "";
+      if (msg.includes("weak") || msg.includes("leaked") || msg.includes("easy to guess")) {
+        setError("La contraseña es muy común o fue filtrada en una brecha de datos. Por favor elige una diferente.");
+      } else {
+        setError(error.message);
+      }
     } else {
       setSuccess(true);
     }
