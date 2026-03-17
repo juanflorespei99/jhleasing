@@ -109,7 +109,7 @@ export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelet
                   {/* Bottom row */}
                   <div className="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-border/30">
                     <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
-                      {v.vin && <span className="font-mono">VIN: {v.vin}</span>}
+                      {v.vin && <span className="font-mono">Serial: {v.vin}</span>}
                       <span className="flex items-center gap-1"><Tag className="h-3 w-3" /> {v.status}</span>
                       <span>{v.images?.length || 0} fotos</span>
                       {v.release_at_public && (

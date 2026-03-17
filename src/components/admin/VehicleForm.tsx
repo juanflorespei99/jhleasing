@@ -208,14 +208,14 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
             </div>
           </div>
 
-          {/* Mileage, VIN, Location */}
+          {/* Mileage, Serial Number, Location */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
             <div>
               <Label className="text-xs">Kilometraje</Label>
               <Input value={mileage} onChange={e => setMileage(e.target.value)} placeholder="0 km" className="mt-1" />
             </div>
             <div>
-              <Label className="text-xs">VIN</Label>
+              <Label className="text-xs">Serial Number</Label>
               <Input value={vin} onChange={e => setVin(e.target.value)} className="mt-1" />
             </div>
             <div className="col-span-2 sm:col-span-1">
