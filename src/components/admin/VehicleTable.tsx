@@ -124,6 +124,11 @@ export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelet
                       <Button variant="outline" size="sm" onClick={() => onEdit(v)} className="rounded-full text-[10px] uppercase tracking-widest gap-1 h-8 px-3">
                         <Pencil className="h-3.5 w-3.5" /> Editar
                       </Button>
+                      {!v.sold_at && onMarkSold && (
+                        <Button variant="outline" size="sm" onClick={() => onMarkSold(v)} className="rounded-full text-[10px] uppercase tracking-widest gap-1 h-8 px-3 text-primary border-primary/30 hover:bg-primary/10">
+                          <BadgeDollarSign className="h-3.5 w-3.5" /> Vendido
+                        </Button>
+                      )}
                       <Button variant="ghost" size="icon" onClick={() => onToggleActive(v)} title={v.is_active ? "Pausar" : "Activar"} className="h-8 w-8 rounded-full">
                         {v.is_active ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
                       </Button>
