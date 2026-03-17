@@ -22,7 +22,7 @@ export default function Index() {
   const [loadingVehicles, setLoadingVehicles] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
-  const typeFilters = ["Todos", "Sedán", "SUV", "Blindada"];
+  const typeFilters = ["Todos", "Sedán", "SUV", "Blindados"];
   const brandFilters = [...new Set(vehicles.map(v => v.brand))].sort();
 
   useEffect(() => {
