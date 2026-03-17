@@ -189,17 +189,12 @@ export default function PurchaseRequest() {
                 )}
                 <style>{`
                   #hubspot-purchase-form .hs-form-private .legal-consent-container { margin-top: 0; }
-                  #hubspot-purchase-form img,
+                  #hubspot-purchase-form img { display: none !important; }
+                  #hubspot-purchase-form .hs-richtext { display: none !important; }
+                  #hubspot-purchase-form .form-columns-0 { display: none !important; }
                   #hubspot-purchase-form .header-image-wrapper,
                   #hubspot-purchase-form .hs-form-header,
-                  #hubspot-purchase-form .sprocket-header,
-                  #hubspot-purchase-form .hs-image-widget,
-                  #hubspot-purchase-form [data-layout-widget-type="cell"] > img,
-                  #hubspot-purchase-form .hs-form-body > img,
-                  #hubspot-purchase-form .hs_cos_wrapper_type_image,
-                  #hubspot-purchase-form .form-columns-0 img { display: none !important; max-height: 0 !important; overflow: hidden !important; }
-                  #hubspot-purchase-form iframe[src*="image"],
-                  #hubspot-purchase-form .hs-richtext img { display: none !important; }
+                  #hubspot-purchase-form .sprocket-header { display: none !important; }
                 `}</style>
                 <div id="hubspot-purchase-form" ref={containerRef} className="min-h-[300px]" />
               </div>
