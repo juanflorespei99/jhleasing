@@ -70,16 +70,14 @@ export default function PurchaseRequest() {
           portalId: "3393996",
           formId: "9924bd04-591b-4223-91f9-9d024fdf3665",
           target: "#hubspot-purchase-form",
-          onFormReady: (form: unknown) => {
+          onFormReady: ($form: unknown) => {
             // Hide HubSpot's decorative content (image + rich text header)
             const hideHubspotDecor = () => {
               const root = document.getElementById("hubspot-purchase-form");
               if (!root) return;
-              // Hide in parent document
               root.querySelectorAll("img, .hs-richtext, .form-columns-0, .header-image-wrapper").forEach(el => {
                 (el as HTMLElement).style.cssText = "display:none!important";
               });
-              // Hide inside iframes
               root.querySelectorAll("iframe").forEach(iframe => {
                 try {
                   const doc = (iframe as HTMLIFrameElement).contentDocument;
@@ -94,40 +92,88 @@ export default function PurchaseRequest() {
             setTimeout(hideHubspotDecor, 300);
             setTimeout(hideHubspotDecor, 1000);
 
+            // Try to set VIN in the form using multiple strategies
             const setVinValue = () => {
               const selectors = [
                 'input[name="numero_de_serie"]',
                 'input[name="TICKET.numero_de_serie"]',
                 'input[name="numero_de_serie_"]',
               ];
-              let vinInput: HTMLInputElement | null = null;
-              const formElement =
-                form instanceof HTMLFormElement
-                  ? form
-                  : typeof form === "object" && form !== null && "get" in form &&
-                      typeof (form as { get?: (i: number) => unknown }).get === "function"
-                    ? ((form as { get: (i: number) => unknown }).get(0) as HTMLFormElement | null)
-                    : null;
-              const searchRoot = formElement || document.getElementById("hubspot-purchase-form");
-              for (const sel of selectors) {
-                vinInput = searchRoot?.querySelector(sel) as HTMLInputElement | null;
-                if (vinInput) break;
+
+              // Strategy 1: Use jQuery $form object (works inside HubSpot iframe)
+              if ($form && typeof $form === "object" && "find" in $form) {
+                const jqForm = $form as { find: (sel: string) => { val: (v: string) => void; length: number } };
+                for (const sel of selectors) {
+                  const $input = jqForm.find(sel);
+                  if ($input.length > 0) {
+                    $input.val(vin);
+                    console.log("[HubSpot VIN] Set via jQuery:", sel);
+                    return true;
+                  }
+                }
               }
-              if (vinInput) {
-                const setter = Object.getOwnPropertyDescriptor(
-                  window.HTMLInputElement.prototype, "value"
-                )?.set;
-                if (setter) setter.call(vinInput, vin);
-                else vinInput.value = vin;
-                vinInput.dispatchEvent(new Event("input", { bubbles: true }));
-                vinInput.dispatchEvent(new Event("change", { bubbles: true }));
-                return true;
+
+              // Strategy 2: Search in iframe contentDocument
+              const root = document.getElementById("hubspot-purchase-form");
+              if (root) {
+                const iframes = root.querySelectorAll("iframe");
+                for (const iframe of Array.from(iframes)) {
+                  try {
+                    const doc = (iframe as HTMLIFrameElement).contentDocument;
+                    if (!doc) continue;
+                    for (const sel of selectors) {
+                      const input = doc.querySelector(sel) as HTMLInputElement | null;
+                      if (input) {
+                        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+                        if (setter) setter.call(input, vin);
+                        else input.value = vin;
+                        input.dispatchEvent(new Event("input", { bubbles: true }));
+                        input.dispatchEvent(new Event("change", { bubbles: true }));
+                        console.log("[HubSpot VIN] Set via iframe:", sel);
+                        return true;
+                      }
+                    }
+                  } catch (_) { /* cross-origin */ }
+                }
+
+                // Strategy 3: Search in parent document
+                for (const sel of selectors) {
+                  const input = root.querySelector(sel) as HTMLInputElement | null;
+                  if (input) {
+                    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+                    if (setter) setter.call(input, vin);
+                    else input.value = vin;
+                    input.dispatchEvent(new Event("input", { bubbles: true }));
+                    input.dispatchEvent(new Event("change", { bubbles: true }));
+                    console.log("[HubSpot VIN] Set via parent DOM:", sel);
+                    return true;
+                  }
+                }
               }
+
+              console.warn("[HubSpot VIN] Could not find VIN input");
               return false;
             };
+
             if (!setVinValue()) {
               setTimeout(setVinValue, 500);
               setTimeout(setVinValue, 1500);
+              setTimeout(setVinValue, 3000);
+            }
+          },
+          onFormSubmit: ($form: unknown) => {
+            // Last-resort: inject VIN right before submission
+            if ($form && typeof $form === "object" && "find" in $form) {
+              const jqForm = $form as { find: (sel: string) => { val: (v?: string) => string; length: number } };
+              const selectors = ['input[name="numero_de_serie"]', 'input[name="TICKET.numero_de_serie"]', 'input[name="numero_de_serie_"]'];
+              for (const sel of selectors) {
+                const $input = jqForm.find(sel);
+                if ($input.length > 0 && !$input.val()) {
+                  $input.val(vin);
+                  console.log("[HubSpot VIN] Injected on submit:", sel);
+                  break;
+                }
+              }
             }
           },
         });
