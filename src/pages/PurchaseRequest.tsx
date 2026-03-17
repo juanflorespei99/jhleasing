@@ -36,8 +36,7 @@ export default function PurchaseRequest() {
   const { slug } = useParams<{ slug: string }>();
   const { user, signOut } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [vehicleName, setVehicleName] = useState("");
-  const [vin, setVin] = useState("");
+  const [vehicle, setVehicle] = useState<{ name: string; vin: string; img: string; year: number; price_public: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch vehicle info
@@ -46,13 +45,10 @@ export default function PurchaseRequest() {
     (async () => {
       const { data } = await supabase
         .from("vehicles")
-        .select("name, vin")
+        .select("name, vin, img, year, price_public")
         .eq("slug", slug)
         .maybeSingle();
-      if (data) {
-        setVehicleName(data.name);
-        setVin(data.vin ?? "");
-      }
+      if (data) setVehicle(data);
       setLoading(false);
     })();
   }, [slug]);
