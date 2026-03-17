@@ -1,60 +1,47 @@
 
 
-# Plan: Comparador de Vehículos
+## Problema actual
 
-## Resumen
-Crear una página `/comparar` donde el usuario selecciona 2 vehículos del inventario y ve una tabla comparativa lado a lado con todos los datos disponibles (año, precio, kilometraje, tipo, ubicación, estatus).
+"Blindada" es un **tipo de vehículo** en la lista (`TYPES`), pero un vehículo blindado puede ser un Sedán, SUV, Pick-up, etc. Necesitamos separar "blindado" como una etiqueta independiente para que el filtro funcione correctamente.
 
-## Arquitectura
+## Plan de implementación
 
-```text
-VehicleDetail.tsx
-  └─ Botón "Comparar" → navega a /comparar?a={slug}
+### 1. Agregar columna `is_armored` a la tabla `vehicles`
 
-/comparar?a={slug}&b={slug}
-  ├─ Selector de vehículos (dropdown con búsqueda)
-  ├─ Tabla comparativa lado a lado
-  │   ├─ Imagen principal
-  │   ├─ Nombre / Marca / Año
-  │   ├─ Precio (público o empleado según rol)
-  │   ├─ Kilometraje
-  │   ├─ Tipo (SUV, Sedán, etc.)
-  │   ├─ Ubicación
-  │   └─ Estatus
-  └─ Anotaciones automáticas
-      ├─ "X es $Y más económico"
-      ├─ "X tiene menos kilometraje"
-      └─ "Ambos son SUV" / "X es SUV, Y es Sedán"
+Migración SQL:
+```sql
+ALTER TABLE public.vehicles
+  ADD COLUMN IF NOT EXISTS is_armored boolean NOT NULL DEFAULT false;
 ```
 
-## Implementación
+Actualizar también la vista `vehicles_public` para incluir `is_armored`.
 
-### 1. Nueva página `src/pages/Compare.tsx`
-- Recibe query params `?a=slug&b=slug` (uno o ambos opcionales)
-- Carga vehículos desde Supabase (vista pública o tabla completa según rol)
-- Dos selectores tipo dropdown para elegir vehículos del inventario
-- Tabla comparativa con las métricas lado a lado
-- Sección de "Conclusiones" auto-generadas comparando precio, km, tipo
+### 2. Actualizar tipos en `src/types/vehicle.ts`
 
-### 2. Componente `src/components/VehicleCompareSelector.tsx`
-- Dropdown con búsqueda que lista los vehículos disponibles
-- Muestra imagen miniatura + nombre + año en cada opción
-- Permite cambiar la selección en cualquier momento
+Agregar `is_armored: boolean` a `VehicleRow` y `VehicleAdminRow`.
 
-### 3. Botón en `VehicleDetail.tsx`
-- Agregar botón "Comparar" junto al botón "Solicitar Compra"
-- Al hacer click, navega a `/comparar?a={slug-actual}` con el vehículo actual pre-seleccionado
+### 3. Modificar el formulario de alta (`VehicleForm.tsx`)
 
-### 4. Ruta en `App.tsx`
-- Agregar `<Route path="/comparar" element={<Compare />} />`
+- Quitar "Blindada" de la lista `TYPES`.
+- Agregar un **Switch** de "¿Blindado?" debajo de los toggles existentes (Público / Activo).
+- Incluir `is_armored` en el payload de insert/update.
 
-### 5. Conclusiones automáticas
-Lógica simple que compara los valores y genera frases como:
-- Diferencia de precio: "El Chevrolet Aveo es $45,000 más económico"
-- Kilometraje: parsear el string de km y comparar
-- Tipo: indicar si son del mismo segmento o diferente
-- Año: "El GMC Yukon es 2 años más reciente"
+### 4. Actualizar la lógica de filtrado
 
-## Datos comparados
-Todos los campos disponibles: año, precio, kilometraje, tipo, ubicación, estatus, marca, descripción. El diseño sigue el estilo `neu-card` existente.
+En `Index.tsx`, `Inventory.tsx` y `VehicleFilters.tsx`:
+- Cambiar el filtro "Blindada" para que compare `v.is_armored === true` en lugar de `v.type === "Blindada"`.
+- Los demás filtros de tipo (SUV, Sedán, etc.) siguen funcionando por `v.type`.
+
+### 5. Mostrar etiqueta "Blindado" en las tarjetas
+
+Agregar un badge o indicador visual en `VehicleCard.tsx` cuando `is_armored` es `true`.
+
+### Archivos a modificar
+- Nueva migración SQL
+- `src/types/vehicle.ts`
+- `src/components/admin/VehicleForm.tsx`
+- `src/pages/Index.tsx`
+- `src/pages/Inventory.tsx`
+- `src/components/VehicleFilters.tsx`
+- `src/components/VehicleCard.tsx`
 
