@@ -67,13 +67,14 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
       setDescription(vehicle.description);
       setIsPublic(vehicle.is_public);
       setIsActive(vehicle.is_active);
+      setIsArmored((vehicle as any).is_armored ?? false);
       setReleaseDate(vehicle.release_at_public ? new Date(vehicle.release_at_public) : undefined);
       setExistingImages(vehicle.images || []);
     } else {
       setBrand(""); setName(""); setType(""); setYear(new Date().getFullYear());
       setPricePublic(0); setPriceEmployee(0); setMileage(""); setVin("");
       setLocation(""); setDescription(""); setIsPublic(true); setIsActive(true);
-      setReleaseDate(undefined); setExistingImages([]);
+      setIsArmored(false); setReleaseDate(undefined); setExistingImages([]);
     }
     setImageFiles([]);
     setError("");
