@@ -121,6 +121,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
         mileage, vin, location, description,
         is_public: isPublic,
         is_active: isActive,
+        is_armored: isArmored,
         release_at_public: releaseDate?.toISOString() || null,
         img: allImages[0] || "",
         images: allImages,
