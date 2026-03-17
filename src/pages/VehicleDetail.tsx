@@ -249,12 +249,6 @@ export default function VehicleDetail() {
         />
       )}
 
-      <PurchaseRequestDialog
-        open={purchaseOpen}
-        onOpenChange={setPurchaseOpen}
-        vehicleName={vehicle.name}
-        vin={vehicle.vin ?? ""}
-      />
     </div>
   );
 }
