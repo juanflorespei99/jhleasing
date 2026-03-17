@@ -71,6 +71,29 @@ export default function PurchaseRequest() {
           formId: "9924bd04-591b-4223-91f9-9d024fdf3665",
           target: "#hubspot-purchase-form",
           onFormReady: (form: unknown) => {
+            // Hide HubSpot's decorative content (image + rich text header)
+            const hideHubspotDecor = () => {
+              const root = document.getElementById("hubspot-purchase-form");
+              if (!root) return;
+              // Hide in parent document
+              root.querySelectorAll("img, .hs-richtext, .form-columns-0, .header-image-wrapper").forEach(el => {
+                (el as HTMLElement).style.cssText = "display:none!important";
+              });
+              // Hide inside iframes
+              root.querySelectorAll("iframe").forEach(iframe => {
+                try {
+                  const doc = (iframe as HTMLIFrameElement).contentDocument;
+                  if (!doc) return;
+                  const style = doc.createElement("style");
+                  style.textContent = "img, .hs-richtext, .form-columns-0, .header-image-wrapper { display:none!important; }";
+                  doc.head.appendChild(style);
+                } catch (_) { /* cross-origin */ }
+              });
+            };
+            hideHubspotDecor();
+            setTimeout(hideHubspotDecor, 300);
+            setTimeout(hideHubspotDecor, 1000);
+
             const setVinValue = () => {
               const selectors = [
                 'input[name="numero_de_serie"]',
