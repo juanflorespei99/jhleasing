@@ -162,18 +162,20 @@ export default function PurchaseRequestDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto [&_.hs-recaptcha]:overflow-visible" style={{ overflow: 'visible' }}>
-        <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">
-            Solicitar Compra
-          </DialogTitle>
-          <DialogDescription>
-            Completa el formulario para solicitar la compra de{" "}
-            <strong>{vehicleName}</strong>. Nuestro equipo te contactará para
-            dar seguimiento.
-          </DialogDescription>
-        </DialogHeader>
-        <div id="hubspot-form-container" ref={containerRef} className="min-h-[200px]" />
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-visible p-0">
+        <div className="overflow-y-auto max-h-[90vh] p-6">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">
+              Solicitar Compra
+            </DialogTitle>
+            <DialogDescription>
+              Completa el formulario para solicitar la compra de{" "}
+              <strong>{vehicleName}</strong>. Nuestro equipo te contactará para
+              dar seguimiento.
+            </DialogDescription>
+          </DialogHeader>
+          <div id="hubspot-form-container" ref={containerRef} className="min-h-[200px]" />
+        </div>
       </DialogContent>
     </Dialog>
   );
