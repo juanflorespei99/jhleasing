@@ -174,7 +174,7 @@ function AdminDashboard() {
                 <Input
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  placeholder="Buscar por nombre, marca, VIN..."
+                  placeholder="Buscar por nombre, marca, serial..."
                   className="pl-9 rounded-full"
                 />
               </div>
