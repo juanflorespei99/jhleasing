@@ -11,6 +11,7 @@ import Register from "./pages/Register";
 import Admin from "./pages/Admin";
 import Inventory from "./pages/Inventory";
 import Compare from "./pages/Compare";
+import PurchaseRequest from "./pages/PurchaseRequest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/registro" element={<Register />} />
             <Route path="/inventario" element={<Inventory />} />
             <Route path="/comparar" element={<Compare />} />
+            <Route path="/solicitar-compra/:slug" element={<PurchaseRequest />} />
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
