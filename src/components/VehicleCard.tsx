@@ -13,7 +13,14 @@ export default function VehicleCard({ vehicle: v, isEmployee, displayPrice }: Pr
     <Link to={`/vehiculo/${v.slug}`} className="neu-card transition-transform duration-300 hover:-translate-y-2 cursor-pointer block">
       <div className="p-5 md:p-8 h-full flex flex-col" style={{ minHeight: 380 }}>
         <div className="flex items-center justify-between mb-2">
-          <span className="label-micro">{v.type}</span>
+          <div className="flex items-center gap-2">
+            <span className="label-micro">{v.type}</span>
+            {v.is_armored && (
+              <span className="text-[9px] md:text-[10px] uppercase tracking-widest font-bold px-2 md:px-3 py-1 rounded-full bg-accent text-accent-foreground">
+                Blindado
+              </span>
+            )}
+          </div>
           <div className="flex gap-2">
             {isEmployee && !v.is_public && (
               <span

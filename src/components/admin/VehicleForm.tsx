@@ -258,6 +258,10 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
               <Switch checked={isActive} onCheckedChange={setIsActive} />
               <Label className="text-xs">Activo</Label>
             </div>
+            <div className="flex items-center gap-2">
+              <Switch checked={isArmored} onCheckedChange={setIsArmored} />
+              <Label className="text-xs">Blindado</Label>
+            </div>
           </div>
 
           {/* Images */}
