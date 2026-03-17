@@ -196,7 +196,7 @@ export default function VehicleDetail() {
                 )}
 
                 <button
-                  onClick={() => setPurchaseOpen(true)}
+                  onClick={() => navigate(`/solicitar-compra/${vehicle.slug}`)}
                   className="w-full py-5 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-200 hover:opacity-90 hover:scale-[1.02] bg-primary text-primary-foreground"
                 >
                   Solicitar Compra
