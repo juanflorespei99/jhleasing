@@ -83,23 +83,58 @@ export default function PurchaseRequestDialog({
           formId: "9924bd04-591b-4223-91f9-9d024fdf3665",
           target: "#hubspot-form-container",
           onFormReady: (form: unknown) => {
-            const formElement =
-              form instanceof HTMLFormElement
-                ? form
-                : typeof form === "object" &&
-                    form !== null &&
-                    "get" in form &&
-                    typeof (form as { get?: (index: number) => unknown }).get === "function"
-                  ? ((form as { get: (index: number) => unknown }).get(0) as HTMLFormElement | null)
-                  : null;
+            const setVinValue = () => {
+              // Try multiple selectors to find the VIN input
+              const selectors = [
+                'input[name="numero_de_serie"]',
+                'input[name="TICKET.numero_de_serie"]',
+                'input[name="numero_de_serie_"]',
+              ];
 
-            const vinInput = formElement?.querySelector(
-              'input[name="numero_de_serie"]'
-            ) as HTMLInputElement | null;
+              let vinInput: HTMLInputElement | null = null;
 
-            if (vinInput) {
-              vinInput.value = vin;
-              vinInput.dispatchEvent(new Event("change", { bubbles: true }));
+              // Search in the form element if available
+              const formElement =
+                form instanceof HTMLFormElement
+                  ? form
+                  : typeof form === "object" &&
+                      form !== null &&
+                      "get" in form &&
+                      typeof (form as { get?: (index: number) => unknown }).get === "function"
+                    ? ((form as { get: (index: number) => unknown }).get(0) as HTMLFormElement | null)
+                    : null;
+
+              const searchRoot = formElement || document.getElementById("hubspot-form-container");
+
+              for (const sel of selectors) {
+                vinInput = searchRoot?.querySelector(sel) as HTMLInputElement | null;
+                if (vinInput) break;
+              }
+
+              if (vinInput) {
+                // Use native setter to trigger HubSpot's internal listeners
+                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+                  window.HTMLInputElement.prototype, "value"
+                )?.set;
+                if (nativeInputValueSetter) {
+                  nativeInputValueSetter.call(vinInput, vin);
+                } else {
+                  vinInput.value = vin;
+                }
+                vinInput.dispatchEvent(new Event("input", { bubbles: true }));
+                vinInput.dispatchEvent(new Event("change", { bubbles: true }));
+                console.log(`[HubSpot] VIN set to: ${vin}`, vinInput.value);
+                return true;
+              }
+
+              console.warn("[HubSpot] VIN input not found with selectors:", selectors);
+              return false;
+            };
+
+            // Try immediately, then retry with delays
+            if (!setVinValue()) {
+              setTimeout(setVinValue, 500);
+              setTimeout(setVinValue, 1500);
             }
           },
         });
