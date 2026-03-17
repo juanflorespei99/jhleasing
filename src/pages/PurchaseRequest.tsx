@@ -160,10 +160,22 @@ export default function PurchaseRequest() {
         {/* FORM CARD */}
         <div className="neu-card">
           <div className="p-10">
+            {vehicle && (
+              <div className="mb-8">
+                <img
+                  src={vehicle.img}
+                  alt={vehicle.name}
+                  className="w-full h-56 object-cover rounded-xl mb-4"
+                />
+                <h2 className="text-lg font-bold text-foreground">{vehicle.name}</h2>
+                <p className="text-sm text-muted-foreground">{vehicle.year} · ${vehicle.price_public.toLocaleString("en-US")} MXN</p>
+                <div className="border-t border-border mt-6 pt-6" />
+              </div>
+            )}
             <span className="label-micro block mb-2">Solicitar Compra</span>
-            {vehicleName && (
+            {vehicle && (
               <p className="text-base text-muted-foreground mb-8">
-                Completa el formulario para solicitar la compra de <strong>{vehicleName}</strong>. Nuestro equipo te contactará para dar seguimiento.
+                Completa el formulario para solicitar la compra de <strong>{vehicle.name}</strong>. Nuestro equipo te contactará para dar seguimiento.
               </p>
             )}
             <div id="hubspot-purchase-form" ref={containerRef} className="min-h-[300px]" />
