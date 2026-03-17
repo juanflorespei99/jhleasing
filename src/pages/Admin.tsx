@@ -127,36 +127,46 @@ function AdminDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-8">
-        <Tabs defaultValue="inventory" className="space-y-6 md:space-y-8">
-          <TabsList className="w-full sm:w-auto">
-            <TabsTrigger value="inventory" className="flex items-center gap-1.5">
-              <Car className="h-4 w-4" />
-              Inventario
-              <span className="text-[10px] bg-foreground/10 px-1.5 py-0.5 rounded-full">{stats.total}</span>
-            </TabsTrigger>
-            <TabsTrigger value="sales" className="flex items-center gap-1.5">
-              <BadgeDollarSign className="h-4 w-4" />
-              Ventas
-              <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">{stats.sold}</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="inventory" className="space-y-6 md:space-y-8">
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-              {[
-                { label: "Total", value: stats.total, icon: Car },
-                { label: "Activos", value: stats.active, color: "text-green-600" },
-                { label: "Públicos", value: stats.public, color: "text-primary" },
-                { label: "Exclusivos", value: stats.exclusive, color: "text-blue-600" },
-              ].map(s => (
-                <div key={s.label} className="neu-card p-4 md:p-5">
-                  <p className="text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground">{s.label}</p>
-                  <p className={`text-2xl md:text-3xl font-bold mt-1 ${s.color || "text-foreground"}`}>{s.value}</p>
+        <Tabs defaultValue="inventory" className="space-y-5">
+          {/* Compact header row: stats + tabs */}
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              {/* Inline stats */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5 bg-foreground/5 rounded-full px-3 py-1.5">
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Total</span>
+                  <span className="text-sm font-bold text-foreground">{stats.total}</span>
                 </div>
-              ))}
-            </div>
+                <div className="flex items-center gap-1.5 bg-green-500/10 rounded-full px-3 py-1.5">
+                  <span className="text-[10px] uppercase tracking-widest text-green-700 font-medium">Activos</span>
+                  <span className="text-sm font-bold text-green-700">{stats.active}</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-primary/10 rounded-full px-3 py-1.5">
+                  <span className="text-[10px] uppercase tracking-widest text-primary font-medium">Públicos</span>
+                  <span className="text-sm font-bold text-primary">{stats.public}</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-blue-500/10 rounded-full px-3 py-1.5">
+                  <span className="text-[10px] uppercase tracking-widest text-blue-700 font-medium">Exclusivos</span>
+                  <span className="text-sm font-bold text-blue-700">{stats.exclusive}</span>
+                </div>
+              </div>
 
+              {/* Tabs */}
+              <TabsList className="bg-foreground/5 rounded-full p-1 h-auto self-start">
+                <TabsTrigger value="inventory" className="rounded-full text-xs px-4 py-1.5 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none gap-1.5">
+                  <Car className="h-3.5 w-3.5" />
+                  Inventario
+                </TabsTrigger>
+                <TabsTrigger value="sales" className="rounded-full text-xs px-4 py-1.5 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none gap-1.5">
+                  <BadgeDollarSign className="h-3.5 w-3.5" />
+                  Ventas
+                  {stats.sold > 0 && <span className="text-[9px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">{stats.sold}</span>}
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
+
+          <TabsContent value="inventory" className="space-y-4">
             {/* Toolbar */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="relative flex-1">
