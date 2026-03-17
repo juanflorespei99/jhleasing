@@ -22,6 +22,7 @@ const fmt = (n: number) =>
   new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n);
 
 function getStatusBadge(v: VehicleAdminRow) {
+  if (v.sold_at) return <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px]">Vendido</Badge>;
   if (!v.is_active) return <Badge variant="secondary" className="bg-muted text-muted-foreground text-[10px]">Inactivo</Badge>;
   if (!v.is_public) return <Badge className="bg-blue-500/20 text-blue-700 border-blue-300 text-[10px]">Exclusivo</Badge>;
   return <Badge className="bg-green-500/20 text-green-700 border-green-300 text-[10px]">Público</Badge>;
