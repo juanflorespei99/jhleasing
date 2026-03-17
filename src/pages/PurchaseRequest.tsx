@@ -36,8 +36,7 @@ export default function PurchaseRequest() {
   const { slug } = useParams<{ slug: string }>();
   const { user, signOut } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [vehicleName, setVehicleName] = useState("");
-  const [vin, setVin] = useState("");
+  const [vehicle, setVehicle] = useState<{ name: string; vin: string; img: string; year: number; price_public: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch vehicle info
@@ -46,20 +45,18 @@ export default function PurchaseRequest() {
     (async () => {
       const { data } = await supabase
         .from("vehicles")
-        .select("name, vin")
+        .select("name, vin, img, year, price_public")
         .eq("slug", slug)
         .maybeSingle();
-      if (data) {
-        setVehicleName(data.name);
-        setVin(data.vin ?? "");
-      }
+      if (data) setVehicle(data);
       setLoading(false);
     })();
   }, [slug]);
 
   // Mount HubSpot form
   useEffect(() => {
-    if (loading || !containerRef.current) return;
+    if (loading || !containerRef.current || !vehicle) return;
+    const vin = vehicle.vin;
     let cancelled = false;
 
     (async () => {
@@ -120,7 +117,7 @@ export default function PurchaseRequest() {
       cancelled = true;
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
-  }, [loading, vin]);
+  }, [loading, vehicle]);
 
   if (loading) {
     return (
@@ -163,10 +160,22 @@ export default function PurchaseRequest() {
         {/* FORM CARD */}
         <div className="neu-card">
           <div className="p-10">
+            {vehicle && (
+              <div className="mb-8">
+                <img
+                  src={vehicle.img}
+                  alt={vehicle.name}
+                  className="w-full h-56 object-cover rounded-xl mb-4"
+                />
+                <h2 className="text-lg font-bold text-foreground">{vehicle.name}</h2>
+                <p className="text-sm text-muted-foreground">{vehicle.year} · ${vehicle.price_public.toLocaleString("en-US")} MXN</p>
+                <div className="border-t border-border mt-6 pt-6" />
+              </div>
+            )}
             <span className="label-micro block mb-2">Solicitar Compra</span>
-            {vehicleName && (
+            {vehicle && (
               <p className="text-base text-muted-foreground mb-8">
-                Completa el formulario para solicitar la compra de <strong>{vehicleName}</strong>. Nuestro equipo te contactará para dar seguimiento.
+                Completa el formulario para solicitar la compra de <strong>{vehicle.name}</strong>. Nuestro equipo te contactará para dar seguimiento.
               </p>
             )}
             <div id="hubspot-purchase-form" ref={containerRef} className="min-h-[300px]" />
