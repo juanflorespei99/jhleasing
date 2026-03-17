@@ -13,7 +13,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const ALLOWED_DOMAINS = ["jhl.mx", "creditoexpresss.com", "scaletechconsulting.mx", "payefy.me"];
+  const ALLOWED_DOMAINS = ["jhl.mx", "creditoexpress.com", "scaletechconsulting.mx"];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
