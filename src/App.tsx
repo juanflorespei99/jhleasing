@@ -11,6 +11,7 @@ import Register from "./pages/Register";
 import Admin from "./pages/Admin";
 import Inventory from "./pages/Inventory";
 import Compare from "./pages/Compare";
+import PurchaseRequest from "./pages/PurchaseRequest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
