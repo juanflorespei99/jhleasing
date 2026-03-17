@@ -10,7 +10,7 @@ interface Props {
 
 export default function VehicleCard({ vehicle: v, isEmployee, displayPrice }: Props) {
   return (
-    <Link to={`/vehiculo/${v.slug}`} className="neu-card transition-transform duration-300 hover:-translate-y-2 cursor-pointer block">
+    <Link to={`/vehiculo/${v.slug}`} className="neu-card transition-transform duration-300 hover:-translate-y-2 cursor-pointer block max-w-sm w-full">
       <div className="p-5 md:p-8 h-full flex flex-col" style={{ minHeight: 380 }}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
