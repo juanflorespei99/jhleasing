@@ -1,33 +1,60 @@
 
 
-## Limpieza automática de usuarios no confirmados
+# Plan: Comparador de Vehículos
 
-**Problema**: Usuarios que se registran pero nunca confirman su email se acumulan en `auth.users`, llenando la base de datos con registros inútiles.
+## Resumen
+Crear una página `/comparar` donde el usuario selecciona 2 vehículos del inventario y ve una tabla comparativa lado a lado con todos los datos disponibles (año, precio, kilometraje, tipo, ubicación, estatus).
 
-**Solución**: Crear un cron job con `pg_cron` + `pg_net` que periódicamente invoque una Edge Function que elimine usuarios no confirmados después de cierto tiempo (por ejemplo, 24 horas).
+## Arquitectura
 
-### Implementación
+```text
+VehicleDetail.tsx
+  └─ Botón "Comparar" → navega a /comparar?a={slug}
 
-1. **Crear Edge Function `cleanup-unconfirmed`**
-   - Usa el service role key para consultar `auth.users` donde `email_confirmed_at IS NULL` y `created_at < NOW() - INTERVAL '24 hours'`
-   - Elimina cada usuario con `supabase.auth.admin.deleteUser()`
-   - Protegida con verificación de Authorization header
+/comparar?a={slug}&b={slug}
+  ├─ Selector de vehículos (dropdown con búsqueda)
+  ├─ Tabla comparativa lado a lado
+  │   ├─ Imagen principal
+  │   ├─ Nombre / Marca / Año
+  │   ├─ Precio (público o empleado según rol)
+  │   ├─ Kilometraje
+  │   ├─ Tipo (SUV, Sedán, etc.)
+  │   ├─ Ubicación
+  │   └─ Estatus
+  └─ Anotaciones automáticas
+      ├─ "X es $Y más económico"
+      ├─ "X tiene menos kilometraje"
+      └─ "Ambos son SUV" / "X es SUV, Y es Sedán"
+```
 
-2. **Habilitar extensiones `pg_cron` y `pg_net`**
-   - Migración SQL para activar ambas extensiones
+## Implementación
 
-3. **Crear cron job**
-   - Ejecutar la función cada hora (o cada 6 horas, configurable)
-   - Usa `net.http_post` para invocar la Edge Function
+### 1. Nueva página `src/pages/Compare.tsx`
+- Recibe query params `?a=slug&b=slug` (uno o ambos opcionales)
+- Carga vehículos desde Supabase (vista pública o tabla completa según rol)
+- Dos selectores tipo dropdown para elegir vehículos del inventario
+- Tabla comparativa con las métricas lado a lado
+- Sección de "Conclusiones" auto-generadas comparando precio, km, tipo
 
-### Detalle técnico
+### 2. Componente `src/components/VehicleCompareSelector.tsx`
+- Dropdown con búsqueda que lista los vehículos disponibles
+- Muestra imagen miniatura + nombre + año en cada opción
+- Permite cambiar la selección en cualquier momento
 
-- La Edge Function iterará sobre usuarios no confirmados con más de 24h de antigüedad y los borrará uno por uno vía `auth.admin.deleteUser()`
-- El cron job se programa con `cron.schedule()` usando `pg_net` para hacer HTTP POST a la función
-- El tiempo de gracia (24h) es configurable — suficiente para que un usuario real confirme, pero limpia los registros de prueba
+### 3. Botón en `VehicleDetail.tsx`
+- Agregar botón "Comparar" junto al botón "Solicitar Compra"
+- Al hacer click, navega a `/comparar?a={slug-actual}` con el vehículo actual pre-seleccionado
 
-### Archivos a crear/modificar
-- `supabase/functions/cleanup-unconfirmed/index.ts` — nueva Edge Function
-- `supabase/config.toml` — agregar configuración de la función
-- Migración SQL — habilitar `pg_cron`, `pg_net` y crear el job programado
+### 4. Ruta en `App.tsx`
+- Agregar `<Route path="/comparar" element={<Compare />} />`
+
+### 5. Conclusiones automáticas
+Lógica simple que compara los valores y genera frases como:
+- Diferencia de precio: "El Chevrolet Aveo es $45,000 más económico"
+- Kilometraje: parsear el string de km y comparar
+- Tipo: indicar si son del mismo segmento o diferente
+- Año: "El GMC Yukon es 2 años más reciente"
+
+## Datos comparados
+Todos los campos disponibles: año, precio, kilometraje, tipo, ubicación, estatus, marca, descripción. El diseño sigue el estilo `neu-card` existente.
 

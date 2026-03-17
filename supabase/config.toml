@@ -1,1 +1,4 @@
 project_id = "rbkqgzairobefrmfdkei"
+
+[functions.cleanup-unconfirmed]
+verify_jwt = false
