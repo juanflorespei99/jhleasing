@@ -1,38 +1,60 @@
 
 
-## Todos los usuarios activados = empleados
+# Plan: Comparador de Vehículos
 
-**Problema actual**: Solo los usuarios con rol `employee` o `admin` en `user_roles` ven todos los vehículos con precios preferenciales. Un usuario autenticado sin rol en esa tabla se trata como "user" y no ve nada (por falta de política RLS).
+## Resumen
+Crear una página `/comparar` donde el usuario selecciona 2 vehículos del inventario y ve una tabla comparativa lado a lado con todos los datos disponibles (año, precio, kilometraje, tipo, ubicación, estatus).
 
-**Solución**: Dos cambios — uno en RLS (base de datos) y otro en el código frontend.
+## Arquitectura
 
-### 1. Nueva política RLS en `vehicles`
-Agregar una política que permita a **cualquier usuario autenticado** leer **todos** los vehículos (sin filtro de `is_public`/`is_active`):
+```text
+VehicleDetail.tsx
+  └─ Botón "Comparar" → navega a /comparar?a={slug}
 
-```sql
-CREATE POLICY "All authenticated users see all vehicles"
-ON public.vehicles
-FOR SELECT
-TO authenticated
-USING (true);
+/comparar?a={slug}&b={slug}
+  ├─ Selector de vehículos (dropdown con búsqueda)
+  ├─ Tabla comparativa lado a lado
+  │   ├─ Imagen principal
+  │   ├─ Nombre / Marca / Año
+  │   ├─ Precio (público o empleado según rol)
+  │   ├─ Kilometraje
+  │   ├─ Tipo (SUV, Sedán, etc.)
+  │   ├─ Ubicación
+  │   └─ Estatus
+  └─ Anotaciones automáticas
+      ├─ "X es $Y más económico"
+      ├─ "X tiene menos kilometraje"
+      └─ "Ambos son SUV" / "X es SUV, Y es Sedán"
 ```
 
-También eliminar la política actual "Employees see all vehicles" que ya sería redundante.
+## Implementación
 
-### 2. Cambio en `useAuth.tsx`
-Modificar `isEmployee` para que cualquier usuario autenticado sea considerado empleado:
+### 1. Nueva página `src/pages/Compare.tsx`
+- Recibe query params `?a=slug&b=slug` (uno o ambos opcionales)
+- Carga vehículos desde Supabase (vista pública o tabla completa según rol)
+- Dos selectores tipo dropdown para elegir vehículos del inventario
+- Tabla comparativa con las métricas lado a lado
+- Sección de "Conclusiones" auto-generadas comparando precio, km, tipo
 
-```typescript
-// Antes:
-const isEmployee = role === "employee" || role === "admin";
+### 2. Componente `src/components/VehicleCompareSelector.tsx`
+- Dropdown con búsqueda que lista los vehículos disponibles
+- Muestra imagen miniatura + nombre + año en cada opción
+- Permite cambiar la selección en cualquier momento
 
-// Después:
-const isEmployee = !!user;
-```
+### 3. Botón en `VehicleDetail.tsx`
+- Agregar botón "Comparar" junto al botón "Solicitar Compra"
+- Al hacer click, navega a `/comparar?a={slug-actual}` con el vehículo actual pre-seleccionado
 
-Esto hace que cualquier usuario con sesión activa vea todos los vehículos, precios de empleado y badges exclusivos — sin depender de la tabla `user_roles`.
+### 4. Ruta en `App.tsx`
+- Agregar `<Route path="/comparar" element={<Compare />} />`
 
-### Archivos a modificar
-- **Migración SQL** — nueva política RLS + eliminar la anterior restrictiva
-- **`src/hooks/useAuth.tsx`** — línea ~87: cambiar condición de `isEmployee`
+### 5. Conclusiones automáticas
+Lógica simple que compara los valores y genera frases como:
+- Diferencia de precio: "El Chevrolet Aveo es $45,000 más económico"
+- Kilometraje: parsear el string de km y comparar
+- Tipo: indicar si son del mismo segmento o diferente
+- Año: "El GMC Yukon es 2 años más reciente"
+
+## Datos comparados
+Todos los campos disponibles: año, precio, kilometraje, tipo, ubicación, estatus, marca, descripción. El diseño sigue el estilo `neu-card` existente.
 
