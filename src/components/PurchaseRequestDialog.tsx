@@ -82,6 +82,7 @@ export default function PurchaseRequestDialog({
           portalId: "3393996",
           formId: "9924bd04-591b-4223-91f9-9d024fdf3665",
           target: "#hubspot-form-container",
+          captchaEnabled: false,
           onFormReady: (form: unknown) => {
             const setVinValue = () => {
               // Try multiple selectors to find the VIN input
