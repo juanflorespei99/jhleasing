@@ -61,6 +61,7 @@ export type Database = {
           images: string[]
           img: string
           is_active: boolean
+          is_armored: boolean
           is_public: boolean
           location: string
           mileage: string
@@ -87,6 +88,7 @@ export type Database = {
           images?: string[]
           img?: string
           is_active?: boolean
+          is_armored?: boolean
           is_public?: boolean
           location?: string
           mileage?: string
@@ -113,6 +115,7 @@ export type Database = {
           images?: string[]
           img?: string
           is_active?: boolean
+          is_armored?: boolean
           is_public?: boolean
           location?: string
           mileage?: string
@@ -141,6 +144,7 @@ export type Database = {
           id: string | null
           images: string[] | null
           img: string | null
+          is_armored: boolean | null
           is_public: boolean | null
           location: string | null
           mileage: string | null
@@ -158,6 +162,7 @@ export type Database = {
           id?: string | null
           images?: string[] | null
           img?: string | null
+          is_armored?: boolean | null
           is_public?: boolean | null
           location?: string | null
           mileage?: string | null
@@ -175,6 +180,7 @@ export type Database = {
           id?: string | null
           images?: string[] | null
           img?: string | null
+          is_armored?: boolean | null
           is_public?: boolean | null
           location?: string | null
           mileage?: string | null

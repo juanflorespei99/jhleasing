@@ -16,6 +16,7 @@ export interface VehicleRow {
   location: string;
   description: string;
   is_public: boolean;
+  is_armored: boolean;
 }
 
 /** Admin-specific vehicle row with all fields */

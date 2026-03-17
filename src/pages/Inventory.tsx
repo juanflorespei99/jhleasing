@@ -62,7 +62,7 @@ export default function Inventory() {
 
   const filteredVehicles = useMemo(() => {
     return vehicles.filter((v) => {
-      const matchesType = activeType === "Todos" || v.type === activeType;
+      const matchesType = activeType === "Todos" || (activeType === "Blindada" ? v.is_armored : v.type === activeType);
       const matchesBrand = activeBrand.length === 0 || activeBrand.includes(v.brand);
       const matchesPrice = displayPrice(v) <= maxPrice;
       return matchesType && matchesBrand && matchesPrice;

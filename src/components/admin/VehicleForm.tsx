@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { BRANDS } from "@/data/brands";
 import type { VehicleAdminRow } from "@/types/vehicle";
 
-const TYPES = ["SUV", "Sedán", "Hatchback", "Pick-up", "Van", "Coupé", "Blindada"];
+const TYPES = ["SUV", "Sedán", "Hatchback", "Pick-up", "Van", "Coupé"];
 
 interface Props {
   open: boolean;
@@ -46,6 +46,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [isActive, setIsActive] = useState(true);
+  const [isArmored, setIsArmored] = useState(false);
   const [releaseDate, setReleaseDate] = useState<Date | undefined>();
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -66,13 +67,14 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
       setDescription(vehicle.description);
       setIsPublic(vehicle.is_public);
       setIsActive(vehicle.is_active);
+      setIsArmored((vehicle as any).is_armored ?? false);
       setReleaseDate(vehicle.release_at_public ? new Date(vehicle.release_at_public) : undefined);
       setExistingImages(vehicle.images || []);
     } else {
       setBrand(""); setName(""); setType(""); setYear(new Date().getFullYear());
       setPricePublic(0); setPriceEmployee(0); setMileage(""); setVin("");
       setLocation(""); setDescription(""); setIsPublic(true); setIsActive(true);
-      setReleaseDate(undefined); setExistingImages([]);
+      setIsArmored(false); setReleaseDate(undefined); setExistingImages([]);
     }
     setImageFiles([]);
     setError("");
@@ -119,6 +121,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
         mileage, vin, location, description,
         is_public: isPublic,
         is_active: isActive,
+        is_armored: isArmored,
         release_at_public: releaseDate?.toISOString() || null,
         img: allImages[0] || "",
         images: allImages,
@@ -254,6 +257,10 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
             <div className="flex items-center gap-2">
               <Switch checked={isActive} onCheckedChange={setIsActive} />
               <Label className="text-xs">Activo</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch checked={isArmored} onCheckedChange={setIsArmored} />
+              <Label className="text-xs">Blindado</Label>
             </div>
           </div>
 
