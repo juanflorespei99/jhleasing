@@ -55,7 +55,8 @@ export default function PurchaseRequest() {
 
   // Mount HubSpot form
   useEffect(() => {
-    if (loading || !containerRef.current) return;
+    if (loading || !containerRef.current || !vehicle) return;
+    const vin = vehicle.vin;
     let cancelled = false;
 
     (async () => {
