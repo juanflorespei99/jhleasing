@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Pause, Play, Trash2, MapPin, Gauge, Calendar, Tag } from "lucide-react";
+import { Pencil, Pause, Play, Trash2, MapPin, Gauge, Calendar, Tag, BadgeDollarSign } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -15,6 +15,7 @@ interface Props {
   onEdit: (v: VehicleAdminRow) => void;
   onToggleActive: (v: VehicleAdminRow) => void;
   onDelete: (id: string) => void;
+  onMarkSold?: (v: VehicleAdminRow) => void;
 }
 
 const fmt = (n: number) =>
