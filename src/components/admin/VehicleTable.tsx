@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Pause, Play, Trash2, MapPin, Gauge, Calendar, Tag } from "lucide-react";
+import { Pencil, Pause, Play, Trash2, MapPin, Gauge, Calendar, Tag, BadgeDollarSign } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -15,18 +15,20 @@ interface Props {
   onEdit: (v: VehicleAdminRow) => void;
   onToggleActive: (v: VehicleAdminRow) => void;
   onDelete: (id: string) => void;
+  onMarkSold?: (v: VehicleAdminRow) => void;
 }
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n);
 
 function getStatusBadge(v: VehicleAdminRow) {
+  if (v.sold_at) return <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px]">Vendido</Badge>;
   if (!v.is_active) return <Badge variant="secondary" className="bg-muted text-muted-foreground text-[10px]">Inactivo</Badge>;
   if (!v.is_public) return <Badge className="bg-blue-500/20 text-blue-700 border-blue-300 text-[10px]">Exclusivo</Badge>;
   return <Badge className="bg-green-500/20 text-green-700 border-green-300 text-[10px]">Público</Badge>;
 }
 
-export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelete }: Props) {
+export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelete, onMarkSold }: Props) {
   if (vehicles.length === 0) {
     return (
       <div className="neu-card p-12 text-center text-muted-foreground">
@@ -122,6 +124,11 @@ export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelet
                       <Button variant="outline" size="sm" onClick={() => onEdit(v)} className="rounded-full text-[10px] uppercase tracking-widest gap-1 h-8 px-3">
                         <Pencil className="h-3.5 w-3.5" /> Editar
                       </Button>
+                      {!v.sold_at && onMarkSold && (
+                        <Button variant="outline" size="sm" onClick={() => onMarkSold(v)} className="rounded-full text-[10px] uppercase tracking-widest gap-1 h-8 px-3 text-primary border-primary/30 hover:bg-primary/10">
+                          <BadgeDollarSign className="h-3.5 w-3.5" /> Vendido
+                        </Button>
+                      )}
                       <Button variant="ghost" size="icon" onClick={() => onToggleActive(v)} title={v.is_active ? "Pausar" : "Activar"} className="h-8 w-8 rounded-full">
                         {v.is_active ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
                       </Button>

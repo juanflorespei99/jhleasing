@@ -53,6 +53,7 @@ export type Database = {
       vehicles: {
         Row: {
           brand: string
+          buyer_name: string | null
           created_at: string
           created_by: string | null
           description: string
@@ -67,7 +68,10 @@ export type Database = {
           price_employee: number
           price_public: number
           release_at_public: string | null
+          sale_notes: string | null
           slug: string
+          sold_at: string | null
+          sold_price: number | null
           status: string
           type: string
           vin: string
@@ -75,6 +79,7 @@ export type Database = {
         }
         Insert: {
           brand: string
+          buyer_name?: string | null
           created_at?: string
           created_by?: string | null
           description?: string
@@ -89,7 +94,10 @@ export type Database = {
           price_employee: number
           price_public: number
           release_at_public?: string | null
+          sale_notes?: string | null
           slug: string
+          sold_at?: string | null
+          sold_price?: number | null
           status?: string
           type: string
           vin?: string
@@ -97,6 +105,7 @@ export type Database = {
         }
         Update: {
           brand?: string
+          buyer_name?: string | null
           created_at?: string
           created_by?: string | null
           description?: string
@@ -111,7 +120,10 @@ export type Database = {
           price_employee?: number
           price_public?: number
           release_at_public?: string | null
+          sale_notes?: string | null
           slug?: string
+          sold_at?: string | null
+          sold_price?: number | null
           status?: string
           type?: string
           vin?: string
