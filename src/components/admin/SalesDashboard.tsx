@@ -1,14 +1,16 @@
 import { Badge } from "@/components/ui/badge";
 import { BadgeDollarSign, User, Calendar, FileText, Tag } from "lucide-react";
+import { fmtMXN } from "@/lib/format";
 import type { VehicleAdminRow } from "@/types/vehicle";
 
 interface Props {
   vehicles: VehicleAdminRow[];
 }
 
-const fmtMXN = (n: number) =>
-  new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n);
-
+/**
+ * Problem: Local fmtMXN duplicated from VehicleTable.
+ * Solution: Use shared fmtMXN from lib/format.
+ */
 export default function SalesDashboard({ vehicles }: Props) {
   const soldVehicles = vehicles
     .filter(v => v.sold_at)

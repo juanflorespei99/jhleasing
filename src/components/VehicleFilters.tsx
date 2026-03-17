@@ -1,4 +1,4 @@
-import { fmt } from "@/types/vehicle";
+import { fmt, getDisplayPrice } from "@/lib/format";
 import type { VehicleRow } from "@/types/vehicle";
 import { brandLogos } from "@/data/brands";
 import MiniCompare from "@/components/MiniCompare";
@@ -18,6 +18,10 @@ interface Props {
   isEmployee: boolean;
 }
 
+/**
+ * Problem: fmt imported from data/vehicles (dead re-export).
+ * Solution: Import from lib/format.
+ */
 export default function VehicleFilters({
   typeFilters, brandFilters, activeType, setActiveType,
   activeBrand, toggleBrand, maxPrice, setMaxPrice,
@@ -35,9 +39,8 @@ export default function VehicleFilters({
                 key={f}
                 onClick={() => setActiveType(f)}
                 className={`px-3 md:px-4 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold transition-all ${
-                  activeType === f ? "neu-inset-sm" : "neu-tag"
+                  activeType === f ? "neu-inset-sm text-primary" : "neu-tag"
                 }`}
-                style={activeType === f ? { color: "hsl(var(--primary))" } : {}}
               >
                 {f}
               </button>
@@ -60,7 +63,7 @@ export default function VehicleFilters({
               boxShadow: "inset 4px 4px 8px #d1d1d1, inset -4px -4px 8px #ffffff",
             }}
           />
-          <div className="flex justify-between text-xs mt-3" style={{ color: "hsl(var(--muted-foreground))" }}>
+          <div className="flex justify-between text-xs mt-3 text-muted-foreground">
             <span>${fmt(priceMin)}</span>
             <span>${fmt(priceMax)}</span>
           </div>

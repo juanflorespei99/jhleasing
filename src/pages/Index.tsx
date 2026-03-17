@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { fmt } from "@/types/vehicle";
+import { useVehicles } from "@/hooks/useVehicles";
+import { getDisplayPrice } from "@/lib/format";
 import type { VehicleRow } from "@/types/vehicle";
 import heroVideo from "@/assets/hero-video.mp4";
 import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
@@ -12,44 +12,24 @@ import VehicleFilters from "@/components/VehicleFilters";
 import VehicleCard from "@/components/VehicleCard";
 import FooterSection from "@/components/FooterSection";
 
+/**
+ * Problem: fetchVehicles duplicated, displayPrice duplicated, fmt imported from
+ * data/vehicles.ts (dead re-export), useEffect deps [isEmployee, isLoading]
+ * caused double-fetch, inline fontFamily duplicated body CSS.
+ * Solution: useVehicles hook, getDisplayPrice util, removed dead imports,
+ * removed redundant fontFamily inline style.
+ */
 export default function Index() {
   const { user, role, isEmployee, isLoading, signOut } = useAuth();
+  const { vehicles, loading: loadingVehicles } = useVehicles(isEmployee, isLoading);
 
   const [activeType, setActiveType] = useState("Todos");
   const [activeBrand, setActiveBrand] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState(Infinity);
-  const [vehicles, setVehicles] = useState<VehicleRow[]>([]);
-  const [loadingVehicles, setLoadingVehicles] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
   const typeFilters = ["Todos", "Sedán", "SUV", "Blindados"];
   const brandFilters = [...new Set(vehicles.map(v => v.brand))].sort();
-
-  useEffect(() => {
-    fetchVehicles();
-  }, [isEmployee, isLoading]);
-
-  const fetchVehicles = async () => {
-    setLoadingVehicles(true);
-    try {
-      if (isEmployee) {
-        const { data, error } = await supabase
-          .from("vehicles")
-          .select("*")
-          .order("created_at", { ascending: false });
-        if (!error && data) setVehicles(data as unknown as VehicleRow[]);
-      } else {
-        const { data, error } = await supabase
-          .from("vehicles_public" as any)
-          .select("*")
-          .order("created_at", { ascending: false });
-        if (!error && data) setVehicles(data as unknown as VehicleRow[]);
-      }
-    } catch (e) {
-      console.error("Error fetching vehicles:", e);
-    }
-    setLoadingVehicles(false);
-  };
 
   const toggleBrand = (brand: string) => {
     setActiveBrand((prev) =>
@@ -57,21 +37,19 @@ export default function Index() {
     );
   };
 
-  const displayPrice = (v: VehicleRow) => isEmployee && v.price_employee ? v.price_employee : v.price_public;
-
-  const prices = vehicles.map(displayPrice);
+  const prices = vehicles.map(v => getDisplayPrice(v, isEmployee));
   const priceMin = prices.length ? Math.floor(Math.min(...prices) / 10000) * 10000 : 100000;
   const priceMax = prices.length ? Math.ceil(Math.max(...prices) / 10000) * 10000 : 1200000;
 
   const filteredVehicles = vehicles.filter((v) => {
     const matchesType = activeType === "Todos" || (activeType === "Blindados" ? v.is_armored : v.type === activeType);
     const matchesBrand = activeBrand.length === 0 || activeBrand.includes(v.brand);
-    const matchesPrice = displayPrice(v) <= maxPrice;
+    const matchesPrice = getDisplayPrice(v, isEmployee) <= maxPrice;
     return matchesType && matchesBrand && matchesPrice;
   });
 
   return (
-    <div className="min-h-screen bg-background p-3 md:p-6" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+    <div className="min-h-screen bg-background p-3 md:p-6">
       <div className="max-w-screen-2xl mx-auto">
 
         {/* NAV */}
@@ -158,12 +136,11 @@ export default function Index() {
               </div>
             ) : (
               filteredVehicles.map((v) => (
-                <VehicleCard key={v.id} vehicle={v} isEmployee={isEmployee} displayPrice={displayPrice(v)} />
+                <VehicleCard key={v.id} vehicle={v} isEmployee={isEmployee} displayPrice={getDisplayPrice(v, isEmployee)} />
               ))
             )}
           </div>
         </section>
-
 
         <FooterSection logoIcon={logoIcon} logoHorizontal={logoHorizontal} />
       </div>

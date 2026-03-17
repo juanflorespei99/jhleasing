@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { fmt } from "@/types/vehicle";
+import { fmt } from "@/lib/format";
 import type { VehicleRow } from "@/types/vehicle";
 
 interface Props {

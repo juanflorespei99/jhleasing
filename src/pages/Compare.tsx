@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { fmt } from "@/types/vehicle";
+import { useVehicles } from "@/hooks/useVehicles";
+import { fmt, getDisplayPrice } from "@/lib/format";
 import type { VehicleRow } from "@/types/vehicle";
 import logoDark from "@/assets/logo-jhl-dark.png";
 import VehicleCompareSelector from "@/components/VehicleCompareSelector";
@@ -12,32 +12,20 @@ function parseMileage(m: string): number | null {
   return match ? parseInt(match[1], 10) : null;
 }
 
+/**
+ * Problem: fetchVehicles duplicated, getPrice duplicated, supabase imported directly.
+ * Solution: useVehicles hook, getDisplayPrice util.
+ */
 export default function Compare() {
   const [params, setParams] = useSearchParams();
-  const { isEmployee, user, signOut } = useAuth();
-  const [vehicles, setVehicles] = useState<VehicleRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { isEmployee, user, signOut, isLoading } = useAuth();
+  const { vehicles, loading } = useVehicles(isEmployee, isLoading);
 
   const slugA = params.get("a");
   const slugB = params.get("b");
 
-  useEffect(() => {
-    const fetchAll = async () => {
-      setLoading(true);
-      if (isEmployee) {
-        const { data } = await supabase.from("vehicles").select("*");
-        setVehicles((data as unknown as VehicleRow[]) || []);
-      } else {
-        const { data } = await supabase.from("vehicles_public" as any).select("*");
-        setVehicles((data as unknown as VehicleRow[]) || []);
-      }
-      setLoading(false);
-    };
-    fetchAll();
-  }, [isEmployee]);
-
-  const vehicleA = useMemo(() => vehicles.find((v) => v.slug === slugA) || null, [vehicles, slugA]);
-  const vehicleB = useMemo(() => vehicles.find((v) => v.slug === slugB) || null, [vehicles, slugB]);
+  const vehicleA = useMemo(() => vehicles.find((v) => v.slug === slugA) ?? null, [vehicles, slugA]);
+  const vehicleB = useMemo(() => vehicles.find((v) => v.slug === slugB) ?? null, [vehicles, slugB]);
 
   const setSlug = (key: "a" | "b", slug: string) => {
     const p = new URLSearchParams(params);
@@ -45,15 +33,12 @@ export default function Compare() {
     setParams(p, { replace: true });
   };
 
-  const getPrice = (v: VehicleRow) =>
-    isEmployee && v.price_employee ? v.price_employee : v.price_public;
-
   const insights = useMemo(() => {
     if (!vehicleA || !vehicleB) return [];
     const notes: string[] = [];
 
-    const pA = getPrice(vehicleA);
-    const pB = getPrice(vehicleB);
+    const pA = getDisplayPrice(vehicleA, isEmployee);
+    const pB = getDisplayPrice(vehicleB, isEmployee);
     if (pA !== pB) {
       const cheaper = pA < pB ? vehicleA : vehicleB;
       notes.push(`${cheaper.name} es $${fmt(Math.abs(pA - pB))} más económico`);
@@ -96,7 +81,7 @@ export default function Compare() {
   const specRows = useMemo(() => {
     if (!vehicleA || !vehicleB) return [];
     return [
-      { label: "Precio", a: `$${fmt(getPrice(vehicleA))}`, b: `$${fmt(getPrice(vehicleB))}` },
+      { label: "Precio", a: `$${fmt(getDisplayPrice(vehicleA, isEmployee))}`, b: `$${fmt(getDisplayPrice(vehicleB, isEmployee))}` },
       { label: "Año", a: String(vehicleA.year), b: String(vehicleB.year) },
       { label: "Kilometraje", a: vehicleA.mileage, b: vehicleB.mileage },
       { label: "Tipo", a: vehicleA.type, b: vehicleB.type },
@@ -107,7 +92,7 @@ export default function Compare() {
   }, [vehicleA, vehicleB, isEmployee]);
 
   return (
-    <div className="min-h-screen bg-background px-4 py-5 md:p-6" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+    <div className="min-h-screen bg-background px-4 py-5 md:p-6">
       <div className="max-w-screen-xl mx-auto">
 
         {/* NAV */}

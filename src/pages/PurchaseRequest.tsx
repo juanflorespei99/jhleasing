@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { fmt } from "@/lib/format";
+import { toast } from "sonner";
 import logoDark from "@/assets/logo-jhl-dark.png";
 
 declare global {
@@ -32,23 +34,48 @@ function loadHubSpotScript(): Promise<void> {
   });
 }
 
+/** HubSpot field selectors for the serial number input */
+const SERIAL_SELECTORS = [
+  'input[name="numero_de_serie"]',
+  'input[name="TICKET.numero_de_serie"]',
+  'input[name="numero_de_serie_"]',
+];
+
+interface VehicleSummary {
+  name: string;
+  vin: string;
+  img: string;
+  year: number;
+  price_public: number;
+}
+
+/**
+ * Problem: toLocaleString("en-US") used inline instead of shared fmt,
+ * console.error without user feedback, repeated selector arrays.
+ * Solution: Use shared fmt, toast on error, extracted SERIAL_SELECTORS constant.
+ */
 export default function PurchaseRequest() {
   const { slug } = useParams<{ slug: string }>();
   const { user, signOut } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [vehicle, setVehicle] = useState<{ name: string; vin: string; img: string; year: number; price_public: number } | null>(null);
+  const [vehicle, setVehicle] = useState<VehicleSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch vehicle info
   useEffect(() => {
     if (!slug) return;
     (async () => {
-      const { data } = await supabase
-        .from("vehicles")
-        .select("name, vin, img, year, price_public")
-        .eq("slug", slug)
-        .maybeSingle();
-      if (data) setVehicle(data);
+      try {
+        const { data, error } = await supabase
+          .from("vehicles")
+          .select("name, vin, img, year, price_public")
+          .eq("slug", slug)
+          .maybeSingle();
+        if (error) throw error;
+        if (data) setVehicle(data);
+      } catch {
+        toast.error("Error cargando datos del vehículo");
+      }
       setLoading(false);
     })();
   }, [slug]);
@@ -56,7 +83,7 @@ export default function PurchaseRequest() {
   // Mount HubSpot form
   useEffect(() => {
     if (loading || !containerRef.current || !vehicle) return;
-    const vin = vehicle.vin;
+    const serialNumber = vehicle.vin;
     let cancelled = false;
 
     (async () => {
@@ -71,7 +98,7 @@ export default function PurchaseRequest() {
           formId: "9924bd04-591b-4223-91f9-9d024fdf3665",
           target: "#hubspot-purchase-form",
           onFormReady: ($form: unknown) => {
-            // Hide HubSpot's decorative content (image + rich text header)
+            // Hide HubSpot's decorative content
             const hideHubspotDecor = () => {
               const root = document.getElementById("hubspot-purchase-form");
               if (!root) return;
@@ -85,29 +112,22 @@ export default function PurchaseRequest() {
                   const style = doc.createElement("style");
                   style.textContent = "img, .hs-richtext, .form-columns-0, .header-image-wrapper { display:none!important; }";
                   doc.head.appendChild(style);
-                } catch (_) { /* cross-origin */ }
+                } catch { /* cross-origin */ }
               });
             };
             hideHubspotDecor();
             setTimeout(hideHubspotDecor, 300);
             setTimeout(hideHubspotDecor, 1000);
 
-            // Try to set VIN in the form using multiple strategies
-            const setVinValue = () => {
-              const selectors = [
-                'input[name="numero_de_serie"]',
-                'input[name="TICKET.numero_de_serie"]',
-                'input[name="numero_de_serie_"]',
-              ];
-
-              // Strategy 1: Use jQuery $form object (works inside HubSpot iframe)
+            // Set serial number using multiple strategies
+            const setSerialValue = (): boolean => {
+              // Strategy 1: jQuery $form object (works inside HubSpot iframe)
               if ($form && typeof $form === "object" && "find" in $form) {
                 const jqForm = $form as { find: (sel: string) => { val: (v: string) => void; length: number } };
-                for (const sel of selectors) {
+                for (const sel of SERIAL_SELECTORS) {
                   const $input = jqForm.find(sel);
                   if ($input.length > 0) {
-                    $input.val(vin);
-                    console.log("[HubSpot VIN] Set via jQuery:", sel);
+                    $input.val(serialNumber);
                     return true;
                   }
                 }
@@ -121,64 +141,59 @@ export default function PurchaseRequest() {
                   try {
                     const doc = (iframe as HTMLIFrameElement).contentDocument;
                     if (!doc) continue;
-                    for (const sel of selectors) {
+                    for (const sel of SERIAL_SELECTORS) {
                       const input = doc.querySelector(sel) as HTMLInputElement | null;
                       if (input) {
                         const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
-                        if (setter) setter.call(input, vin);
-                        else input.value = vin;
+                        if (setter) setter.call(input, serialNumber);
+                        else input.value = serialNumber;
                         input.dispatchEvent(new Event("input", { bubbles: true }));
                         input.dispatchEvent(new Event("change", { bubbles: true }));
-                        console.log("[HubSpot VIN] Set via iframe:", sel);
                         return true;
                       }
                     }
-                  } catch (_) { /* cross-origin */ }
+                  } catch { /* cross-origin */ }
                 }
 
                 // Strategy 3: Search in parent document
-                for (const sel of selectors) {
+                for (const sel of SERIAL_SELECTORS) {
                   const input = root.querySelector(sel) as HTMLInputElement | null;
                   if (input) {
                     const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
-                    if (setter) setter.call(input, vin);
-                    else input.value = vin;
+                    if (setter) setter.call(input, serialNumber);
+                    else input.value = serialNumber;
                     input.dispatchEvent(new Event("input", { bubbles: true }));
                     input.dispatchEvent(new Event("change", { bubbles: true }));
-                    console.log("[HubSpot VIN] Set via parent DOM:", sel);
                     return true;
                   }
                 }
               }
 
-              console.warn("[HubSpot VIN] Could not find VIN input");
               return false;
             };
 
-            if (!setVinValue()) {
-              setTimeout(setVinValue, 500);
-              setTimeout(setVinValue, 1500);
-              setTimeout(setVinValue, 3000);
+            if (!setSerialValue()) {
+              setTimeout(setSerialValue, 500);
+              setTimeout(setSerialValue, 1500);
+              setTimeout(setSerialValue, 3000);
             }
           },
           onFormSubmit: ($form: unknown) => {
-            // Last-resort: inject VIN right before submission
+            // Last-resort: inject serial number right before submission
             if ($form && typeof $form === "object" && "find" in $form) {
               const jqForm = $form as { find: (sel: string) => { val: (v?: string) => string; length: number } };
-              const selectors = ['input[name="numero_de_serie"]', 'input[name="TICKET.numero_de_serie"]', 'input[name="numero_de_serie_"]'];
-              for (const sel of selectors) {
+              for (const sel of SERIAL_SELECTORS) {
                 const $input = jqForm.find(sel);
                 if ($input.length > 0 && !$input.val()) {
-                  $input.val(vin);
-                  console.log("[HubSpot VIN] Injected on submit:", sel);
+                  $input.val(serialNumber);
                   break;
                 }
               }
             }
           },
         });
-      } catch (e) {
-        console.error("Error cargando formulario de HubSpot:", e);
+      } catch {
+        toast.error("Error cargando formulario");
       }
     })();
 
@@ -197,7 +212,7 @@ export default function PurchaseRequest() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+    <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-screen-xl mx-auto">
         {/* NAV */}
         <nav className="flex justify-between items-center mb-6 md:mb-10 px-1 md:px-3">
@@ -240,7 +255,7 @@ export default function PurchaseRequest() {
                 />
                 <div className="p-5">
                   <h2 className="text-base md:text-lg font-bold text-foreground">{vehicle.name}</h2>
-                  <p className="text-sm text-muted-foreground mt-1">{vehicle.year} · ${vehicle.price_public.toLocaleString("en-US")} MXN</p>
+                  <p className="text-sm text-muted-foreground mt-1">{vehicle.year} · ${fmt(vehicle.price_public)} MXN</p>
                 </div>
               </div>
             </div>

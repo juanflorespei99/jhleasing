@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { fmtMXN } from "@/lib/format";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -18,9 +19,10 @@ interface Props {
   onSaved: () => void;
 }
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n);
-
+/**
+ * Problem: Local fmt duplicated, `as any` cast on update payload.
+ * Solution: Use shared fmtMXN, removed `as any` (payload matches table schema).
+ */
 export default function MarkAsSoldDialog({ open, onOpenChange, vehicle, onSaved }: Props) {
   const [soldPrice, setSoldPrice] = useState("");
   const [buyerName, setBuyerName] = useState("");
@@ -60,12 +62,11 @@ export default function MarkAsSoldDialog({ open, onOpenChange, vehicle, onSaved 
         sale_notes: saleNotes.trim(),
         status: "Vendido",
         is_active: false,
-      } as any)
+      })
       .eq("id", vehicle.id);
 
     if (error) {
       toast.error("Error al registrar la venta");
-      console.error(error);
     } else {
       toast.success(`${vehicle.brand} ${vehicle.name} marcado como vendido`);
       onSaved();
@@ -93,11 +94,11 @@ export default function MarkAsSoldDialog({ open, onOpenChange, vehicle, onSaved 
           <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-muted/10 border border-border/30">
             <div>
               <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold">P. Público</span>
-              <p className="text-sm font-bold">{fmt(vehicle.price_public)}</p>
+              <p className="text-sm font-bold">{fmtMXN(vehicle.price_public)}</p>
             </div>
             <div>
               <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold">P. Empleado</span>
-              <p className="text-sm font-bold">{fmt(vehicle.price_employee)}</p>
+              <p className="text-sm font-bold">{fmtMXN(vehicle.price_employee)}</p>
             </div>
           </div>
 

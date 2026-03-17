@@ -1,54 +1,28 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { fmt } from "@/types/vehicle";
-import type { VehicleRow } from "@/types/vehicle";
-import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
+import { useVehicles } from "@/hooks/useVehicles";
+import { fmt, getDisplayPrice } from "@/lib/format";
 import VehicleCard from "@/components/VehicleCard";
 import { brandLogos } from "@/data/brands";
+import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
 
 const typeFilters = ["Todos", "Sedán", "SUV", "Blindados"];
 
+/**
+ * Problem: fetchVehicles duplicated from Index.tsx, displayPrice duplicated,
+ * useEffect deps caused double-fetch, unused `useEffect` import.
+ * Solution: useVehicles hook, getDisplayPrice util, removed dead imports.
+ */
 export default function Inventory() {
   const { user, role, isEmployee, isLoading, signOut } = useAuth();
+  const { vehicles, loading: loadingVehicles } = useVehicles(isEmployee, isLoading);
 
   const [activeType, setActiveType] = useState("Todos");
   const [activeBrand, setActiveBrand] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState(Infinity);
-  const [vehicles, setVehicles] = useState<VehicleRow[]>([]);
-  const [loadingVehicles, setLoadingVehicles] = useState(true);
 
-  useEffect(() => {
-    fetchVehicles();
-  }, [isEmployee, isLoading]);
-
-  const fetchVehicles = async () => {
-    setLoadingVehicles(true);
-    try {
-      if (isEmployee) {
-        const { data, error } = await supabase
-          .from("vehicles")
-          .select("*")
-          .order("created_at", { ascending: false });
-        if (!error && data) setVehicles(data as unknown as VehicleRow[]);
-      } else {
-        const { data, error } = await supabase
-          .from("vehicles_public" as any)
-          .select("*")
-          .order("created_at", { ascending: false });
-        if (!error && data) setVehicles(data as unknown as VehicleRow[]);
-      }
-    } catch (e) {
-      console.error("Error fetching vehicles:", e);
-    }
-    setLoadingVehicles(false);
-  };
-
-  const displayPrice = (v: VehicleRow) =>
-    isEmployee && v.price_employee ? v.price_employee : v.price_public;
-
-  const prices = vehicles.map(displayPrice);
+  const prices = vehicles.map(v => getDisplayPrice(v, isEmployee));
   const priceMin = prices.length ? Math.floor(Math.min(...prices) / 10000) * 10000 : 100000;
   const priceMax = prices.length ? Math.ceil(Math.max(...prices) / 10000) * 10000 : 1200000;
 
@@ -64,7 +38,7 @@ export default function Inventory() {
     return vehicles.filter((v) => {
       const matchesType = activeType === "Todos" || (activeType === "Blindados" ? v.is_armored : v.type === activeType);
       const matchesBrand = activeBrand.length === 0 || activeBrand.includes(v.brand);
-      const matchesPrice = displayPrice(v) <= maxPrice;
+      const matchesPrice = getDisplayPrice(v, isEmployee) <= maxPrice;
       return matchesType && matchesBrand && matchesPrice;
     });
   }, [vehicles, activeType, activeBrand, maxPrice, isEmployee]);
@@ -73,7 +47,7 @@ export default function Inventory() {
   const currentMax = maxPrice > priceMax ? priceMax : maxPrice;
 
   return (
-    <div className="min-h-screen bg-background" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+    <div className="min-h-screen bg-background">
       {/* NAV */}
       <nav className="flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 bg-secondary gap-3">
         <Link to="/" className="shrink-0">
@@ -198,7 +172,7 @@ export default function Inventory() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 items-start">
             {filteredVehicles.map((v) => (
-              <VehicleCard key={v.id} vehicle={v} isEmployee={isEmployee} displayPrice={displayPrice(v)} />
+              <VehicleCard key={v.id} vehicle={v} isEmployee={isEmployee} displayPrice={getDisplayPrice(v, isEmployee)} />
             ))}
           </div>
         )}

@@ -1,12 +1,19 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { fmt } from "@/types/vehicle";
+import { fmt } from "@/lib/format";
 import type { VehicleRow } from "@/types/vehicle";
 import logoDark from "@/assets/logo-jhl-dark.png";
 import ImageLightbox from "@/components/ImageLightbox";
+import { useEffect, useState as _useState } from "react";
+import { toast } from "sonner";
 
+/**
+ * Problem: `as unknown as VehicleRow` casts, console.error without user feedback,
+ * redundant inline fontFamily.
+ * Solution: Proper typing via Supabase view, toast on error, removed inline font.
+ */
 export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -27,12 +34,15 @@ export default function VehicleDetail() {
     if (!id) return;
     const fetchVehicle = async () => {
       setLoading(true);
-      if (isEmployee) {
-        const { data } = await supabase.from("vehicles").select("*").eq("slug", id).maybeSingle();
-        setVehicle(data as unknown as VehicleRow | null);
-      } else {
-        const { data } = await supabase.from("vehicles_public" as any).select("*").eq("slug", id).maybeSingle();
-        setVehicle(data as unknown as VehicleRow | null);
+      try {
+        const query = isEmployee
+          ? supabase.from("vehicles").select("*").eq("slug", id).maybeSingle()
+          : supabase.from("vehicles_public").select("*").eq("slug", id).maybeSingle();
+        const { data, error } = await query;
+        if (error) throw error;
+        setVehicle(data as VehicleRow | null);
+      } catch {
+        toast.error("Error cargando vehículo");
       }
       setLoading(false);
     };
@@ -72,7 +82,7 @@ export default function VehicleDetail() {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-6" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-screen-2xl mx-auto">
 
         {/* NAV */}
