@@ -233,7 +233,7 @@ export default function VehicleDetail() {
                 </svg>
                 <span className="text-xs uppercase tracking-widest font-bold">¿Tienes preguntas?</span>
                 <span className="heading-md">Contáctanos</span>
-                <p className="text-sm opacity-70">1-800-JH-LEASE</p>
+                <a href="tel:+525550048424" className="text-sm opacity-70 hover:opacity-100 transition-opacity">+52 55 5004 8424</a>
               </div>
             </div>
           </div>
