@@ -155,6 +155,15 @@
   }
 }
 
+/* reCAPTCHA challenge must float above Radix Dialog overlay (z-50) */
+body > div[style*="z-index"]:has(iframe[src*="recaptcha"]),
+body > div[style*="z-index"]:has(iframe[title*="recaptcha"]),
+iframe[src*="recaptcha/api2/bframe"],
+iframe[src*="recaptcha/enterprise/bframe"] {
+  z-index: 2147483647 !important;
+}
+
+
 /* Range input thumb styling */
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;

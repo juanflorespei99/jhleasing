@@ -163,7 +163,12 @@ export default function PurchaseRequestDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-visible p-0">
+      <DialogContent
+        className="max-w-lg max-h-[90vh] overflow-visible p-0"
+        onInteractOutside={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <div className="overflow-y-auto max-h-[90vh] p-6">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
