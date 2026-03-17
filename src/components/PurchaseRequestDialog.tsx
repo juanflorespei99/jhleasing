@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 
 interface PurchaseRequestDialogProps {
   open: boolean;
@@ -85,7 +85,6 @@ export default function PurchaseRequestDialog({
           captchaEnabled: false,
           onFormReady: (form: unknown) => {
             const setVinValue = () => {
-              // Try multiple selectors to find the VIN input
               const selectors = [
                 'input[name="numero_de_serie"]',
                 'input[name="TICKET.numero_de_serie"]',
@@ -94,7 +93,6 @@ export default function PurchaseRequestDialog({
 
               let vinInput: HTMLInputElement | null = null;
 
-              // Search in the form element if available
               const formElement =
                 form instanceof HTMLFormElement
                   ? form
@@ -113,7 +111,6 @@ export default function PurchaseRequestDialog({
               }
 
               if (vinInput) {
-                // Use native setter to trigger HubSpot's internal listeners
                 const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
                   window.HTMLInputElement.prototype, "value"
                 )?.set;
@@ -132,7 +129,6 @@ export default function PurchaseRequestDialog({
               return false;
             };
 
-            // Try immediately, then retry with delays
             if (!setVinValue()) {
               setTimeout(setVinValue, 500);
               setTimeout(setVinValue, 1500);
@@ -145,7 +141,6 @@ export default function PurchaseRequestDialog({
     };
 
     const timer = window.setTimeout(mountHubspotForm, 0);
-
 
     return () => {
       cancelled = true;
@@ -162,27 +157,20 @@ export default function PurchaseRequestDialog({
   }, [open, vin]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="max-w-lg max-h-[90vh] overflow-visible p-0"
-        onInteractOutside={(e) => e.preventDefault()}
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
-        <div className="overflow-y-auto max-h-[90vh] p-6">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">
-              Solicitar Compra
-            </DialogTitle>
-            <DialogDescription>
-              Completa el formulario para solicitar la compra de{" "}
-              <strong>{vehicleName}</strong>. Nuestro equipo te contactará para
-              dar seguimiento.
-            </DialogDescription>
-          </DialogHeader>
-          <div id="hubspot-form-container" ref={containerRef} className="min-h-[200px]" />
-        </div>
-      </DialogContent>
-    </Dialog>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="sm:max-w-lg w-full overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle className="text-lg font-semibold">
+            Solicitar Compra
+          </SheetTitle>
+          <SheetDescription>
+            Completa el formulario para solicitar la compra de{" "}
+            <strong>{vehicleName}</strong>. Nuestro equipo te contactará para
+            dar seguimiento.
+          </SheetDescription>
+        </SheetHeader>
+        <div id="hubspot-form-container" ref={containerRef} className="min-h-[200px] mt-4" />
+      </SheetContent>
+    </Sheet>
   );
 }
