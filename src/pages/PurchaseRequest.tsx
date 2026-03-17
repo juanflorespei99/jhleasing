@@ -187,6 +187,13 @@ export default function PurchaseRequest() {
                     Completa el formulario para solicitar la compra de <strong>{vehicle.name}</strong>.
                   </p>
                 )}
+                <style>{`
+                  #hubspot-purchase-form .hs-form-private .legal-consent-container { margin-top: 0; }
+                  #hubspot-purchase-form img,
+                  #hubspot-purchase-form .header-image-wrapper,
+                  #hubspot-purchase-form .hs-form-header,
+                  #hubspot-purchase-form .sprocket-header { display: none !important; }
+                `}</style>
                 <div id="hubspot-purchase-form" ref={containerRef} className="min-h-[300px]" />
               </div>
             </div>
