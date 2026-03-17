@@ -128,57 +128,68 @@ export default function PurchaseRequest() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-      <div className="max-w-screen-md mx-auto">
+    <div className="min-h-screen bg-background p-4 md:p-6" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+      <div className="max-w-screen-xl mx-auto">
         {/* NAV */}
-        <nav className="flex justify-between items-center mb-12 px-3">
+        <nav className="flex justify-between items-center mb-6 md:mb-10 px-1 md:px-3">
           <Link to="/">
-            <img src={logoDark} alt="JH Leasing" className="h-20 w-auto" />
+            <img src={logoDark} alt="JH Leasing" className="h-14 md:h-20 w-auto" />
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             <Link
               to={`/vehiculo/${slug}`}
-              className="flex items-center gap-2 px-6 py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity"
+              className="flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
-              Volver al vehículo
+              <span className="hidden sm:inline">Volver al vehículo</span>
+              <span className="sm:hidden">Volver</span>
             </Link>
             {user ? (
-              <button onClick={() => signOut()} className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity">
+              <button onClick={() => signOut()} className="px-4 md:px-5 py-2 md:py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity">
                 Salir
               </button>
             ) : (
-              <Link to="/login" className="px-5 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90 bg-primary text-primary-foreground">
+              <Link to="/login" className="px-4 md:px-5 py-2 md:py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90 bg-primary text-primary-foreground">
                 Iniciar Sesión
               </Link>
             )}
           </div>
         </nav>
 
-        {/* FORM CARD */}
-        <div className="neu-card">
-          <div className="p-10">
-            {vehicle && (
-              <div className="mb-8">
+        {/* TWO-COLUMN LAYOUT */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* LEFT: Vehicle summary — sticky on desktop */}
+          {vehicle && (
+            <div className="lg:w-[380px] shrink-0">
+              <div className="neu-card lg:sticky lg:top-6">
                 <img
                   src={vehicle.img}
                   alt={vehicle.name}
-                  className="w-full h-56 object-cover rounded-xl mb-4"
+                  className="w-full h-40 md:h-56 object-cover rounded-t-xl"
                 />
-                <h2 className="text-lg font-bold text-foreground">{vehicle.name}</h2>
-                <p className="text-sm text-muted-foreground">{vehicle.year} · ${vehicle.price_public.toLocaleString("en-US")} MXN</p>
-                <div className="border-t border-border mt-6 pt-6" />
+                <div className="p-5">
+                  <h2 className="text-base md:text-lg font-bold text-foreground">{vehicle.name}</h2>
+                  <p className="text-sm text-muted-foreground mt-1">{vehicle.year} · ${vehicle.price_public.toLocaleString("en-US")} MXN</p>
+                </div>
               </div>
-            )}
-            <span className="label-micro block mb-2">Solicitar Compra</span>
-            {vehicle && (
-              <p className="text-base text-muted-foreground mb-8">
-                Completa el formulario para solicitar la compra de <strong>{vehicle.name}</strong>. Nuestro equipo te contactará para dar seguimiento.
-              </p>
-            )}
-            <div id="hubspot-purchase-form" ref={containerRef} className="min-h-[300px]" />
+            </div>
+          )}
+
+          {/* RIGHT: Form */}
+          <div className="flex-1 min-w-0">
+            <div className="neu-card">
+              <div className="p-6 md:p-10">
+                <span className="label-micro block mb-2">Solicitar Compra</span>
+                {vehicle && (
+                  <p className="text-sm md:text-base text-muted-foreground mb-6">
+                    Completa el formulario para solicitar la compra de <strong>{vehicle.name}</strong>.
+                  </p>
+                )}
+                <div id="hubspot-purchase-form" ref={containerRef} className="min-h-[300px]" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
