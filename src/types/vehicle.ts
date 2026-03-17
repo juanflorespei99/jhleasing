@@ -26,6 +26,10 @@ export interface VehicleAdminRow extends VehicleRow {
   release_at_public: string | null;
   created_at: string;
   created_by: string | null;
+  sold_at: string | null;
+  sold_price: number | null;
+  buyer_name: string;
+  sale_notes: string;
 }
 
 /** Format number with comma separators */
