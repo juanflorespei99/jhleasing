@@ -15,7 +15,6 @@ export default function VehicleDetail() {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [purchaseOpen, setPurchaseOpen] = useState(false);
 
   const galleryImages = useMemo(() => {
     if (!vehicle?.images?.length) return [];
