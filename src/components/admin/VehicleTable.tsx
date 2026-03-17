@@ -28,7 +28,7 @@ function getStatusBadge(v: VehicleAdminRow) {
   return <Badge className="bg-green-500/20 text-green-700 border-green-300 text-[10px]">Público</Badge>;
 }
 
-export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelete }: Props) {
+export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelete, onMarkSold }: Props) {
   if (vehicles.length === 0) {
     return (
       <div className="neu-card p-12 text-center text-muted-foreground">
