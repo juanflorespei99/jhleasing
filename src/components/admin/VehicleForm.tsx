@@ -12,9 +12,11 @@ import { CalendarIcon, Upload, X } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { fmtMXN } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { BRANDS } from "@/data/brands";
+import { toast } from "sonner";
 import type { VehicleAdminRow } from "@/types/vehicle";
 
 const TYPES = ["SUV", "Sedán", "Hatchback", "Pick-up", "Van", "Coupé"];
@@ -30,6 +32,13 @@ function slugify(text: string) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
+/**
+ * Problem: `(vehicle as any).is_armored` cast, `as any` on insert payload,
+ * local Intl.NumberFormat inline instead of shared formatter, error only shown
+ * in form text instead of toast.
+ * Solution: is_armored is now in VehicleAdminRow interface, removed all `as any`,
+ * use fmtMXN, toast on error.
+ */
 export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Props) {
   const { user } = useAuth();
   const isEdit = !!vehicle;
@@ -67,7 +76,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
       setDescription(vehicle.description);
       setIsPublic(vehicle.is_public);
       setIsActive(vehicle.is_active);
-      setIsArmored((vehicle as any).is_armored ?? false);
+      setIsArmored(vehicle.is_armored);
       setReleaseDate(vehicle.release_at_public ? new Date(vehicle.release_at_public) : undefined);
       setExistingImages(vehicle.images || []);
     } else {
@@ -106,7 +115,10 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!brand || !name || !type) { setError("Completa los campos obligatorios"); return; }
+    if (!brand || !name || !type) {
+      setError("Completa los campos obligatorios");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -131,15 +143,19 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
       if (isEdit && vehicle) {
         const { error } = await supabase.from("vehicles").update(payload).eq("id", vehicle.id);
         if (error) throw error;
+        toast.success("Vehículo actualizado");
       } else {
-        const { error } = await supabase.from("vehicles").insert(payload as any);
+        const { error } = await supabase.from("vehicles").insert(payload);
         if (error) throw error;
+        toast.success("Vehículo creado");
       }
 
       onSaved();
       onOpenChange(false);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error guardando vehículo";
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -201,7 +217,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
               <Label className="text-xs">Margen</Label>
               <div className="h-10 flex items-center px-3 rounded-md border bg-muted/30 mt-1">
                 <span className="text-primary font-bold text-sm">
-                  {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(margin)}
+                  {fmtMXN(margin)}
                 </span>
                 <span className="text-[10px] text-muted-foreground ml-1">({marginPct}%)</span>
               </div>

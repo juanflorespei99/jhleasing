@@ -24,6 +24,7 @@ export interface VehicleAdminRow extends VehicleRow {
   price_employee: number;
   vin: string;
   is_active: boolean;
+  is_armored: boolean;
   release_at_public: string | null;
   created_at: string;
   created_by: string | null;
@@ -33,5 +34,10 @@ export interface VehicleAdminRow extends VehicleRow {
   sale_notes: string;
 }
 
-/** Format number with comma separators */
-export const fmt = (n: number) => n.toLocaleString("en-US");
+/**
+ * Re-export formatting utilities for backward compatibility.
+ * Problem: fmt was defined here, creating coupling between types and formatting.
+ * Solution: Canonical source is now src/lib/format.ts; re-export kept to avoid
+ * breaking imports during migration.
+ */
+export { fmt, fmtMXN, getDisplayPrice } from "@/lib/format";

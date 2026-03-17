@@ -6,9 +6,14 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { fmtMXN } from "@/lib/format";
 import type { VehicleAdminRow } from "@/types/vehicle";
 
-export type { VehicleAdminRow as VehicleRow } from "@/types/vehicle";
+/**
+ * Problem: Dead re-export `export type { VehicleAdminRow as VehicleRow }`,
+ * local fmt duplicated fmtMXN formatter.
+ * Solution: Removed dead re-export, use shared fmtMXN.
+ */
 
 interface Props {
   vehicles: VehicleAdminRow[];
@@ -17,9 +22,6 @@ interface Props {
   onDelete: (id: string) => void;
   onMarkSold?: (v: VehicleAdminRow) => void;
 }
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(n);
 
 function getStatusBadge(v: VehicleAdminRow) {
   if (v.sold_at) return <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px]">Vendido</Badge>;
@@ -80,16 +82,16 @@ export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelet
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-3">
                     <div className="bg-background/60 rounded-xl p-2.5">
                       <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold block">P. Público</span>
-                      <p className="text-sm md:text-base font-bold text-foreground mt-0.5">{fmt(v.price_public)}</p>
+                      <p className="text-sm md:text-base font-bold text-foreground mt-0.5">{fmtMXN(v.price_public)}</p>
                     </div>
                     <div className="bg-background/60 rounded-xl p-2.5">
                       <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-semibold block">P. Empleado</span>
-                      <p className="text-sm md:text-base font-bold text-foreground mt-0.5">{fmt(v.price_employee)}</p>
+                      <p className="text-sm md:text-base font-bold text-foreground mt-0.5">{fmtMXN(v.price_employee)}</p>
                     </div>
                     <div className="bg-primary/5 rounded-xl p-2.5">
                       <span className="text-[9px] uppercase tracking-widest text-primary font-semibold block">Margen</span>
                       <p className="text-sm md:text-base font-bold text-primary mt-0.5">
-                        {fmt(margin)} <span className="text-[10px] font-normal text-muted-foreground">({marginPct}%)</span>
+                        {fmtMXN(margin)} <span className="text-[10px] font-normal text-muted-foreground">({marginPct}%)</span>
                       </p>
                     </div>
                     <div className="bg-background/60 rounded-xl p-2.5">

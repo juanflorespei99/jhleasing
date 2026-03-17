@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Columns2 } from "lucide-react";
-import { fmt } from "@/types/vehicle";
+import { fmt, getDisplayPrice } from "@/lib/format";
 import type { VehicleRow } from "@/types/vehicle";
 
 interface Props {
@@ -76,8 +76,7 @@ function MiniSelector({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               autoFocus
-              className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
-              style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))" }}
+              className="w-full px-3 py-2 rounded-lg text-[11px] outline-none bg-card text-foreground"
             />
           </div>
           <div className="max-h-40 overflow-y-auto px-1 pb-1">
@@ -105,6 +104,10 @@ function MiniSelector({
   );
 }
 
+/**
+ * Problem: getPrice duplicated from parent pages, fmt imported from dead re-export.
+ * Solution: Use shared getDisplayPrice and fmt from lib/format.
+ */
 export default function MiniCompare({ vehicles, isEmployee }: Props) {
   const [slugA, setSlugA] = useState<string | null>(null);
   const [slugB, setSlugB] = useState<string | null>(null);
@@ -112,12 +115,9 @@ export default function MiniCompare({ vehicles, isEmployee }: Props) {
   const vA = vehicles.find((v) => v.slug === slugA);
   const vB = vehicles.find((v) => v.slug === slugB);
 
-  const getPrice = (v: VehicleRow) =>
-    isEmployee && v.price_employee ? v.price_employee : v.price_public;
-
   const rows = vA && vB
     ? [
-        { label: "Precio", a: `$${fmt(getPrice(vA))}`, b: `$${fmt(getPrice(vB))}` },
+        { label: "Precio", a: `$${fmt(getDisplayPrice(vA, isEmployee))}`, b: `$${fmt(getDisplayPrice(vB, isEmployee))}` },
         { label: "Año", a: String(vA.year), b: String(vB.year) },
         { label: "Km", a: vA.mileage, b: vB.mileage },
       ]
@@ -148,7 +148,7 @@ export default function MiniCompare({ vehicles, isEmployee }: Props) {
       </div>
 
       {rows && (
-        <div className="rounded-xl overflow-hidden mb-4" style={{ background: "hsl(var(--card))" }}>
+        <div className="rounded-xl overflow-hidden mb-4 bg-card">
           <table className="w-full text-[10px]">
             <thead>
               <tr className="border-b border-border">

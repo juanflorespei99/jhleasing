@@ -1,15 +1,8 @@
-import { useLocation, Link } from "react-router-dom";
-import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 export default function NotFound() {
-  const location = useLocation();
-
-  useEffect(() => {
-    console.error("404: Ruta no encontrada:", location.pathname);
-  }, [location.pathname]);
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+    <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="neu-card p-16 text-center">
         <p className="text-6xl font-extralight mb-4 text-foreground">404</p>
         <p className="heading-md mb-6 text-muted-foreground">Página no encontrada</p>
