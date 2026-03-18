@@ -191,6 +191,14 @@ export default function PurchaseRequest() {
               }
             }
           },
+          onFormSubmitted: () => {
+            // Reserve the vehicle: hide from public until admin acts
+            if (slug) {
+              supabase.rpc("reserve_vehicle", { _slug: slug }).then(({ error }) => {
+                if (error) console.error("reserve_vehicle error:", error);
+              });
+            }
+          },
         });
       } catch {
         toast.error("Error cargando formulario");

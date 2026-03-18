@@ -17,7 +17,7 @@ export function useVehicles(isEmployee: boolean, isLoading: boolean) {
     setLoading(true);
     try {
       const query = isEmployee
-        ? supabase.from("vehicles").select("*").order("created_at", { ascending: false })
+        ? supabase.from("vehicles").select("*").neq("status", "Vendido").order("created_at", { ascending: false })
         : supabase.from("vehicles_public").select("*").order("created_at", { ascending: false });
 
       const { data, error } = await query;
