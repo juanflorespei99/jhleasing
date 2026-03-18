@@ -43,7 +43,6 @@ const SERIAL_SELECTORS = [
 
 interface VehicleSummary {
   name: string;
-  vin: string;
   img: string;
   year: number;
   price_public: number;
