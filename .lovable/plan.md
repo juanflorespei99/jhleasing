@@ -1,50 +1,60 @@
 
 
-## Fix: Anonymous Users Can Read Sensitive Vehicle Data
+# Plan: Comparador de Vehículos
 
-### Problem
-Migration `20260307032302` granted `SELECT ON public.vehicles TO anon`, allowing unauthenticated API callers to query the raw `vehicles` table and see **all** columns -- including `price_employee`, `vin`, `buyer_name`, `sold_price`, `sale_notes`.
+## Resumen
+Crear una página `/comparar` donde el usuario selecciona 2 vehículos del inventario y ve una tabla comparativa lado a lado con todos los datos disponibles (año, precio, kilometraje, tipo, ubicación, estatus).
 
-The UI correctly uses `vehicles_public` (which excludes these), but the REST API exposes everything.
+## Arquitectura
 
-A second finding flags `vehicles_public` as a SECURITY DEFINER view (the latest recreation in migration `20260317180121` dropped `security_invoker = on`).
+```text
+VehicleDetail.tsx
+  └─ Botón "Comparar" → navega a /comparar?a={slug}
 
-### Solution (single migration)
-
-1. **Revoke full SELECT on `vehicles` from `anon`**
-2. **Grant column-level SELECT** on `vehicles` to `anon` -- only the safe columns that `vehicles_public` exposes
-3. **Recreate `vehicles_public`** with `SECURITY INVOKER = ON` to fix the second finding
-4. **Keep the existing anon RLS policy** -- it still correctly filters rows for the column-level grant
-
-```sql
--- 1. Revoke blanket SELECT
-REVOKE SELECT ON public.vehicles FROM anon;
-
--- 2. Grant only non-sensitive columns
-GRANT SELECT (
-  id, slug, brand, name, type, year, price_public,
-  mileage, img, images, status, location, description,
-  is_public, is_armored, is_active, created_at, release_at_public
-) ON public.vehicles TO anon;
-
--- 3. Recreate view with security_invoker
-DROP VIEW IF EXISTS public.vehicles_public;
-CREATE VIEW public.vehicles_public
-WITH (security_invoker = on) AS
-SELECT id, slug, brand, name, type, year, price_public,
-       mileage, img, images, status, location, description,
-       is_public, is_armored, created_at
-FROM public.vehicles
-WHERE is_active = true
-  AND is_public = true
-  AND (release_at_public IS NULL OR release_at_public <= now());
-
--- 4. Ensure anon can read the view
-GRANT SELECT ON public.vehicles_public TO anon;
+/comparar?a={slug}&b={slug}
+  ├─ Selector de vehículos (dropdown con búsqueda)
+  ├─ Tabla comparativa lado a lado
+  │   ├─ Imagen principal
+  │   ├─ Nombre / Marca / Año
+  │   ├─ Precio (público o empleado según rol)
+  │   ├─ Kilometraje
+  │   ├─ Tipo (SUV, Sedán, etc.)
+  │   ├─ Ubicación
+  │   └─ Estatus
+  └─ Anotaciones automáticas
+      ├─ "X es $Y más económico"
+      ├─ "X tiene menos kilometraje"
+      └─ "Ambos son SUV" / "X es SUV, Y es Sedán"
 ```
 
-This fixes both security findings simultaneously:
-- Anon can no longer read `price_employee`, `vin`, `buyer_name`, `sold_price`, `sale_notes`, `created_by` via direct API
-- The view is no longer SECURITY DEFINER
-- No frontend changes needed -- the UI already uses `vehicles_public`
+## Implementación
+
+### 1. Nueva página `src/pages/Compare.tsx`
+- Recibe query params `?a=slug&b=slug` (uno o ambos opcionales)
+- Carga vehículos desde Supabase (vista pública o tabla completa según rol)
+- Dos selectores tipo dropdown para elegir vehículos del inventario
+- Tabla comparativa con las métricas lado a lado
+- Sección de "Conclusiones" auto-generadas comparando precio, km, tipo
+
+### 2. Componente `src/components/VehicleCompareSelector.tsx`
+- Dropdown con búsqueda que lista los vehículos disponibles
+- Muestra imagen miniatura + nombre + año en cada opción
+- Permite cambiar la selección en cualquier momento
+
+### 3. Botón en `VehicleDetail.tsx`
+- Agregar botón "Comparar" junto al botón "Solicitar Compra"
+- Al hacer click, navega a `/comparar?a={slug-actual}` con el vehículo actual pre-seleccionado
+
+### 4. Ruta en `App.tsx`
+- Agregar `<Route path="/comparar" element={<Compare />} />`
+
+### 5. Conclusiones automáticas
+Lógica simple que compara los valores y genera frases como:
+- Diferencia de precio: "El Chevrolet Aveo es $45,000 más económico"
+- Kilometraje: parsear el string de km y comparar
+- Tipo: indicar si son del mismo segmento o diferente
+- Año: "El GMC Yukon es 2 años más reciente"
+
+## Datos comparados
+Todos los campos disponibles: año, precio, kilometraje, tipo, ubicación, estatus, marca, descripción. El diseño sigue el estilo `neu-card` existente.
 
