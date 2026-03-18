@@ -58,20 +58,25 @@ export default function PurchaseRequest() {
   const { user, signOut } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   const [vehicle, setVehicle] = useState<VehicleSummary | null>(null);
+  const [vin, setVin] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
-  // Fetch vehicle info
+  // Fetch vehicle info + VIN via secure RPC
   useEffect(() => {
     if (!slug) return;
     (async () => {
       try {
-        const { data, error } = await supabase
-          .from("vehicles")
-          .select("name, vin, img, year, price_public")
-          .eq("slug", slug)
-          .maybeSingle();
-        if (error) throw error;
-        if (data) setVehicle(data);
+        const [vehicleRes, vinRes] = await Promise.all([
+          supabase
+            .from("vehicles")
+            .select("name, img, year, price_public")
+            .eq("slug", slug)
+            .maybeSingle(),
+          supabase.rpc("get_vehicle_vin", { _slug: slug }),
+        ]);
+        if (vehicleRes.error) throw vehicleRes.error;
+        if (vehicleRes.data) setVehicle(vehicleRes.data);
+        if (vinRes.data) setVin(vinRes.data);
       } catch {
         toast.error("Error cargando datos del vehículo");
       }
@@ -81,8 +86,8 @@ export default function PurchaseRequest() {
 
   // Mount HubSpot form
   useEffect(() => {
-    if (loading || !containerRef.current || !vehicle) return;
-    const serialNumber = vehicle.vin;
+    if (loading || !containerRef.current || !vehicle || !vin) return;
+    const serialNumber = vin;
     let cancelled = false;
 
     (async () => {
