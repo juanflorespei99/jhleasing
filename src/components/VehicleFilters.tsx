@@ -101,10 +101,10 @@ export default function VehicleFilters({
           <span className="label-micro mb-5 block">Cómo Comprar</span>
           <div className="space-y-5">
             {[
-              { step: "01", title: "Selección", desc: "Elige tu vehículo del inventario disponible" },
-              { step: "02", title: "Cotización", desc: "Recibe precio final sin sorpresas" },
-              { step: "03", title: "Aprobación", desc: "Valida documentación y forma de pago" },
-              { step: "04", title: "Entrega", desc: "Recoge tu vehículo listo para rodar" },
+              { step: "01", title: "Selecciona", desc: "Explora nuestro inventario y elige el vehículo que más se adapte a tus necesidades" },
+              { step: "02", title: "Envía tus datos", desc: "Llena el formulario de solicitud de compra con tu información de contacto" },
+              { step: "03", title: "Te contactamos", desc: "Nuestro equipo se comunicará contigo para confirmar disponibilidad, resolver dudas y coordinar el pago" },
+              { step: "04", title: "Pago y Entrega", desc: "Realiza tu pago de forma segura y recoge tu vehículo listo para rodar" },
             ].map((s) => (
               <div key={s.step} className="flex gap-4 items-start">
                 <span className="text-2xl font-extralight text-primary leading-none mt-0.5">{s.step}</span>
