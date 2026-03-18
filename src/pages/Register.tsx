@@ -13,17 +13,9 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const ALLOWED_DOMAINS = ["jhl.mx", "creditoexpress.com", "scaletechconsulting.mx"];
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
-    const domain = email.split("@")[1]?.toLowerCase();
-    if (!domain || !ALLOWED_DOMAINS.includes(domain)) {
-      setError("Acceso restringido a colaboradores autorizados");
-      return;
-    }
 
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden");
