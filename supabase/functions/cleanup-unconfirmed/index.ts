@@ -11,10 +11,10 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Verify authorization
+  // Verify authorization with private CRON_SECRET
   const authHeader = req.headers.get("authorization");
-  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!authHeader || authHeader !== `Bearer ${anonKey}`) {
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  if (!cronSecret || !authHeader || authHeader !== `Bearer ${cronSecret}`) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
