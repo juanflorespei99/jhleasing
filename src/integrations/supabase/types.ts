@@ -202,6 +202,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      reserve_vehicle: { Args: { _slug: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "employee" | "user"
