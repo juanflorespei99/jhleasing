@@ -43,7 +43,6 @@ const SERIAL_SELECTORS = [
 
 interface VehicleSummary {
   name: string;
-  vin: string;
   img: string;
   year: number;
   price_public: number;
@@ -59,20 +58,25 @@ export default function PurchaseRequest() {
   const { user, signOut } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   const [vehicle, setVehicle] = useState<VehicleSummary | null>(null);
+  const [vin, setVin] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
-  // Fetch vehicle info
+  // Fetch vehicle info + VIN via secure RPC
   useEffect(() => {
     if (!slug) return;
     (async () => {
       try {
-        const { data, error } = await supabase
-          .from("vehicles")
-          .select("name, vin, img, year, price_public")
-          .eq("slug", slug)
-          .maybeSingle();
-        if (error) throw error;
-        if (data) setVehicle(data);
+        const [vehicleRes, vinRes] = await Promise.all([
+          supabase
+            .from("vehicles")
+            .select("name, img, year, price_public")
+            .eq("slug", slug)
+            .maybeSingle(),
+          supabase.rpc("get_vehicle_vin", { _slug: slug }),
+        ]);
+        if (vehicleRes.error) throw vehicleRes.error;
+        if (vehicleRes.data) setVehicle(vehicleRes.data);
+        if (vinRes.data) setVin(vinRes.data);
       } catch {
         toast.error("Error cargando datos del vehículo");
       }
@@ -82,8 +86,8 @@ export default function PurchaseRequest() {
 
   // Mount HubSpot form
   useEffect(() => {
-    if (loading || !containerRef.current || !vehicle) return;
-    const serialNumber = vehicle.vin;
+    if (loading || !containerRef.current || !vehicle || !vin) return;
+    const serialNumber = vin;
     let cancelled = false;
 
     (async () => {
@@ -179,14 +183,48 @@ export default function PurchaseRequest() {
             }
           },
           onFormSubmit: ($form: unknown) => {
-            // Last-resort: inject serial number right before submission
+            // Last-resort: force-inject serial number right before submission using ALL strategies
+            // Strategy A: jQuery $form object
             if ($form && typeof $form === "object" && "find" in $form) {
               const jqForm = $form as { find: (sel: string) => { val: (v?: string) => string; length: number } };
               for (const sel of SERIAL_SELECTORS) {
                 const $input = jqForm.find(sel);
-                if ($input.length > 0 && !$input.val()) {
+                if ($input.length > 0) {
                   $input.val(serialNumber);
                   break;
+                }
+              }
+            }
+
+            // Strategy B: iframe contentDocument
+            const root = document.getElementById("hubspot-purchase-form");
+            if (root) {
+              for (const iframe of Array.from(root.querySelectorAll("iframe"))) {
+                try {
+                  const doc = (iframe as HTMLIFrameElement).contentDocument;
+                  if (!doc) continue;
+                  for (const sel of SERIAL_SELECTORS) {
+                    const input = doc.querySelector(sel) as HTMLInputElement | null;
+                    if (input && !input.value) {
+                      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+                      if (setter) setter.call(input, serialNumber);
+                      else input.value = serialNumber;
+                      input.dispatchEvent(new Event("input", { bubbles: true }));
+                      input.dispatchEvent(new Event("change", { bubbles: true }));
+                    }
+                  }
+                } catch { /* cross-origin */ }
+              }
+
+              // Strategy C: parent DOM
+              for (const sel of SERIAL_SELECTORS) {
+                const input = root.querySelector(sel) as HTMLInputElement | null;
+                if (input && !input.value) {
+                  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+                  if (setter) setter.call(input, serialNumber);
+                  else input.value = serialNumber;
+                  input.dispatchEvent(new Event("input", { bubbles: true }));
+                  input.dispatchEvent(new Event("change", { bubbles: true }));
                 }
               }
             }

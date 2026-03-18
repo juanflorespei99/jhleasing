@@ -1,42 +1,60 @@
 
 
-## Fix: Serial Number (VIN) Not Reaching HubSpot
+# Plan: Comparador de Vehículos
 
-### Root Cause
-Two problems are preventing the VIN from arriving at HubSpot:
+## Resumen
+Crear una página `/comparar` donde el usuario selecciona 2 vehículos del inventario y ve una tabla comparativa lado a lado con todos los datos disponibles (año, precio, kilometraje, tipo, ubicación, estatus).
 
-1. **Column-level grant blocks VIN for anonymous users**: The recent security migration revoked blanket SELECT on `vehicles` from `anon` and only granted safe columns — `vin` was excluded. So when an unauthenticated user visits `/solicitar-compra/:slug`, the query `select("name, vin, ...")` fails or returns `null` for `vin`.
+## Arquitectura
 
-2. **Fragile injection strategies**: The multi-strategy DOM injection (jQuery, iframe, parent DOM) can silently fail if HubSpot renders the form differently. There's no guaranteed fallback.
+```text
+VehicleDetail.tsx
+  └─ Botón "Comparar" → navega a /comparar?a={slug}
 
-### Solution
-
-**Step 1 — Database function to fetch VIN securely**
-
-Create a `SECURITY DEFINER` function `get_vehicle_vin(_slug text)` that returns the VIN for a given slug. This avoids granting `vin` column access to anon while still allowing the purchase form to obtain it.
-
-```sql
-CREATE OR REPLACE FUNCTION public.get_vehicle_vin(_slug text)
-RETURNS text
-LANGUAGE sql STABLE SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT vin FROM vehicles WHERE slug = _slug AND is_active = true LIMIT 1;
-$$;
+/comparar?a={slug}&b={slug}
+  ├─ Selector de vehículos (dropdown con búsqueda)
+  ├─ Tabla comparativa lado a lado
+  │   ├─ Imagen principal
+  │   ├─ Nombre / Marca / Año
+  │   ├─ Precio (público o empleado según rol)
+  │   ├─ Kilometraje
+  │   ├─ Tipo (SUV, Sedán, etc.)
+  │   ├─ Ubicación
+  │   └─ Estatus
+  └─ Anotaciones automáticas
+      ├─ "X es $Y más económico"
+      ├─ "X tiene menos kilometraje"
+      └─ "Ambos son SUV" / "X es SUV, Y es Sedán"
 ```
 
-**Step 2 — Update PurchaseRequest.tsx**
+## Implementación
 
-- Fetch VIN via RPC (`supabase.rpc("get_vehicle_vin", { _slug: slug })`) instead of selecting it from the vehicles table directly
-- Remove `vin` from the main vehicle query (keep `name, img, year, price_public`)
-- Keep all existing injection strategies but also add `onFormSubmit` with a forced re-injection that covers **all** strategies (not just jQuery), ensuring the VIN is set right before submission regardless of prior attempts
+### 1. Nueva página `src/pages/Compare.tsx`
+- Recibe query params `?a=slug&b=slug` (uno o ambos opcionales)
+- Carga vehículos desde Supabase (vista pública o tabla completa según rol)
+- Dos selectores tipo dropdown para elegir vehículos del inventario
+- Tabla comparativa con las métricas lado a lado
+- Sección de "Conclusiones" auto-generadas comparando precio, km, tipo
 
-**Step 3 — Update Supabase types**
+### 2. Componente `src/components/VehicleCompareSelector.tsx`
+- Dropdown con búsqueda que lista los vehículos disponibles
+- Muestra imagen miniatura + nombre + año en cada opción
+- Permite cambiar la selección en cualquier momento
 
-Add `get_vehicle_vin` function signature to `types.ts`.
+### 3. Botón en `VehicleDetail.tsx`
+- Agregar botón "Comparar" junto al botón "Solicitar Compra"
+- Al hacer click, navega a `/comparar?a={slug-actual}` con el vehículo actual pre-seleccionado
 
-### Files Changed
-- New migration: `get_vehicle_vin` function
-- `src/pages/PurchaseRequest.tsx` — fetch VIN via RPC, strengthen `onFormSubmit` fallback
-- `src/integrations/supabase/types.ts` — add function type
+### 4. Ruta en `App.tsx`
+- Agregar `<Route path="/comparar" element={<Compare />} />`
+
+### 5. Conclusiones automáticas
+Lógica simple que compara los valores y genera frases como:
+- Diferencia de precio: "El Chevrolet Aveo es $45,000 más económico"
+- Kilometraje: parsear el string de km y comparar
+- Tipo: indicar si son del mismo segmento o diferente
+- Año: "El GMC Yukon es 2 años más reciente"
+
+## Datos comparados
+Todos los campos disponibles: año, precio, kilometraje, tipo, ubicación, estatus, marca, descripción. El diseño sigue el estilo `neu-card` existente.
 
