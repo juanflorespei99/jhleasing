@@ -1,60 +1,35 @@
 
 
-# Plan: Comparador de Vehículos
+## Actualizar el job de pg_cron para usar CRON_SECRET
 
-## Resumen
-Crear una página `/comparar` donde el usuario selecciona 2 vehículos del inventario y ve una tabla comparativa lado a lado con todos los datos disponibles (año, precio, kilometraje, tipo, ubicación, estatus).
+El código de la Edge Function ya valida contra `CRON_SECRET`. Ahora falta que el job de `pg_cron` envíe ese secreto en lugar de la anon key.
 
-## Arquitectura
+### Pasos
 
-```text
-VehicleDetail.tsx
-  └─ Botón "Comparar" → navega a /comparar?a={slug}
+1. **Guardar el CRON_SECRET en el Vault de Supabase** (si no se ha hecho):
+   ```sql
+   SELECT vault.create_secret('TU_VALOR_DE_CRON_SECRET', 'CRON_SECRET');
+   ```
 
-/comparar?a={slug}&b={slug}
-  ├─ Selector de vehículos (dropdown con búsqueda)
-  ├─ Tabla comparativa lado a lado
-  │   ├─ Imagen principal
-  │   ├─ Nombre / Marca / Año
-  │   ├─ Precio (público o empleado según rol)
-  │   ├─ Kilometraje
-  │   ├─ Tipo (SUV, Sedán, etc.)
-  │   ├─ Ubicación
-  │   └─ Estatus
-  └─ Anotaciones automáticas
-      ├─ "X es $Y más económico"
-      ├─ "X tiene menos kilometraje"
-      └─ "Ambos son SUV" / "X es SUV, Y es Sedán"
-```
+2. **Eliminar el job anterior y crear uno nuevo** que lea el secreto del vault:
+   ```sql
+   SELECT cron.unschedule('cleanup-unconfirmed-users');
 
-## Implementación
+   SELECT cron.schedule(
+     'cleanup-unconfirmed-users',
+     '0 */6 * * *',
+     $$
+     SELECT net.http_post(
+       url := 'https://rbkqgzairobefrmfdkei.supabase.co/functions/v1/cleanup-unconfirmed',
+       headers := jsonb_build_object(
+         'Content-Type', 'application/json',
+         'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'CRON_SECRET' LIMIT 1)
+       ),
+       body := '{}'::jsonb
+     ) AS request_id;
+     $$
+   );
+   ```
 
-### 1. Nueva página `src/pages/Compare.tsx`
-- Recibe query params `?a=slug&b=slug` (uno o ambos opcionales)
-- Carga vehículos desde Supabase (vista pública o tabla completa según rol)
-- Dos selectores tipo dropdown para elegir vehículos del inventario
-- Tabla comparativa con las métricas lado a lado
-- Sección de "Conclusiones" auto-generadas comparando precio, km, tipo
-
-### 2. Componente `src/components/VehicleCompareSelector.tsx`
-- Dropdown con búsqueda que lista los vehículos disponibles
-- Muestra imagen miniatura + nombre + año en cada opción
-- Permite cambiar la selección en cualquier momento
-
-### 3. Botón en `VehicleDetail.tsx`
-- Agregar botón "Comparar" junto al botón "Solicitar Compra"
-- Al hacer click, navega a `/comparar?a={slug-actual}` con el vehículo actual pre-seleccionado
-
-### 4. Ruta en `App.tsx`
-- Agregar `<Route path="/comparar" element={<Compare />} />`
-
-### 5. Conclusiones automáticas
-Lógica simple que compara los valores y genera frases como:
-- Diferencia de precio: "El Chevrolet Aveo es $45,000 más económico"
-- Kilometraje: parsear el string de km y comparar
-- Tipo: indicar si son del mismo segmento o diferente
-- Año: "El GMC Yukon es 2 años más reciente"
-
-## Datos comparados
-Todos los campos disponibles: año, precio, kilometraje, tipo, ubicación, estatus, marca, descripción. El diseño sigue el estilo `neu-card` existente.
+Ambos SQLs se ejecutarán vía el SQL Editor de Supabase (no como migración, ya que contienen datos específicos del proyecto). Yo los ejecutaré con la herramienta de queries directas.
 
