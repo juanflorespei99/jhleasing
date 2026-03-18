@@ -183,14 +183,48 @@ export default function PurchaseRequest() {
             }
           },
           onFormSubmit: ($form: unknown) => {
-            // Last-resort: inject serial number right before submission
+            // Last-resort: force-inject serial number right before submission using ALL strategies
+            // Strategy A: jQuery $form object
             if ($form && typeof $form === "object" && "find" in $form) {
               const jqForm = $form as { find: (sel: string) => { val: (v?: string) => string; length: number } };
               for (const sel of SERIAL_SELECTORS) {
                 const $input = jqForm.find(sel);
-                if ($input.length > 0 && !$input.val()) {
+                if ($input.length > 0) {
                   $input.val(serialNumber);
                   break;
+                }
+              }
+            }
+
+            // Strategy B: iframe contentDocument
+            const root = document.getElementById("hubspot-purchase-form");
+            if (root) {
+              for (const iframe of Array.from(root.querySelectorAll("iframe"))) {
+                try {
+                  const doc = (iframe as HTMLIFrameElement).contentDocument;
+                  if (!doc) continue;
+                  for (const sel of SERIAL_SELECTORS) {
+                    const input = doc.querySelector(sel) as HTMLInputElement | null;
+                    if (input && !input.value) {
+                      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+                      if (setter) setter.call(input, serialNumber);
+                      else input.value = serialNumber;
+                      input.dispatchEvent(new Event("input", { bubbles: true }));
+                      input.dispatchEvent(new Event("change", { bubbles: true }));
+                    }
+                  }
+                } catch { /* cross-origin */ }
+              }
+
+              // Strategy C: parent DOM
+              for (const sel of SERIAL_SELECTORS) {
+                const input = root.querySelector(sel) as HTMLInputElement | null;
+                if (input && !input.value) {
+                  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+                  if (setter) setter.call(input, serialNumber);
+                  else input.value = serialNumber;
+                  input.dispatchEvent(new Event("input", { bubbles: true }));
+                  input.dispatchEvent(new Event("change", { bubbles: true }));
                 }
               }
             }
