@@ -34,12 +34,8 @@ function loadHubSpotScript(): Promise<void> {
   });
 }
 
-/** HubSpot field selectors for the serial number input */
-const SERIAL_SELECTORS = [
-  'input[name="numero_de_serie"]',
-  'input[name="TICKET.numero_de_serie"]',
-  'input[name="numero_de_serie_"]',
-];
+/** HubSpot field selector for the serial number hidden input */
+const SERIAL_SELECTOR = 'input[name="numero_de_serie"]';
 
 interface VehicleSummary {
   name: string;
@@ -109,125 +105,46 @@ export default function PurchaseRequest() {
               root.querySelectorAll("img, .hs-richtext, .form-columns-0, .header-image-wrapper").forEach(el => {
                 (el as HTMLElement).style.cssText = "display:none!important";
               });
-              root.querySelectorAll("iframe").forEach(iframe => {
-                try {
-                  const doc = (iframe as HTMLIFrameElement).contentDocument;
-                  if (!doc) return;
-                  const style = doc.createElement("style");
-                  style.textContent = "img, .hs-richtext, .form-columns-0, .header-image-wrapper { display:none!important; }";
-                  doc.head.appendChild(style);
-                } catch { /* cross-origin */ }
-              });
             };
             hideHubspotDecor();
             setTimeout(hideHubspotDecor, 300);
             setTimeout(hideHubspotDecor, 1000);
 
-            // Set serial number using multiple strategies
-            const setSerialValue = (): boolean => {
-              // Strategy 1: jQuery $form object (works inside HubSpot iframe)
+            // Set serial number — HubSpot recommended approach
+            const setSerial = () => {
+              // Strategy 1: jQuery $form (provided by HubSpot)
               if ($form && typeof $form === "object" && "find" in $form) {
-                const jqForm = $form as { find: (sel: string) => { val: (v: string) => void; length: number } };
-                for (const sel of SERIAL_SELECTORS) {
-                  const $input = jqForm.find(sel);
-                  if ($input.length > 0) {
-                    $input.val(serialNumber);
-                    return true;
-                  }
+                const jq = $form as { find: (s: string) => { val: (v: string) => void; length: number } };
+                const $input = jq.find(SERIAL_SELECTOR);
+                if ($input.length > 0) {
+                  $input.val(serialNumber);
+                  return true;
                 }
               }
-
-              // Strategy 2: Search in iframe contentDocument
-              const root = document.getElementById("hubspot-purchase-form");
-              if (root) {
-                const iframes = root.querySelectorAll("iframe");
-                for (const iframe of Array.from(iframes)) {
-                  try {
-                    const doc = (iframe as HTMLIFrameElement).contentDocument;
-                    if (!doc) continue;
-                    for (const sel of SERIAL_SELECTORS) {
-                      const input = doc.querySelector(sel) as HTMLInputElement | null;
-                      if (input) {
-                        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
-                        if (setter) setter.call(input, serialNumber);
-                        else input.value = serialNumber;
-                        input.dispatchEvent(new Event("input", { bubbles: true }));
-                        input.dispatchEvent(new Event("change", { bubbles: true }));
-                        return true;
-                      }
-                    }
-                  } catch { /* cross-origin */ }
-                }
-
-                // Strategy 3: Search in parent document
-                for (const sel of SERIAL_SELECTORS) {
-                  const input = root.querySelector(sel) as HTMLInputElement | null;
-                  if (input) {
-                    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
-                    if (setter) setter.call(input, serialNumber);
-                    else input.value = serialNumber;
-                    input.dispatchEvent(new Event("input", { bubbles: true }));
-                    input.dispatchEvent(new Event("change", { bubbles: true }));
-                    return true;
-                  }
-                }
+              // Strategy 2: querySelector in parent DOM
+              const input = document.querySelector(SERIAL_SELECTOR) as HTMLInputElement | null;
+              if (input) {
+                input.value = serialNumber;
+                return true;
               }
-
               return false;
             };
 
-            if (!setSerialValue()) {
-              setTimeout(setSerialValue, 500);
-              setTimeout(setSerialValue, 1500);
-              setTimeout(setSerialValue, 3000);
+            if (!setSerial()) {
+              setTimeout(setSerial, 500);
+              setTimeout(setSerial, 1500);
+              setTimeout(setSerial, 3000);
             }
           },
           onFormSubmit: ($form: unknown) => {
-            // Last-resort: force-inject serial number right before submission using ALL strategies
-            // Strategy A: jQuery $form object
+            // Guardian: force serial number right before submission
             if ($form && typeof $form === "object" && "find" in $form) {
-              const jqForm = $form as { find: (sel: string) => { val: (v?: string) => string; length: number } };
-              for (const sel of SERIAL_SELECTORS) {
-                const $input = jqForm.find(sel);
-                if ($input.length > 0) {
-                  $input.val(serialNumber);
-                  break;
-                }
-              }
+              const jq = $form as { find: (s: string) => { val: (v?: string) => string; length: number } };
+              const $input = jq.find(SERIAL_SELECTOR);
+              if ($input.length > 0) $input.val(serialNumber);
             }
-
-            // Strategy B: iframe contentDocument
-            const root = document.getElementById("hubspot-purchase-form");
-            if (root) {
-              for (const iframe of Array.from(root.querySelectorAll("iframe"))) {
-                try {
-                  const doc = (iframe as HTMLIFrameElement).contentDocument;
-                  if (!doc) continue;
-                  for (const sel of SERIAL_SELECTORS) {
-                    const input = doc.querySelector(sel) as HTMLInputElement | null;
-                    if (input && !input.value) {
-                      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
-                      if (setter) setter.call(input, serialNumber);
-                      else input.value = serialNumber;
-                      input.dispatchEvent(new Event("input", { bubbles: true }));
-                      input.dispatchEvent(new Event("change", { bubbles: true }));
-                    }
-                  }
-                } catch { /* cross-origin */ }
-              }
-
-              // Strategy C: parent DOM
-              for (const sel of SERIAL_SELECTORS) {
-                const input = root.querySelector(sel) as HTMLInputElement | null;
-                if (input && !input.value) {
-                  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
-                  if (setter) setter.call(input, serialNumber);
-                  else input.value = serialNumber;
-                  input.dispatchEvent(new Event("input", { bubbles: true }));
-                  input.dispatchEvent(new Event("change", { bubbles: true }));
-                }
-              }
-            }
+            const input = document.querySelector(SERIAL_SELECTOR) as HTMLInputElement | null;
+            if (input && !input.value) input.value = serialNumber;
           },
           onFormSubmitted: () => {
             // Reserve the vehicle: hide from public until admin acts
