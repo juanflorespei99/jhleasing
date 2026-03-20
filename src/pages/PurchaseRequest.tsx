@@ -164,7 +164,7 @@ export default function PurchaseRequest() {
       cancelled = true;
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
-  }, [loading, vehicle]);
+  }, [loading, vehicle, vin]);
 
   if (loading) {
     return (
