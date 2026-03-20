@@ -1,10 +1,17 @@
 import { Badge } from "@/components/ui/badge";
-import { BadgeDollarSign, User, Calendar, FileText, Tag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BadgeDollarSign, User, Calendar, FileText, Tag, Trash2 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { fmtMXN } from "@/lib/format";
 import type { VehicleAdminRow } from "@/types/vehicle";
 
 interface Props {
   vehicles: VehicleAdminRow[];
+  onDelete: (id: string) => void;
 }
 
 /**
