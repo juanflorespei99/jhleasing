@@ -109,14 +109,35 @@ export default function SalesDashboard({ vehicles, onDelete }: Props) {
                     </div>
 
                     {/* Bottom row */}
-                    <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-border/30 text-[11px] text-muted-foreground">
-                      {v.vin && <span className="font-mono">Serial: {v.vin}</span>}
-                      <span className="flex items-center gap-1"><Tag className="h-3 w-3" /> {v.brand}</span>
-                      {v.sale_notes && (
-                        <span className="flex items-center gap-1">
-                          <FileText className="h-3 w-3" /> {v.sale_notes}
-                        </span>
-                      )}
+                    <div className="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-border/30">
+                      <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
+                        {v.vin && <span className="font-mono">Serial: {v.vin}</span>}
+                        <span className="flex items-center gap-1"><Tag className="h-3 w-3" /> {v.brand}</span>
+                        {v.sale_notes && (
+                          <span className="flex items-center gap-1">
+                            <FileText className="h-3 w-3" /> {v.sale_notes}
+                          </span>
+                        )}
+                      </div>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" title="Eliminar" className="h-8 w-8 rounded-full">
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar vehículo vendido?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción no se puede deshacer. Se eliminará "{v.brand} {v.name}" del registro de ventas.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => onDelete(v.id)}>Eliminar</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </div>
