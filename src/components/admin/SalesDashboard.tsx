@@ -18,7 +18,7 @@ interface Props {
  * Problem: Local fmtMXN duplicated from VehicleTable.
  * Solution: Use shared fmtMXN from lib/format.
  */
-export default function SalesDashboard({ vehicles }: Props) {
+export default function SalesDashboard({ vehicles, onDelete }: Props) {
   const soldVehicles = vehicles
     .filter(v => v.sold_at)
     .sort((a, b) => new Date(b.sold_at!).getTime() - new Date(a.sold_at!).getTime());
