@@ -1,17 +1,24 @@
 import { Badge } from "@/components/ui/badge";
-import { BadgeDollarSign, User, Calendar, FileText, Tag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BadgeDollarSign, User, Calendar, FileText, Tag, Trash2 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { fmtMXN } from "@/lib/format";
 import type { VehicleAdminRow } from "@/types/vehicle";
 
 interface Props {
   vehicles: VehicleAdminRow[];
+  onDelete: (id: string) => void;
 }
 
 /**
  * Problem: Local fmtMXN duplicated from VehicleTable.
  * Solution: Use shared fmtMXN from lib/format.
  */
-export default function SalesDashboard({ vehicles }: Props) {
+export default function SalesDashboard({ vehicles, onDelete }: Props) {
   const soldVehicles = vehicles
     .filter(v => v.sold_at)
     .sort((a, b) => new Date(b.sold_at!).getTime() - new Date(a.sold_at!).getTime());
@@ -102,14 +109,35 @@ export default function SalesDashboard({ vehicles }: Props) {
                     </div>
 
                     {/* Bottom row */}
-                    <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t border-border/30 text-[11px] text-muted-foreground">
-                      {v.vin && <span className="font-mono">Serial: {v.vin}</span>}
-                      <span className="flex items-center gap-1"><Tag className="h-3 w-3" /> {v.brand}</span>
-                      {v.sale_notes && (
-                        <span className="flex items-center gap-1">
-                          <FileText className="h-3 w-3" /> {v.sale_notes}
-                        </span>
-                      )}
+                    <div className="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-border/30">
+                      <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
+                        {v.vin && <span className="font-mono">Serial: {v.vin}</span>}
+                        <span className="flex items-center gap-1"><Tag className="h-3 w-3" /> {v.brand}</span>
+                        {v.sale_notes && (
+                          <span className="flex items-center gap-1">
+                            <FileText className="h-3 w-3" /> {v.sale_notes}
+                          </span>
+                        )}
+                      </div>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" title="Eliminar" className="h-8 w-8 rounded-full">
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar vehículo vendido?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción no se puede deshacer. Se eliminará "{v.brand} {v.name}" del registro de ventas.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => onDelete(v.id)}>Eliminar</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </div>

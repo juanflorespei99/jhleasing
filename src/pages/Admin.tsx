@@ -201,7 +201,7 @@ function AdminDashboard() {
             {loading ? (
               <div className="text-center py-20 text-muted-foreground">Cargando ventas...</div>
             ) : (
-              <SalesDashboard vehicles={vehicles} />
+              <SalesDashboard vehicles={vehicles} onDelete={handleDelete} />
             )}
           </TabsContent>
         </Tabs>
