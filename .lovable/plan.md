@@ -1,60 +1,35 @@
 
 
-# Plan: Comparador de Vehículos
+## Simplificar la inyección del Serial Number en HubSpot
 
-## Resumen
-Crear una página `/comparar` donde el usuario selecciona 2 vehículos del inventario y ve una tabla comparativa lado a lado con todos los datos disponibles (año, precio, kilometraje, tipo, ubicación, estatus).
+### Problema actual
+El código tiene 3 estrategias complejas (jQuery, iframe contentDocument, parent DOM) con hacks como `Object.getOwnPropertyDescriptor` y React synthetic event dispatching. HubSpot mismo recomienda un enfoque mucho más simple usando el callback `onFormReady` con `$form.find()` o `document.querySelector()` + `setTimeout`.
 
-## Arquitectura
+### Lo que dice HubSpot
+La guía que compartiste confirma que el enfoque correcto es:
+- Usar `onFormReady($form)` con `$form.find('input[name="numero_de_serie"]').val(valor)`
+- O bien `document.querySelector('input[name="numero_de_serie"]')` con un `setTimeout` de ~500ms
+- Y reforzar en `onFormSubmit` para garantizar que el valor esté presente antes del envío
 
-```text
-VehicleDetail.tsx
-  └─ Botón "Comparar" → navega a /comparar?a={slug}
+### Plan
 
-/comparar?a={slug}&b={slug}
-  ├─ Selector de vehículos (dropdown con búsqueda)
-  ├─ Tabla comparativa lado a lado
-  │   ├─ Imagen principal
-  │   ├─ Nombre / Marca / Año
-  │   ├─ Precio (público o empleado según rol)
-  │   ├─ Kilometraje
-  │   ├─ Tipo (SUV, Sedán, etc.)
-  │   ├─ Ubicación
-  │   └─ Estatus
-  └─ Anotaciones automáticas
-      ├─ "X es $Y más económico"
-      ├─ "X tiene menos kilometraje"
-      └─ "Ambos son SUV" / "X es SUV, Y es Sedán"
-```
+**Archivo: `src/pages/PurchaseRequest.tsx`**
 
-## Implementación
+Simplificar el bloque `onFormReady` y `onFormSubmit` siguiendo exactamente el patrón recomendado por HubSpot:
 
-### 1. Nueva página `src/pages/Compare.tsx`
-- Recibe query params `?a=slug&b=slug` (uno o ambos opcionales)
-- Carga vehículos desde Supabase (vista pública o tabla completa según rol)
-- Dos selectores tipo dropdown para elegir vehículos del inventario
-- Tabla comparativa con las métricas lado a lado
-- Sección de "Conclusiones" auto-generadas comparando precio, km, tipo
+1. **`onFormReady($form)`**: 
+   - Intentar `$form.find('input[name="numero_de_serie"]').val(serialNumber)` (método jQuery que HubSpot provee)
+   - Como fallback, usar `setTimeout` con `document.querySelector` en el DOM del contenedor (el patrón exacto que HubSpot recomienda)
+   - Reintentar a 500ms, 1500ms y 3000ms si no se encuentra el input
 
-### 2. Componente `src/components/VehicleCompareSelector.tsx`
-- Dropdown con búsqueda que lista los vehículos disponibles
-- Muestra imagen miniatura + nombre + año en cada opción
-- Permite cambiar la selección en cualquier momento
+2. **`onFormSubmit($form)`**:
+   - Mismo enfoque simplificado: `$form.find()` + fallback `querySelector`
+   - Forzar el valor justo antes del envío como guardián final
 
-### 3. Botón en `VehicleDetail.tsx`
-- Agregar botón "Comparar" junto al botón "Solicitar Compra"
-- Al hacer click, navega a `/comparar?a={slug-actual}` con el vehículo actual pre-seleccionado
+3. **Eliminar**: Las estrategias de iframe `contentDocument` y los hacks de `Object.getOwnPropertyDescriptor` que no son necesarios según la guía oficial
 
-### 4. Ruta en `App.tsx`
-- Agregar `<Route path="/comparar" element={<Compare />} />`
+4. **Mantener**: La lógica de `get_vehicle_vin` RPC, el `onFormSubmitted` con `reserve_vehicle`, y el ocultamiento de decoración de HubSpot
 
-### 5. Conclusiones automáticas
-Lógica simple que compara los valores y genera frases como:
-- Diferencia de precio: "El Chevrolet Aveo es $45,000 más económico"
-- Kilometraje: parsear el string de km y comparar
-- Tipo: indicar si son del mismo segmento o diferente
-- Año: "El GMC Yukon es 2 años más reciente"
-
-## Datos comparados
-Todos los campos disponibles: año, precio, kilometraje, tipo, ubicación, estatus, marca, descripción. El diseño sigue el estilo `neu-card` existente.
+### Cambios
+- Solo `src/pages/PurchaseRequest.tsx` — simplificar ~100 líneas de estrategias de inyección a ~30 líneas siguiendo el patrón oficial de HubSpot
 
