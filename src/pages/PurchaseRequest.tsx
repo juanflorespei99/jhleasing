@@ -34,12 +34,8 @@ function loadHubSpotScript(): Promise<void> {
   });
 }
 
-/** HubSpot field selectors for the serial number input */
-const SERIAL_SELECTORS = [
-  'input[name="numero_de_serie"]',
-  'input[name="TICKET.numero_de_serie"]',
-  'input[name="numero_de_serie_"]',
-];
+/** HubSpot field selector for the serial number hidden input */
+const SERIAL_SELECTOR = 'input[name="numero_de_serie"]';
 
 interface VehicleSummary {
   name: string;
