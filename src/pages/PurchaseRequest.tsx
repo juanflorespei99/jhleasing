@@ -115,28 +115,48 @@ export default function PurchaseRequest() {
             setTimeout(hideHubspotDecor, 300);
             setTimeout(hideHubspotDecor, 1000);
 
-            // Set serial number — HubSpot recommended approach
             const triggerEvents = (el: HTMLInputElement) => {
               el.dispatchEvent(new Event("input", { bubbles: true }));
               el.dispatchEvent(new Event("change", { bubbles: true }));
             };
 
-            const setSerial = () => {
-              // Strategy 1: jQuery $form (provided by HubSpot)
-              if ($form && typeof $form === "object" && "find" in $form) {
-                const jq = $form as { find: (s: string) => { val: (v: string) => void; length: number; get: (i: number) => HTMLInputElement } };
-                const $input = jq.find(SERIAL_SELECTOR);
-                if ($input.length > 0) {
-                  $input.val(serialNumber);
-                  triggerEvents($input.get(0));
-                  return true;
+            /** Find the serial input using multiple selector strategies */
+            const findSerialInput = (context?: unknown): HTMLInputElement | null => {
+              // Strategy 1: jQuery $form.find (HubSpot provides this)
+              if (context && typeof context === "object" && "find" in context) {
+                const jq = context as { find: (s: string) => { length: number; get: (i: number) => HTMLInputElement } };
+                for (const sel of SERIAL_SELECTORS) {
+                  const $input = jq.find(sel);
+                  if ($input.length > 0) return $input.get(0);
                 }
               }
-              // Strategy 2: querySelector in parent DOM
-              const input = document.querySelector(SERIAL_SELECTOR) as HTMLInputElement | null;
+              // Strategy 2: DOM querySelector with all selectors
+              for (const sel of SERIAL_SELECTORS) {
+                const el = document.querySelector(sel) as HTMLInputElement | null;
+                if (el) return el;
+              }
+              // Strategy 3: find any input whose name contains "numero_de_serie"
+              const all = document.querySelectorAll<HTMLInputElement>('#hubspot-purchase-form input[type="hidden"], #hubspot-purchase-form input');
+              for (const inp of all) {
+                if (inp.name.includes("numero_de_serie")) return inp;
+              }
+              return null;
+            };
+
+            const setSerial = () => {
+              const input = findSerialInput($form);
               if (input) {
                 input.value = serialNumber;
                 triggerEvents(input);
+                // Also set via jQuery .val() for HubSpot's internal state
+                if ($form && typeof $form === "object" && "find" in $form) {
+                  const jq = $form as { find: (s: string) => { val: (v: string) => void; length: number } };
+                  for (const sel of SERIAL_SELECTORS) {
+                    const $i = jq.find(sel);
+                    if ($i.length > 0) $i.val(serialNumber);
+                  }
+                }
+                console.log("[JHL] Serial number set:", serialNumber);
                 return true;
               }
               return false;
@@ -146,24 +166,31 @@ export default function PurchaseRequest() {
               setTimeout(setSerial, 500);
               setTimeout(setSerial, 1500);
               setTimeout(setSerial, 3000);
+              setTimeout(setSerial, 5000);
             }
           },
-          onFormSubmit: ($form: unknown) => {
-            // Guardian: force serial number right before submission
-            if ($form && typeof $form === "object" && "find" in $form) {
-              const jq = $form as { find: (s: string) => { val: (v?: string) => string; length: number; get: (i: number) => HTMLInputElement } };
-              const $input = jq.find(SERIAL_SELECTOR);
-              if ($input.length > 0) $input.val(serialNumber);
+          onFormSubmit: () => {
+            // Force serial number right before submission using all strategies
+            for (const sel of SERIAL_SELECTORS) {
+              const input = document.querySelector(sel) as HTMLInputElement | null;
+              if (input) {
+                input.value = serialNumber;
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+                input.dispatchEvent(new Event("change", { bubbles: true }));
+              }
             }
-            const input = document.querySelector(SERIAL_SELECTOR) as HTMLInputElement | null;
-            if (input) {
-              input.value = serialNumber;
-              input.dispatchEvent(new Event("input", { bubbles: true }));
-              input.dispatchEvent(new Event("change", { bubbles: true }));
+            // Fallback: find by partial name match
+            const all = document.querySelectorAll<HTMLInputElement>('#hubspot-purchase-form input');
+            for (const inp of all) {
+              if (inp.name.includes("numero_de_serie")) {
+                inp.value = serialNumber;
+                inp.dispatchEvent(new Event("input", { bubbles: true }));
+                inp.dispatchEvent(new Event("change", { bubbles: true }));
+              }
             }
+            console.log("[JHL] onFormSubmit — serial forced:", serialNumber);
           },
           onFormSubmitted: () => {
-            // Reserve the vehicle: hide from public until admin acts
             if (slug) {
               supabase.rpc("reserve_vehicle", { _slug: slug }).then(({ error }) => {
                 if (error) console.error("reserve_vehicle error:", error);
