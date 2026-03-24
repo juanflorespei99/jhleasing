@@ -90,6 +90,60 @@ export default function PurchaseRequest() {
     if (loading || !containerRef.current || !vehicle || !vin) return;
     const serialNumber = vin;
     let cancelled = false;
+    let observer: MutationObserver | null = null;
+
+    /** Check if an element is related to the serial number field */
+    const isSerialField = (el: Element): boolean => {
+      const label = el.querySelector('label');
+      const input = el.querySelector('input');
+      return (
+        (!!label && /numero.de.serie/i.test(label.textContent || '')) ||
+        (!!input && /numero_de_serie/i.test(input.name || ''))
+      );
+    };
+
+    /** Hide decorative HubSpot elements + serial field, inject VIN */
+    const processForm = () => {
+      const root = document.getElementById("hubspot-purchase-form");
+      if (!root) return;
+
+      // Hide decorative elements
+      root.querySelectorAll("img, .hs-richtext, .form-columns-0, .header-image-wrapper").forEach(el => {
+        (el as HTMLElement).style.cssText = "display:none!important";
+      });
+
+      // Find, hide, and fill serial number field
+      root.querySelectorAll('.hs-form-field').forEach(field => {
+        if (isSerialField(field)) {
+          (field as HTMLElement).style.cssText = 'display:none!important';
+          const input = field.querySelector('input') as HTMLInputElement | null;
+          if (input && input.value !== serialNumber) {
+            input.value = serialNumber;
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+            console.log("[JHL] Serial number set via observer:", serialNumber);
+          }
+        }
+      });
+
+      // Also try all known selectors directly
+      for (const sel of SERIAL_SELECTORS) {
+        const input = root.querySelector(sel) as HTMLInputElement | null;
+        if (input && input.value !== serialNumber) {
+          input.value = serialNumber;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
+      // Fallback: any input with numero_de_serie in name
+      root.querySelectorAll<HTMLInputElement>('input').forEach(inp => {
+        if (inp.name.includes("numero_de_serie") && inp.value !== serialNumber) {
+          inp.value = serialNumber;
+          inp.dispatchEvent(new Event("input", { bubbles: true }));
+          inp.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      });
+    };
 
     (async () => {
       try {
@@ -97,111 +151,41 @@ export default function PurchaseRequest() {
         if (cancelled || !window.hbspt || !containerRef.current) return;
         containerRef.current.innerHTML = "";
 
+        // Start observing DOM mutations BEFORE creating form
+        observer = new MutationObserver(() => processForm());
+        observer.observe(containerRef.current, { childList: true, subtree: true, attributes: true });
+
         window.hbspt.forms.create({
           region: "na1",
           portalId: "3393996",
           formId: "9924bd04-591b-4223-91f9-9d024fdf3665",
           target: "#hubspot-purchase-form",
           onFormReady: ($form: unknown) => {
-            // Hide HubSpot's decorative content
-            const hideHubspotDecor = () => {
-              const root = document.getElementById("hubspot-purchase-form");
-              if (!root) return;
-              root.querySelectorAll("img, .hs-richtext, .form-columns-0, .header-image-wrapper").forEach(el => {
-                (el as HTMLElement).style.cssText = "display:none!important";
-              });
-              // Hide serial number field by searching all field groups
-              root.querySelectorAll('.hs-form-field').forEach(field => {
-                const label = field.querySelector('label');
-                const input = field.querySelector('input');
-                if (
-                  (label && /numero.de.serie/i.test(label.textContent || '')) ||
-                  (input && /numero_de_serie/i.test(input.name || ''))
-                ) {
-                  (field as HTMLElement).style.cssText = 'display:none!important';
-                }
-              });
-            };
-            hideHubspotDecor();
-            setTimeout(hideHubspotDecor, 300);
-            setTimeout(hideHubspotDecor, 1000);
-
-            const triggerEvents = (el: HTMLInputElement) => {
-              el.dispatchEvent(new Event("input", { bubbles: true }));
-              el.dispatchEvent(new Event("change", { bubbles: true }));
-            };
-
-            /** Find the serial input using multiple selector strategies */
-            const findSerialInput = (context?: unknown): HTMLInputElement | null => {
-              // Strategy 1: jQuery $form.find (HubSpot provides this)
-              if (context && typeof context === "object" && "find" in context) {
-                const jq = context as { find: (s: string) => { length: number; get: (i: number) => HTMLInputElement } };
-                for (const sel of SERIAL_SELECTORS) {
-                  const $input = jq.find(sel);
-                  if ($input.length > 0) return $input.get(0);
-                }
-              }
-              // Strategy 2: DOM querySelector with all selectors
+            processForm();
+            // Also use jQuery .val() for HubSpot internal state
+            if ($form && typeof $form === "object" && "find" in $form) {
+              const jq = $form as { find: (s: string) => { val: (v: string) => void; length: number } };
               for (const sel of SERIAL_SELECTORS) {
-                const el = document.querySelector(sel) as HTMLInputElement | null;
-                if (el) return el;
+                const $i = jq.find(sel);
+                if ($i.length > 0) $i.val(serialNumber);
               }
-              // Strategy 3: find any input whose name contains "numero_de_serie"
-              const all = document.querySelectorAll<HTMLInputElement>('#hubspot-purchase-form input[type="hidden"], #hubspot-purchase-form input');
-              for (const inp of all) {
-                if (inp.name.includes("numero_de_serie")) return inp;
-              }
-              return null;
-            };
-
-            const setSerial = () => {
-              const input = findSerialInput($form);
-              if (input) {
-                input.value = serialNumber;
-                triggerEvents(input);
-                // Hide the field container so the user never sees it
-                const fieldGroup = input.closest('.hs-form-field');
-                if (fieldGroup) (fieldGroup as HTMLElement).style.cssText = 'display:none!important';
-                // Also set via jQuery .val() for HubSpot's internal state
-                if ($form && typeof $form === "object" && "find" in $form) {
-                  const jq = $form as { find: (s: string) => { val: (v: string) => void; length: number } };
-                  for (const sel of SERIAL_SELECTORS) {
-                    const $i = jq.find(sel);
-                    if ($i.length > 0) $i.val(serialNumber);
-                  }
-                }
-                console.log("[JHL] Serial number set:", serialNumber);
-                return true;
-              }
-              return false;
-            };
-
-            if (!setSerial()) {
-              setTimeout(setSerial, 500);
-              setTimeout(setSerial, 1500);
-              setTimeout(setSerial, 3000);
-              setTimeout(setSerial, 5000);
             }
+            // Extra delayed passes
+            setTimeout(processForm, 500);
+            setTimeout(processForm, 1500);
+            setTimeout(processForm, 3000);
           },
           onFormSubmit: () => {
-            // Force serial number right before submission using all strategies
-            for (const sel of SERIAL_SELECTORS) {
-              const input = document.querySelector(sel) as HTMLInputElement | null;
-              if (input) {
-                input.value = serialNumber;
-                input.dispatchEvent(new Event("input", { bubbles: true }));
-                input.dispatchEvent(new Event("change", { bubbles: true }));
-              }
-            }
-            // Fallback: find by partial name match
-            const all = document.querySelectorAll<HTMLInputElement>('#hubspot-purchase-form input');
-            for (const inp of all) {
+            // Force serial number right before submission
+            const root = document.getElementById("hubspot-purchase-form");
+            if (!root) return;
+            root.querySelectorAll<HTMLInputElement>('input').forEach(inp => {
               if (inp.name.includes("numero_de_serie")) {
                 inp.value = serialNumber;
                 inp.dispatchEvent(new Event("input", { bubbles: true }));
                 inp.dispatchEvent(new Event("change", { bubbles: true }));
               }
-            }
+            });
             console.log("[JHL] onFormSubmit — serial forced:", serialNumber);
           },
           onFormSubmitted: () => {
@@ -219,6 +203,7 @@ export default function PurchaseRequest() {
 
     return () => {
       cancelled = true;
+      if (observer) observer.disconnect();
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
   }, [loading, vehicle, vin]);
