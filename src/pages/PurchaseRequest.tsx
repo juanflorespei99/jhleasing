@@ -34,14 +34,6 @@ function loadHubSpotScript(): Promise<void> {
   });
 }
 
-/** All possible selectors HubSpot might render for the serial number field */
-const SERIAL_SELECTORS = [
-  'input[name="numero_de_serie"]',
-  'input[name="numero_de_serie__c"]',
-  'input[name="0-1/numero_de_serie"]',
-  'input[name="properties.numero_de_serie"]',
-];
-
 interface VehicleSummary {
   name: string;
   img: string;
@@ -50,10 +42,32 @@ interface VehicleSummary {
 }
 
 /**
- * Problem: toLocaleString("en-US") used inline instead of shared fmt,
- * console.error without user feedback, repeated selector arrays.
- * Solution: Use shared fmt, toast on error, extracted SERIAL_SELECTORS constant.
+ * Scans a DOM root for the "numero de serie" field,
+ * hides its container and fills it with the VIN.
  */
+function scanAndHide(root: Document | HTMLElement, serialNumber: string) {
+  root.querySelectorAll(".hs-form-field, [class*='hs_numero_de_serie']").forEach(field => {
+    const label = field.querySelector("label");
+    const input = field.querySelector("input") as HTMLInputElement | null;
+    const matchLabel = label && /serie/i.test(label.textContent || "");
+    const matchName = input && /numero_de_serie/i.test(input.name || "");
+    if (matchLabel || matchName) {
+      (field as HTMLElement).style.cssText = "display:none!important";
+      if (input && input.value !== serialNumber) {
+        // Use native setter to bypass React/framework wrappers
+        const nativeSetter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype, "value"
+        )?.set;
+        if (nativeSetter) nativeSetter.call(input, serialNumber);
+        else input.value = serialNumber;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+        console.log("[JHL] Serial set via DOM scan:", serialNumber);
+      }
+    }
+  });
+}
+
 export default function PurchaseRequest() {
   const { slug } = useParams<{ slug: string }>();
   const { user, signOut } = useAuth();
@@ -62,7 +76,7 @@ export default function PurchaseRequest() {
   const [vin, setVin] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
-  // Fetch vehicle info + VIN via secure RPC
+  // Fetch vehicle info + VIN
   useEffect(() => {
     if (!slug) return;
     (async () => {
@@ -85,96 +99,66 @@ export default function PurchaseRequest() {
     })();
   }, [slug]);
 
-  // Mount HubSpot form
+  // Mount HubSpot form + MutationObserver/polling to hide serial field
   useEffect(() => {
     if (loading || !containerRef.current || !vehicle || !vin) return;
     const serialNumber = vin;
     let cancelled = false;
 
-    /**
-     * HubSpot renders forms inside an iframe, so parent-document CSS/JS
-     * cannot reach the fields. We must use the $form jQuery object
-     * (which lives inside the iframe) to manipulate the form content.
-     */
-    const hideAndFillSerial = ($form: unknown) => {
-      if (!$form || typeof $form !== "object" || !("find" in $form)) return;
-      const jq = $form as {
-        find: (s: string) => {
-          val: (v: string) => { change: () => void };
-          closest: (s: string) => { hide: () => void; length: number };
-          each: (fn: (this: HTMLElement) => void) => void;
-          length: number;
-          get: (i: number) => HTMLElement;
-        };
-        get: (i: number) => HTMLElement;
-      };
-
-      // Strategy 1: known selectors
-      let found = false;
-      for (const sel of SERIAL_SELECTORS) {
-        const $i = jq.find(sel);
-        if ($i.length > 0) {
-          $i.val(serialNumber).change();
-          $i.closest('.hs-form-field').hide();
-          found = true;
-          console.log("[JHL] Serial set via selector:", sel, serialNumber);
-        }
-      }
-
-      // Strategy 2: find any input with "numero_de_serie" in name
-      if (!found) {
-        jq.find('input').each(function () {
-          if (this instanceof HTMLInputElement && this.name.includes('numero_de_serie')) {
-            const $inp = jq.find(`input[name="${this.name}"]`);
-            $inp.val(serialNumber).change();
-            $inp.closest('.hs-form-field').hide();
-            console.log("[JHL] Serial set via partial match:", this.name, serialNumber);
-          }
-        });
-      }
-
-      // Strategy 3: find by label text inside the iframe
-      try {
-        const iframeDoc = jq.get(0)?.ownerDocument;
-        if (iframeDoc) {
-          // Inject CSS to hide the field
-          if (!iframeDoc.getElementById('jhl-hide-serial')) {
-            const style = iframeDoc.createElement('style');
-            style.id = 'jhl-hide-serial';
-            style.textContent = `
-              .hs_numero_de_serie,
-              .hs_numero_de_serie__c,
-              .hs_properties_numero_de_serie { display: none !important; }
-            `;
-            iframeDoc.head.appendChild(style);
-          }
-          // Also find by label text
-          iframeDoc.querySelectorAll('.hs-form-field').forEach(field => {
-            const label = field.querySelector('label');
-            if (label && /numero.de.serie/i.test(label.textContent || '')) {
-              (field as HTMLElement).style.cssText = 'display:none!important';
-              const input = field.querySelector('input') as HTMLInputElement | null;
-              if (input) {
-                input.value = serialNumber;
-                input.dispatchEvent(new Event("input", { bubbles: true }));
-                input.dispatchEvent(new Event("change", { bubbles: true }));
-                console.log("[JHL] Serial set via iframe label match:", serialNumber);
-              }
-            }
-          });
-        }
-      } catch (e) {
-        console.log("[JHL] iframe access attempt:", e);
-      }
-    };
-
-    // Also hide decorative elements in parent document (non-iframe case)
-    const hideDecorInParent = () => {
+    /** Process serial field in parent DOM and any accessible iframes */
+    const processSerialField = () => {
       const root = document.getElementById("hubspot-purchase-form");
       if (!root) return;
-      root.querySelectorAll("img, .hs-richtext, .form-columns-0, .header-image-wrapper").forEach(el => {
+
+      // Direct DOM children
+      scanAndHide(root, serialNumber);
+
+      // Hide decorative elements (images, richtext, headers)
+      root.querySelectorAll("img, .hs-richtext, .form-columns-0, .header-image-wrapper, .hs-form-header, .sprocket-header").forEach(el => {
         (el as HTMLElement).style.cssText = "display:none!important";
       });
+
+      // Scan inside iframes (same-origin only)
+      root.querySelectorAll("iframe").forEach(iframe => {
+        try {
+          const doc = (iframe as HTMLIFrameElement).contentDocument
+            || (iframe as HTMLIFrameElement).contentWindow?.document;
+          if (doc) {
+            scanAndHide(doc, serialNumber);
+            // Inject CSS into iframe head
+            if (!doc.getElementById("jhl-hide-serial")) {
+              const style = doc.createElement("style");
+              style.id = "jhl-hide-serial";
+              style.textContent = `
+                .hs_numero_de_serie,
+                .hs_numero_de_serie__c,
+                .hs_properties_numero_de_serie,
+                [class*="numero_de_serie"] { display: none !important; }
+              `;
+              doc.head.appendChild(style);
+            }
+          }
+        } catch { /* cross-origin iframe, skip */ }
+      });
+    };
+
+    // Set up MutationObserver + polling (independent of HubSpot callbacks)
+    let observer: MutationObserver | null = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    const startObserving = () => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      observer = new MutationObserver(() => processSerialField());
+      observer.observe(container, { childList: true, subtree: true });
+
+      // Polling fallback: every 500ms for 15s
+      interval = setInterval(processSerialField, 500);
+      setTimeout(() => {
+        if (interval) clearInterval(interval);
+        interval = null;
+      }, 15000);
     };
 
     (async () => {
@@ -183,23 +167,22 @@ export default function PurchaseRequest() {
         if (cancelled || !window.hbspt || !containerRef.current) return;
         containerRef.current.innerHTML = "";
 
+        // Start observing BEFORE creating the form
+        startObserving();
+
         window.hbspt.forms.create({
           region: "na1",
           portalId: "3393996",
           formId: "9924bd04-591b-4223-91f9-9d024fdf3665",
           target: "#hubspot-purchase-form",
-          onFormReady: ($form: unknown) => {
-            hideDecorInParent();
-            hideAndFillSerial($form);
-            // Retry several times — HubSpot may re-render fields
-            setTimeout(() => { hideDecorInParent(); hideAndFillSerial($form); }, 300);
-            setTimeout(() => { hideDecorInParent(); hideAndFillSerial($form); }, 1000);
-            setTimeout(() => { hideDecorInParent(); hideAndFillSerial($form); }, 2500);
-            setTimeout(() => { hideDecorInParent(); hideAndFillSerial($form); }, 5000);
+          // Legacy callbacks kept as additional layer
+          onFormReady: () => {
+            processSerialField();
+            setTimeout(processSerialField, 300);
+            setTimeout(processSerialField, 1000);
           },
-          onFormSubmit: ($form: unknown) => {
-            // Force serial right before HubSpot sends data
-            hideAndFillSerial($form);
+          onFormSubmit: () => {
+            processSerialField();
             console.log("[JHL] onFormSubmit — serial forced:", serialNumber);
           },
           onFormSubmitted: () => {
@@ -217,6 +200,8 @@ export default function PurchaseRequest() {
 
     return () => {
       cancelled = true;
+      if (observer) observer.disconnect();
+      if (interval) clearInterval(interval);
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
   }, [loading, vehicle, vin]);
@@ -262,7 +247,6 @@ export default function PurchaseRequest() {
 
         {/* TWO-COLUMN LAYOUT */}
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* LEFT: Vehicle summary — sticky on desktop */}
           {vehicle && (
             <div className="lg:w-[380px] shrink-0">
               <div className="neu-card lg:sticky lg:top-6">
@@ -279,7 +263,6 @@ export default function PurchaseRequest() {
             </div>
           )}
 
-          {/* RIGHT: Form */}
           <div className="flex-1 min-w-0">
             <div className="neu-card">
               <div className="p-6 md:p-10">
@@ -300,6 +283,7 @@ export default function PurchaseRequest() {
                   #hubspot-purchase-form .hs_numero_de_serie { display: none !important; }
                   #hubspot-purchase-form .hs_numero_de_serie__c { display: none !important; }
                   #hubspot-purchase-form .hs_properties_numero_de_serie { display: none !important; }
+                  #hubspot-purchase-form [class*="numero_de_serie"] { display: none !important; }
                 `}</style>
                 <div id="hubspot-purchase-form" ref={containerRef} className="min-h-[300px]" />
               </div>
