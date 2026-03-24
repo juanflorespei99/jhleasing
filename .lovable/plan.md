@@ -1,50 +1,31 @@
 
-Objetivo: corregir de forma directa el flujo para que el formulario de compra envíe siempre el Serial Number real del coche seleccionado.
 
-Contexto confirmado:
-- El Nissan Versa sí existe en la BDD con:
-  - slug: `nissan-versa-2024`
-  - vin: `3N1CN8DV0RL000003`
-- La página `/solicitar-compra/:slug` ya está trayendo el VIN con `get_vehicle_vin`.
-- Por tanto, el problema no es “jalar el dato” desde Supabase; el problema está en el último tramo: cómo HubSpot recibe ese valor.
+## Plan: Ocultar campo "Número de Serie" y asegurar llenado automático
 
-Plan de implementación:
-1. Mantener el origen actual del dato
-   - Seguir usando el `slug` del vehículo seleccionado.
-   - Seguir obteniendo el VIN por RPC (`get_vehicle_vin`) para respetar seguridad y RLS.
+**Problema**: El campo "Número de Serie" aparece visible y vacío en el formulario de HubSpot. El cliente no conoce este dato — debe llenarse automáticamente con el VIN del vehículo y estar oculto.
 
-2. Endurecer la integración con HubSpot
-   - Reemplazar la lógica frágil basada solo en un selector fijo por una estrategia más robusta:
-     - esperar explícitamente a que el formulario esté listo,
-     - localizar el campo real de Serial Number que HubSpot renderiza,
-     - asignarle el VIN,
-     - disparar los eventos necesarios para que HubSpot lo registre internamente.
+**Solución** (archivo: `src/pages/PurchaseRequest.tsx`):
 
-3. Corregir el punto más probable del fallo
-   - Verificar y ajustar el selector del campo.
-   - Ahora mismo el código asume `input[name="numero_de_serie"]`, pero por la evidencia el campo visible no está quedando poblado; eso apunta a que el `name` real renderizado por HubSpot no coincide exactamente o cambia en runtime.
-   - Haré la lógica tolerante a variantes del campo en vez de depender de una sola coincidencia rígida.
+1. **Agregar CSS para ocultar el campo**: Añadir una regla CSS que oculte el contenedor `.hs_numero_de_serie` (clase que HubSpot genera para el field group del campo `numero_de_serie`).
 
-4. Forzar el valor en dos momentos
-   - Al cargar el formulario (`onFormReady`).
-   - Justo antes del envío (`onFormSubmit`).
-   - Así evitamos que HubSpot “pierda” el valor aunque rehidrate o reprocese el form internamente.
+2. **Reforzar la ocultación vía JS en `onFormReady`**: Después de inyectar el VIN, buscar el contenedor padre del input y ocultarlo con `display:none` por si el selector CSS no aplica exactamente.
 
-5. Añadir una verificación visible durante desarrollo
-   - Incluir una comprobación local no invasiva para confirmar que el VIN obtenido por `slug` es el correcto antes de pasarlo a HubSpot.
-   - Esto permite separar claramente “dato cargado” de “dato enviado”.
+3. **Mantener la inyección actual**: El campo sigue existiendo en el DOM (solo oculto), así que la lógica de inyección del VIN funciona igual.
 
-6. Mantener el resto del flujo intacto
-   - No cambiar rutas ni navegación.
-   - No tocar la BDD ni funciones SQL.
-   - No cambiar el proceso de reserva (`reserve_vehicle`), salvo conservarlo como está después del envío exitoso.
+### Cambios técnicos
 
-Resultado esperado:
-- Si el usuario entra al Nissan Versa y pulsa “Solicitar compra”, el formulario debe enviar `3N1CN8DV0RL000003`.
-- Si entra a otro coche, debe enviarse el VIN único de ese otro coche, sin valores fijos ni manuales.
+En el bloque `<style>` existente, agregar:
+```css
+#hubspot-purchase-form .hs_numero_de_serie { display: none !important; }
+```
 
-Detalles técnicos:
-- Archivo principal a ajustar: `src/pages/PurchaseRequest.tsx`
-- No hacen falta cambios en Supabase para esta corrección.
-- La parte crítica será sustituir la asignación “me apoyo en un único selector” por una integración más robusta con el formulario ya renderizado.
-- La validación final debe hacerse en el dominio publicado, porque HubSpot puede comportarse distinto en preview.
+En `onFormReady`, tras inyectar el valor, ocultar el contenedor padre del input encontrado:
+```typescript
+if (input) {
+  // ... existing injection logic ...
+  // Hide the field container
+  const fieldGroup = input.closest('.hs-form-field');
+  if (fieldGroup) (fieldGroup as HTMLElement).style.display = 'none';
+}
+```
+
