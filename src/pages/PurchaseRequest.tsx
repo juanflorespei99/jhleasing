@@ -289,6 +289,8 @@ export default function PurchaseRequest() {
                   #hubspot-purchase-form .hs-form-header,
                   #hubspot-purchase-form .sprocket-header { display: none !important; }
                   #hubspot-purchase-form .hs_numero_de_serie { display: none !important; }
+                  #hubspot-purchase-form .hs_numero_de_serie__c { display: none !important; }
+                  #hubspot-purchase-form .hs_properties_numero_de_serie { display: none !important; }
                 `}</style>
                 <div id="hubspot-purchase-form" ref={containerRef} className="min-h-[300px]" />
               </div>
