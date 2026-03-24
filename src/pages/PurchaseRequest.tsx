@@ -110,6 +110,17 @@ export default function PurchaseRequest() {
               root.querySelectorAll("img, .hs-richtext, .form-columns-0, .header-image-wrapper").forEach(el => {
                 (el as HTMLElement).style.cssText = "display:none!important";
               });
+              // Hide serial number field by searching all field groups
+              root.querySelectorAll('.hs-form-field').forEach(field => {
+                const label = field.querySelector('label');
+                const input = field.querySelector('input');
+                if (
+                  (label && /numero.de.serie/i.test(label.textContent || '')) ||
+                  (input && /numero_de_serie/i.test(input.name || ''))
+                ) {
+                  (field as HTMLElement).style.cssText = 'display:none!important';
+                }
+              });
             };
             hideHubspotDecor();
             setTimeout(hideHubspotDecor, 300);
