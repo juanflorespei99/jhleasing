@@ -1,35 +1,26 @@
 
 
-## Simplificar la inyección del Serial Number en HubSpot
+## Probar con valor fijo en el campo numero_de_serie
 
-### Problema actual
-El código tiene 3 estrategias complejas (jQuery, iframe contentDocument, parent DOM) con hacks como `Object.getOwnPropertyDescriptor` y React synthetic event dispatching. HubSpot mismo recomienda un enfoque mucho más simple usando el callback `onFormReady` con `$form.find()` o `document.querySelector()` + `setTimeout`.
+### Objetivo
+Enviar un valor corto y fijo (ej. `"TEST123"`) en lugar del VIN dinámico para descartar que el problema sea el tipo de campo, la longitud del valor, o el RPC de Supabase.
 
-### Lo que dice HubSpot
-La guía que compartiste confirma que el enfoque correcto es:
-- Usar `onFormReady($form)` con `$form.find('input[name="numero_de_serie"]').val(valor)`
-- O bien `document.querySelector('input[name="numero_de_serie"]')` con un `setTimeout` de ~500ms
-- Y reforzar en `onFormSubmit` para garantizar que el valor esté presente antes del envío
-
-### Plan
+### Cambio
 
 **Archivo: `src/pages/PurchaseRequest.tsx`**
 
-Simplificar el bloque `onFormReady` y `onFormSubmit` siguiendo exactamente el patrón recomendado por HubSpot:
+En la línea donde se define `serialNumber` dentro del segundo `useEffect`, reemplazar:
+```ts
+const serialNumber = vin;
+```
+por:
+```ts
+const serialNumber = "TEST123";
+```
 
-1. **`onFormReady($form)`**: 
-   - Intentar `$form.find('input[name="numero_de_serie"]').val(serialNumber)` (método jQuery que HubSpot provee)
-   - Como fallback, usar `setTimeout` con `document.querySelector` en el DOM del contenedor (el patrón exacto que HubSpot recomienda)
-   - Reintentar a 500ms, 1500ms y 3000ms si no se encuentra el input
+Esto es temporal — solo para confirmar si HubSpot recibe el dato. Si `TEST123` aparece en el ticket de HubSpot, sabremos que la inyección funciona y el problema está en el valor dinámico o su timing. Si no aparece, el problema es de cómo HubSpot procesa el campo oculto.
 
-2. **`onFormSubmit($form)`**:
-   - Mismo enfoque simplificado: `$form.find()` + fallback `querySelector`
-   - Forzar el valor justo antes del envío como guardián final
-
-3. **Eliminar**: Las estrategias de iframe `contentDocument` y los hacks de `Object.getOwnPropertyDescriptor` que no son necesarios según la guía oficial
-
-4. **Mantener**: La lógica de `get_vehicle_vin` RPC, el `onFormSubmitted` con `reserve_vehicle`, y el ocultamiento de decoración de HubSpot
-
-### Cambios
-- Solo `src/pages/PurchaseRequest.tsx` — simplificar ~100 líneas de estrategias de inyección a ~30 líneas siguiendo el patrón oficial de HubSpot
+### Después del test
+- Si **llega** `TEST123`: volvemos a poner `vin` y revisamos el timing/valor del RPC.
+- Si **no llega**: el problema es que HubSpot no está recogiendo el valor del input aunque se escriba, y hay que escalar con ellos.
 
