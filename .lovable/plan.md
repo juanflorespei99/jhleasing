@@ -1,26 +1,34 @@
 
 
-## Probar con valor fijo en el campo numero_de_serie
+## Restaurar el VIN real en la inyección de HubSpot
 
-### Objetivo
-Enviar un valor corto y fijo (ej. `"TEST123"`) en lugar del VIN dinámico para descartar que el problema sea el tipo de campo, la longitud del valor, o el RPC de Supabase.
+El valor `"TEST123"` fue un diagnóstico temporal. El serial number real ya existe en la BD y se obtiene correctamente. Solo hay que restaurar la línea original.
 
 ### Cambio
 
 **Archivo: `src/pages/PurchaseRequest.tsx`**
 
-En la línea donde se define `serialNumber` dentro del segundo `useEffect`, reemplazar:
+Línea 86 — reemplazar:
 ```ts
-const serialNumber = vin;
+const serialNumber = "TEST123"; // TEMPORAL: valor fijo para diagnóstico HubSpot
 ```
 por:
 ```ts
-const serialNumber = "TEST123";
+const serialNumber = vin;
 ```
 
-Esto es temporal — solo para confirmar si HubSpot recibe el dato. Si `TEST123` aparece en el ticket de HubSpot, sabremos que la inyección funciona y el problema está en el valor dinámico o su timing. Si no aparece, el problema es de cómo HubSpot procesa el campo oculto.
+### Mejora adicional: disparar evento `change` tras inyectar el valor
 
-### Después del test
-- Si **llega** `TEST123`: volvemos a poner `vin` y revisamos el timing/valor del RPC.
-- Si **no llega**: el problema es que HubSpot no está recogiendo el valor del input aunque se escriba, y hay que escalar con ellos.
+HubSpot puede estar ignorando el valor porque no detecta un evento de cambio en el input. Después de cada `.val(serialNumber)` o `input.value = serialNumber`, dispararemos:
+```ts
+input.dispatchEvent(new Event("input", { bubbles: true }));
+input.dispatchEvent(new Event("change", { bubbles: true }));
+```
+
+Esto es la causa más probable de que HubSpot no recoja el dato — frameworks de formularios modernos escuchan eventos, no solo el atributo `.value`.
+
+### Resumen de cambios
+- 1 archivo modificado: `src/pages/PurchaseRequest.tsx`
+- Restaurar `vin` como valor del serial
+- Añadir `dispatchEvent` de `input` y `change` en las 3 estrategias de inyección (onFormReady jQuery, onFormReady querySelector, onFormSubmit)
 
