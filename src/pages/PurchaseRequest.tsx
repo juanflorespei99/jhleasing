@@ -148,6 +148,9 @@ export default function PurchaseRequest() {
               if (input) {
                 input.value = serialNumber;
                 triggerEvents(input);
+                // Hide the field container so the user never sees it
+                const fieldGroup = input.closest('.hs-form-field');
+                if (fieldGroup) (fieldGroup as HTMLElement).style.cssText = 'display:none!important';
                 // Also set via jQuery .val() for HubSpot's internal state
                 if ($form && typeof $form === "object" && "find" in $form) {
                   const jq = $form as { find: (s: string) => { val: (v: string) => void; length: number } };
@@ -285,6 +288,7 @@ export default function PurchaseRequest() {
                   #hubspot-purchase-form .header-image-wrapper,
                   #hubspot-purchase-form .hs-form-header,
                   #hubspot-purchase-form .sprocket-header { display: none !important; }
+                  #hubspot-purchase-form .hs_numero_de_serie { display: none !important; }
                 `}</style>
                 <div id="hubspot-purchase-form" ref={containerRef} className="min-h-[300px]" />
               </div>
