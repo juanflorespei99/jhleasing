@@ -83,7 +83,7 @@ export default function PurchaseRequest() {
   // Mount HubSpot form
   useEffect(() => {
     if (loading || !containerRef.current || !vehicle || !vin) return;
-    const serialNumber = "TEST123"; // TEMPORAL: valor fijo para diagnóstico HubSpot
+    const serialNumber = vin;
     let cancelled = false;
 
     (async () => {
@@ -111,13 +111,19 @@ export default function PurchaseRequest() {
             setTimeout(hideHubspotDecor, 1000);
 
             // Set serial number — HubSpot recommended approach
+            const triggerEvents = (el: HTMLInputElement) => {
+              el.dispatchEvent(new Event("input", { bubbles: true }));
+              el.dispatchEvent(new Event("change", { bubbles: true }));
+            };
+
             const setSerial = () => {
               // Strategy 1: jQuery $form (provided by HubSpot)
               if ($form && typeof $form === "object" && "find" in $form) {
-                const jq = $form as { find: (s: string) => { val: (v: string) => void; length: number } };
+                const jq = $form as { find: (s: string) => { val: (v: string) => void; length: number; get: (i: number) => HTMLInputElement } };
                 const $input = jq.find(SERIAL_SELECTOR);
                 if ($input.length > 0) {
                   $input.val(serialNumber);
+                  triggerEvents($input.get(0));
                   return true;
                 }
               }
@@ -125,6 +131,7 @@ export default function PurchaseRequest() {
               const input = document.querySelector(SERIAL_SELECTOR) as HTMLInputElement | null;
               if (input) {
                 input.value = serialNumber;
+                triggerEvents(input);
                 return true;
               }
               return false;
@@ -139,12 +146,16 @@ export default function PurchaseRequest() {
           onFormSubmit: ($form: unknown) => {
             // Guardian: force serial number right before submission
             if ($form && typeof $form === "object" && "find" in $form) {
-              const jq = $form as { find: (s: string) => { val: (v?: string) => string; length: number } };
+              const jq = $form as { find: (s: string) => { val: (v?: string) => string; length: number; get: (i: number) => HTMLInputElement } };
               const $input = jq.find(SERIAL_SELECTOR);
               if ($input.length > 0) $input.val(serialNumber);
             }
             const input = document.querySelector(SERIAL_SELECTOR) as HTMLInputElement | null;
-            if (input && !input.value) input.value = serialNumber;
+            if (input) {
+              input.value = serialNumber;
+              input.dispatchEvent(new Event("input", { bubbles: true }));
+              input.dispatchEvent(new Event("change", { bubbles: true }));
+            }
           },
           onFormSubmitted: () => {
             // Reserve the vehicle: hide from public until admin acts
