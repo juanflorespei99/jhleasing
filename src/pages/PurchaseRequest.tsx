@@ -146,12 +146,16 @@ export default function PurchaseRequest() {
           onFormSubmit: ($form: unknown) => {
             // Guardian: force serial number right before submission
             if ($form && typeof $form === "object" && "find" in $form) {
-              const jq = $form as { find: (s: string) => { val: (v?: string) => string; length: number } };
+              const jq = $form as { find: (s: string) => { val: (v?: string) => string; length: number; get: (i: number) => HTMLInputElement } };
               const $input = jq.find(SERIAL_SELECTOR);
               if ($input.length > 0) $input.val(serialNumber);
             }
             const input = document.querySelector(SERIAL_SELECTOR) as HTMLInputElement | null;
-            if (input && !input.value) input.value = serialNumber;
+            if (input) {
+              input.value = serialNumber;
+              input.dispatchEvent(new Event("input", { bubbles: true }));
+              input.dispatchEvent(new Event("change", { bubbles: true }));
+            }
           },
           onFormSubmitted: () => {
             // Reserve the vehicle: hide from public until admin acts
