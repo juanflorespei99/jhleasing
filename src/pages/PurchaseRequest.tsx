@@ -34,8 +34,13 @@ function loadHubSpotScript(): Promise<void> {
   });
 }
 
-/** HubSpot field selector for the serial number hidden input */
-const SERIAL_SELECTOR = 'input[name="numero_de_serie"]';
+/** All possible selectors HubSpot might render for the serial number field */
+const SERIAL_SELECTORS = [
+  'input[name="numero_de_serie"]',
+  'input[name="numero_de_serie__c"]',
+  'input[name="0-1/numero_de_serie"]',
+  'input[name="properties.numero_de_serie"]',
+];
 
 interface VehicleSummary {
   name: string;
