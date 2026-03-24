@@ -90,58 +90,90 @@ export default function PurchaseRequest() {
     if (loading || !containerRef.current || !vehicle || !vin) return;
     const serialNumber = vin;
     let cancelled = false;
-    let observer: MutationObserver | null = null;
 
-    /** Check if an element is related to the serial number field */
-    const isSerialField = (el: Element): boolean => {
-      const label = el.querySelector('label');
-      const input = el.querySelector('input');
-      return (
-        (!!label && /numero.de.serie/i.test(label.textContent || '')) ||
-        (!!input && /numero_de_serie/i.test(input.name || ''))
-      );
-    };
+    /**
+     * HubSpot renders forms inside an iframe, so parent-document CSS/JS
+     * cannot reach the fields. We must use the $form jQuery object
+     * (which lives inside the iframe) to manipulate the form content.
+     */
+    const hideAndFillSerial = ($form: unknown) => {
+      if (!$form || typeof $form !== "object" || !("find" in $form)) return;
+      const jq = $form as {
+        find: (s: string) => {
+          val: (v: string) => { change: () => void };
+          closest: (s: string) => { hide: () => void; length: number };
+          each: (fn: (this: HTMLElement) => void) => void;
+          length: number;
+          get: (i: number) => HTMLElement;
+        };
+        get: (i: number) => HTMLElement;
+      };
 
-    /** Hide decorative HubSpot elements + serial field, inject VIN */
-    const processForm = () => {
-      const root = document.getElementById("hubspot-purchase-form");
-      if (!root) return;
-
-      // Hide decorative elements
-      root.querySelectorAll("img, .hs-richtext, .form-columns-0, .header-image-wrapper").forEach(el => {
-        (el as HTMLElement).style.cssText = "display:none!important";
-      });
-
-      // Find, hide, and fill serial number field
-      root.querySelectorAll('.hs-form-field').forEach(field => {
-        if (isSerialField(field)) {
-          (field as HTMLElement).style.cssText = 'display:none!important';
-          const input = field.querySelector('input') as HTMLInputElement | null;
-          if (input && input.value !== serialNumber) {
-            input.value = serialNumber;
-            input.dispatchEvent(new Event("input", { bubbles: true }));
-            input.dispatchEvent(new Event("change", { bubbles: true }));
-            console.log("[JHL] Serial number set via observer:", serialNumber);
-          }
-        }
-      });
-
-      // Also try all known selectors directly
+      // Strategy 1: known selectors
+      let found = false;
       for (const sel of SERIAL_SELECTORS) {
-        const input = root.querySelector(sel) as HTMLInputElement | null;
-        if (input && input.value !== serialNumber) {
-          input.value = serialNumber;
-          input.dispatchEvent(new Event("input", { bubbles: true }));
-          input.dispatchEvent(new Event("change", { bubbles: true }));
+        const $i = jq.find(sel);
+        if ($i.length > 0) {
+          $i.val(serialNumber).change();
+          $i.closest('.hs-form-field').hide();
+          found = true;
+          console.log("[JHL] Serial set via selector:", sel, serialNumber);
         }
       }
-      // Fallback: any input with numero_de_serie in name
-      root.querySelectorAll<HTMLInputElement>('input').forEach(inp => {
-        if (inp.name.includes("numero_de_serie") && inp.value !== serialNumber) {
-          inp.value = serialNumber;
-          inp.dispatchEvent(new Event("input", { bubbles: true }));
-          inp.dispatchEvent(new Event("change", { bubbles: true }));
+
+      // Strategy 2: find any input with "numero_de_serie" in name
+      if (!found) {
+        jq.find('input').each(function () {
+          if (this instanceof HTMLInputElement && this.name.includes('numero_de_serie')) {
+            const $inp = jq.find(`input[name="${this.name}"]`);
+            $inp.val(serialNumber).change();
+            $inp.closest('.hs-form-field').hide();
+            console.log("[JHL] Serial set via partial match:", this.name, serialNumber);
+          }
+        });
+      }
+
+      // Strategy 3: find by label text inside the iframe
+      try {
+        const iframeDoc = jq.get(0)?.ownerDocument;
+        if (iframeDoc) {
+          // Inject CSS to hide the field
+          if (!iframeDoc.getElementById('jhl-hide-serial')) {
+            const style = iframeDoc.createElement('style');
+            style.id = 'jhl-hide-serial';
+            style.textContent = `
+              .hs_numero_de_serie,
+              .hs_numero_de_serie__c,
+              .hs_properties_numero_de_serie { display: none !important; }
+            `;
+            iframeDoc.head.appendChild(style);
+          }
+          // Also find by label text
+          iframeDoc.querySelectorAll('.hs-form-field').forEach(field => {
+            const label = field.querySelector('label');
+            if (label && /numero.de.serie/i.test(label.textContent || '')) {
+              (field as HTMLElement).style.cssText = 'display:none!important';
+              const input = field.querySelector('input') as HTMLInputElement | null;
+              if (input) {
+                input.value = serialNumber;
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+                input.dispatchEvent(new Event("change", { bubbles: true }));
+                console.log("[JHL] Serial set via iframe label match:", serialNumber);
+              }
+            }
+          });
         }
+      } catch (e) {
+        console.log("[JHL] iframe access attempt:", e);
+      }
+    };
+
+    // Also hide decorative elements in parent document (non-iframe case)
+    const hideDecorInParent = () => {
+      const root = document.getElementById("hubspot-purchase-form");
+      if (!root) return;
+      root.querySelectorAll("img, .hs-richtext, .form-columns-0, .header-image-wrapper").forEach(el => {
+        (el as HTMLElement).style.cssText = "display:none!important";
       });
     };
 
@@ -151,41 +183,23 @@ export default function PurchaseRequest() {
         if (cancelled || !window.hbspt || !containerRef.current) return;
         containerRef.current.innerHTML = "";
 
-        // Start observing DOM mutations BEFORE creating form
-        observer = new MutationObserver(() => processForm());
-        observer.observe(containerRef.current, { childList: true, subtree: true, attributes: true });
-
         window.hbspt.forms.create({
           region: "na1",
           portalId: "3393996",
           formId: "9924bd04-591b-4223-91f9-9d024fdf3665",
           target: "#hubspot-purchase-form",
           onFormReady: ($form: unknown) => {
-            processForm();
-            // Also use jQuery .val() for HubSpot internal state
-            if ($form && typeof $form === "object" && "find" in $form) {
-              const jq = $form as { find: (s: string) => { val: (v: string) => void; length: number } };
-              for (const sel of SERIAL_SELECTORS) {
-                const $i = jq.find(sel);
-                if ($i.length > 0) $i.val(serialNumber);
-              }
-            }
-            // Extra delayed passes
-            setTimeout(processForm, 500);
-            setTimeout(processForm, 1500);
-            setTimeout(processForm, 3000);
+            hideDecorInParent();
+            hideAndFillSerial($form);
+            // Retry several times — HubSpot may re-render fields
+            setTimeout(() => { hideDecorInParent(); hideAndFillSerial($form); }, 300);
+            setTimeout(() => { hideDecorInParent(); hideAndFillSerial($form); }, 1000);
+            setTimeout(() => { hideDecorInParent(); hideAndFillSerial($form); }, 2500);
+            setTimeout(() => { hideDecorInParent(); hideAndFillSerial($form); }, 5000);
           },
-          onFormSubmit: () => {
-            // Force serial number right before submission
-            const root = document.getElementById("hubspot-purchase-form");
-            if (!root) return;
-            root.querySelectorAll<HTMLInputElement>('input').forEach(inp => {
-              if (inp.name.includes("numero_de_serie")) {
-                inp.value = serialNumber;
-                inp.dispatchEvent(new Event("input", { bubbles: true }));
-                inp.dispatchEvent(new Event("change", { bubbles: true }));
-              }
-            });
+          onFormSubmit: ($form: unknown) => {
+            // Force serial right before HubSpot sends data
+            hideAndFillSerial($form);
             console.log("[JHL] onFormSubmit — serial forced:", serialNumber);
           },
           onFormSubmitted: () => {
@@ -203,7 +217,6 @@ export default function PurchaseRequest() {
 
     return () => {
       cancelled = true;
-      if (observer) observer.disconnect();
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
   }, [loading, vehicle, vin]);
