@@ -83,7 +83,7 @@ export default function PurchaseRequest() {
   // Mount HubSpot form
   useEffect(() => {
     if (loading || !containerRef.current || !vehicle || !vin) return;
-    const serialNumber = "TEST123"; // TEMPORAL: valor fijo para diagnóstico HubSpot
+    const serialNumber = vin;
     let cancelled = false;
 
     (async () => {
