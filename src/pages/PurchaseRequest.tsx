@@ -39,50 +39,32 @@ interface VehicleSummary {
   img: string;
   year: number;
   price_public: number;
-  vin: string; // ← AÑADIDO: traemos el VIN directo
+  vin: string;
 }
 
 function injectAndHideVin(serialNumber: string) {
-  // Buscar en DOM directo
-  const allInputs = document.querySelectorAll<HTMLInputElement>(
-    'input[name="numero_de_serie"]'
-  );
-  allInputs.forEach((input) => {
-    const nativeSetter = Object.getOwnPropertyDescriptor(
-      HTMLInputElement.prototype, "value"
-    )?.set;
+  document.querySelectorAll<HTMLInputElement>('input[name="numero_de_serie"]').forEach((input) => {
+    const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
     if (nativeSetter) nativeSetter.call(input, serialNumber);
     else input.value = serialNumber;
     input.dispatchEvent(new Event("input", { bubbles: true }));
     input.dispatchEvent(new Event("change", { bubbles: true }));
-
-    // Ocultar el contenedor del campo
     const fieldContainer = input.closest(".hs-form-field");
-    if (fieldContainer) {
-      (fieldContainer as HTMLElement).style.cssText = "display:none!important";
-    }
+    if (fieldContainer) (fieldContainer as HTMLElement).style.cssText = "display:none!important";
   });
 
-  // Buscar dentro de iframes (mismo origen)
   document.querySelectorAll("iframe").forEach((iframe) => {
     try {
       const doc = iframe.contentDocument || iframe.contentWindow?.document;
       if (!doc) return;
-      const iframeInputs = doc.querySelectorAll<HTMLInputElement>(
-        'input[name="numero_de_serie"]'
-      );
-      iframeInputs.forEach((input) => {
-        const nativeSetter = Object.getOwnPropertyDescriptor(
-          HTMLInputElement.prototype, "value"
-        )?.set;
+      doc.querySelectorAll<HTMLInputElement>('input[name="numero_de_serie"]').forEach((input) => {
+        const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
         if (nativeSetter) nativeSetter.call(input, serialNumber);
         else input.value = serialNumber;
         input.dispatchEvent(new Event("input", { bubbles: true }));
         input.dispatchEvent(new Event("change", { bubbles: true }));
         const fieldContainer = input.closest(".hs-form-field");
-        if (fieldContainer) {
-          (fieldContainer as HTMLElement).style.cssText = "display:none!important";
-        }
+        if (fieldContainer) (fieldContainer as HTMLElement).style.cssText = "display:none!important";
       });
     } catch { /* cross-origin, skip */ }
   });
@@ -95,7 +77,6 @@ export default function PurchaseRequest() {
   const [vehicle, setVehicle] = useState<VehicleSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ FIX: Traemos vin directamente de la tabla, sin RPC separada
   useEffect(() => {
     if (!slug) return;
     (async () => {
@@ -115,7 +96,6 @@ export default function PurchaseRequest() {
     })();
   }, [slug]);
 
-  // ✅ FIX: El formulario solo se monta cuando tenemos vehicle Y vin confirmado
   useEffect(() => {
     if (loading || !containerRef.current || !vehicle || !vehicle.vin) return;
 
@@ -129,7 +109,6 @@ export default function PurchaseRequest() {
       if (!container) return;
       observer = new MutationObserver(() => injectAndHideVin(serialNumber));
       observer.observe(container, { childList: true, subtree: true });
-      // Polling 500ms por 20 segundos como fallback
       interval = setInterval(() => injectAndHideVin(serialNumber), 500);
       setTimeout(() => {
         if (interval) clearInterval(interval);
@@ -157,7 +136,6 @@ export default function PurchaseRequest() {
             setTimeout(() => injectAndHideVin(serialNumber), 1500);
           },
           onFormSubmit: () => {
-            // Último intento justo antes de enviar
             injectAndHideVin(serialNumber);
             console.log("[JHL] Submit — VIN forzado:", serialNumber);
           },
@@ -243,10 +221,15 @@ export default function PurchaseRequest() {
             <div className="neu-card">
               <div className="p-6 md:p-10">
                 <span className="label-micro block mb-2">Solicitar Compra</span>
-                <h1 className="text-xl md:text-2xl font-bold text-foreground mb-6">
-                  Completa tus datos
-                </h1>
+                {vehicle && (
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Completa el formulario para solicitar la compra de {vehicle.name}.
+                  </p>
+                )}
                 <div id="hubspot-purchase-form" ref={containerRef} />
+                <p className="text-xs text-muted-foreground mt-6 text-center">
+                  Al enviar este formulario aceptas nuestros términos y condiciones.
+                </p>
               </div>
             </div>
           </div>
