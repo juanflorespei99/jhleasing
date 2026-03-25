@@ -1,38 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { fmt } from "@/lib/format";
 import { toast } from "sonner";
 import logoDark from "@/assets/logo-jhl-dark.png";
-
-declare global {
-  interface Window {
-    hbspt?: {
-      forms: {
-        create: (opts: Record<string, unknown>) => void;
-      };
-    };
-  }
-}
-
-function loadHubSpotScript(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (window.hbspt) { resolve(); return; }
-    const existing = document.querySelector('script[src*="js.hsforms.net/forms/embed/v2.js"]');
-    if (existing) {
-      existing.addEventListener("load", () => resolve());
-      existing.addEventListener("error", () => reject(new Error("HubSpot script failed")));
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "https://js.hsforms.net/forms/embed/v2.js";
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("HubSpot script failed"));
-    document.head.appendChild(script);
-  });
-}
 
 interface VehicleSummary {
   name: string;
@@ -42,41 +14,13 @@ interface VehicleSummary {
   vin: string;
 }
 
-function injectAndHideVin(serialNumber: string) {
-  document.querySelectorAll<HTMLInputElement>('input[name="numero_de_serie"]').forEach((input) => {
-    const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
-    if (nativeSetter) nativeSetter.call(input, serialNumber);
-    else input.value = serialNumber;
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-    const fieldContainer = input.closest(".hs-form-field");
-    if (fieldContainer) (fieldContainer as HTMLElement).style.cssText = "display:none!important";
-  });
-
-  document.querySelectorAll("iframe").forEach((iframe) => {
-    try {
-      const doc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (!doc) return;
-      doc.querySelectorAll<HTMLInputElement>('input[name="numero_de_serie"]').forEach((input) => {
-        const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
-        if (nativeSetter) nativeSetter.call(input, serialNumber);
-        else input.value = serialNumber;
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-        input.dispatchEvent(new Event("change", { bubbles: true }));
-        const fieldContainer = input.closest(".hs-form-field");
-        if (fieldContainer) (fieldContainer as HTMLElement).style.cssText = "display:none!important";
-      });
-    } catch { /* cross-origin, skip */ }
-  });
-}
-
 export default function PurchaseRequest() {
   const { slug } = useParams<{ slug: string }>();
   const { user, signOut } = useAuth();
-  const containerRef = useRef<HTMLDivElement>(null);
   const [vehicle, setVehicle] = useState<VehicleSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Obtener datos del vehículo incluyendo VIN directamente de Supabase
   useEffect(() => {
     if (!slug) return;
     (async () => {
@@ -96,69 +40,14 @@ export default function PurchaseRequest() {
     })();
   }, [slug]);
 
+  // Cargar el script de HubSpot una sola vez
   useEffect(() => {
-    if (loading || !containerRef.current || !vehicle || !vehicle.vin) return;
-
-    const serialNumber = vehicle.vin;
-    let cancelled = false;
-    let observer: MutationObserver | null = null;
-    let interval: ReturnType<typeof setInterval> | null = null;
-
-    const startObserving = () => {
-      const container = containerRef.current;
-      if (!container) return;
-      observer = new MutationObserver(() => injectAndHideVin(serialNumber));
-      observer.observe(container, { childList: true, subtree: true });
-      interval = setInterval(() => injectAndHideVin(serialNumber), 500);
-      setTimeout(() => {
-        if (interval) clearInterval(interval);
-        interval = null;
-      }, 20000);
-    };
-
-    (async () => {
-      try {
-        await loadHubSpotScript();
-        if (cancelled || !window.hbspt || !containerRef.current) return;
-        containerRef.current.innerHTML = "";
-        startObserving();
-
-        window.hbspt.forms.create({
-          region: "na1",
-          portalId: "3393996",
-          formId: "9924bd04-591b-4223-91f9-9d024fdf3665",
-          target: "#hubspot-purchase-form",
-          onFormReady: () => {
-            console.log("[JHL] Form ready — VIN:", serialNumber);
-            injectAndHideVin(serialNumber);
-            setTimeout(() => injectAndHideVin(serialNumber), 300);
-            setTimeout(() => injectAndHideVin(serialNumber), 800);
-            setTimeout(() => injectAndHideVin(serialNumber), 1500);
-          },
-          onFormSubmit: () => {
-            injectAndHideVin(serialNumber);
-            console.log("[JHL] Submit — VIN forzado:", serialNumber);
-          },
-          onFormSubmitted: () => {
-            if (slug) {
-              supabase.rpc("reserve_vehicle", { _slug: slug }).then(({ error }) => {
-                if (error) console.error("reserve_vehicle error:", error);
-              });
-            }
-          },
-        });
-      } catch {
-        toast.error("Error cargando formulario");
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      if (observer) observer.disconnect();
-      if (interval) clearInterval(interval);
-      if (containerRef.current) containerRef.current.innerHTML = "";
-    };
-  }, [loading, vehicle]);
+    if (document.querySelector('script[src*="js.hsforms.net/forms/embed/3393996.js"]')) return;
+    const script = document.createElement("script");
+    script.src = "https://js.hsforms.net/forms/embed/3393996.js";
+    script.defer = true;
+    document.head.appendChild(script);
+  }, []);
 
   if (loading) {
     return (
@@ -168,9 +57,15 @@ export default function PurchaseRequest() {
     );
   }
 
+  // El VIN se pasa directamente en data-form-payload — sin manipulación del DOM
+  const formPayload = vehicle?.vin
+    ? JSON.stringify({ fields: { numero_de_serie: vehicle.vin } })
+    : "{}";
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-screen-xl mx-auto">
+
         {/* NAV */}
         <nav className="flex justify-between items-center mb-6 md:mb-10 px-1 md:px-3">
           <Link to="/">
@@ -188,19 +83,27 @@ export default function PurchaseRequest() {
               <span className="sm:hidden">Volver</span>
             </Link>
             {user ? (
-              <button onClick={() => signOut()} className="px-4 md:px-5 py-2 md:py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity">
+              <button
+                onClick={() => signOut()}
+                className="px-4 md:px-5 py-2 md:py-3 rounded-full text-xs uppercase tracking-widest font-semibold neu-tag hover:opacity-70 transition-opacity"
+              >
                 Salir
               </button>
             ) : (
-              <Link to="/login" className="px-4 md:px-5 py-2 md:py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90 bg-primary text-primary-foreground">
+              <Link
+                to="/login"
+                className="px-4 md:px-5 py-2 md:py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90 bg-primary text-primary-foreground"
+              >
                 Iniciar Sesión
               </Link>
             )}
           </div>
         </nav>
 
-        {/* TWO-COLUMN LAYOUT */}
+        {/* LAYOUT DOS COLUMNAS */}
         <div className="flex flex-col lg:flex-row gap-6">
+
+          {/* Tarjeta del vehículo */}
           {vehicle && (
             <div className="lg:w-[380px] shrink-0">
               <div className="neu-card lg:sticky lg:top-6">
@@ -211,22 +114,39 @@ export default function PurchaseRequest() {
                 />
                 <div className="p-5">
                   <h2 className="text-base md:text-lg font-bold text-foreground">{vehicle.name}</h2>
-                  <p className="text-sm text-muted-foreground mt-1">{vehicle.year} · ${fmt(vehicle.price_public)} MXN</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {vehicle.year} · ${fmt(vehicle.price_public)} MXN
+                  </p>
                 </div>
               </div>
             </div>
           )}
 
+          {/* Formulario HubSpot */}
           <div className="flex-1 min-w-0">
             <div className="neu-card">
               <div className="p-6 md:p-10">
                 <span className="label-micro block mb-2">Solicitar Compra</span>
                 {vehicle && (
                   <p className="text-sm text-muted-foreground mb-6">
-                    Completa el formulario para solicitar la compra de {vehicle.name}.
+                    Completa el formulario para solicitar la compra de{" "}
+                    {vehicle.name}.
                   </p>
                 )}
-                <div id="hubspot-purchase-form" ref={containerRef} />
+
+                {/*
+                  Método oficial de HubSpot: data-form-payload inyecta el VIN
+                  directamente en el campo oculto numero_de_serie antes de renderizar.
+                  No requiere manipulación del DOM ni callbacks de timing.
+                */}
+                <div
+                  className="hs-form-frame"
+                  data-region="na1"
+                  data-form-id="9924bd04-591b-4223-91f9-9d024fdf3665"
+                  data-portal-id="3393996"
+                  data-form-payload={formPayload}
+                />
+
                 <p className="text-xs text-muted-foreground mt-6 text-center">
                   Al enviar este formulario aceptas nuestros términos y condiciones.
                 </p>
