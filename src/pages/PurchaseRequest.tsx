@@ -39,22 +39,39 @@ interface VehicleSummary {
   img: string;
   year: number;
   price_public: number;
+  vin: string; // ← AÑADIDO: traemos el VIN directo
 }
 
-/**
- * Scans a DOM root for the "numero de serie" field,
- * hides its container and fills it with the VIN.
- */
-function scanAndHide(root: Document | HTMLElement, serialNumber: string) {
-  root.querySelectorAll(".hs-form-field, [class*='hs_numero_de_serie']").forEach(field => {
-    const label = field.querySelector("label");
-    const input = field.querySelector("input") as HTMLInputElement | null;
-    const matchLabel = label && /serie/i.test(label.textContent || "");
-    const matchName = input && /numero_de_serie/i.test(input.name || "");
-    if (matchLabel || matchName) {
-      (field as HTMLElement).style.cssText = "display:none!important";
-      if (input && input.value !== serialNumber) {
-        // Use native setter to bypass React/framework wrappers
+function injectAndHideVin(serialNumber: string) {
+  // Buscar en DOM directo
+  const allInputs = document.querySelectorAll<HTMLInputElement>(
+    'input[name="numero_de_serie"]'
+  );
+  allInputs.forEach((input) => {
+    const nativeSetter = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype, "value"
+    )?.set;
+    if (nativeSetter) nativeSetter.call(input, serialNumber);
+    else input.value = serialNumber;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+
+    // Ocultar el contenedor del campo
+    const fieldContainer = input.closest(".hs-form-field");
+    if (fieldContainer) {
+      (fieldContainer as HTMLElement).style.cssText = "display:none!important";
+    }
+  });
+
+  // Buscar dentro de iframes (mismo origen)
+  document.querySelectorAll("iframe").forEach((iframe) => {
+    try {
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!doc) return;
+      const iframeInputs = doc.querySelectorAll<HTMLInputElement>(
+        'input[name="numero_de_serie"]'
+      );
+      iframeInputs.forEach((input) => {
         const nativeSetter = Object.getOwnPropertyDescriptor(
           HTMLInputElement.prototype, "value"
         )?.set;
@@ -62,9 +79,12 @@ function scanAndHide(root: Document | HTMLElement, serialNumber: string) {
         else input.value = serialNumber;
         input.dispatchEvent(new Event("input", { bubbles: true }));
         input.dispatchEvent(new Event("change", { bubbles: true }));
-        console.log("[JHL] Serial set via DOM scan:", serialNumber);
-      }
-    }
+        const fieldContainer = input.closest(".hs-form-field");
+        if (fieldContainer) {
+          (fieldContainer as HTMLElement).style.cssText = "display:none!important";
+        }
+      });
+    } catch { /* cross-origin, skip */ }
   });
 }
 
@@ -73,25 +93,21 @@ export default function PurchaseRequest() {
   const { user, signOut } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   const [vehicle, setVehicle] = useState<VehicleSummary | null>(null);
-  const [vin, setVin] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
-  // Fetch vehicle info + VIN
+  // ✅ FIX: Traemos vin directamente de la tabla, sin RPC separada
   useEffect(() => {
     if (!slug) return;
     (async () => {
       try {
-        const [vehicleRes, vinRes] = await Promise.all([
-          supabase
-            .from("vehicles")
-            .select("name, img, year, price_public")
-            .eq("slug", slug)
-            .maybeSingle(),
-          supabase.rpc("get_vehicle_vin", { _slug: slug }),
-        ]);
-        if (vehicleRes.error) throw vehicleRes.error;
-        if (vehicleRes.data) setVehicle(vehicleRes.data);
-        if (vinRes.data) setVin(vinRes.data);
+        const { data, error } = await supabase
+          .from("vehicles")
+          .select("name, img, year, price_public, vin")
+          .eq("slug", slug)
+          .maybeSingle();
+        if (error) throw error;
+        if (data) setVehicle(data);
+        else toast.error("Vehículo no encontrado");
       } catch {
         toast.error("Error cargando datos del vehículo");
       }
@@ -99,66 +115,26 @@ export default function PurchaseRequest() {
     })();
   }, [slug]);
 
-  // Mount HubSpot form + MutationObserver/polling to hide serial field
+  // ✅ FIX: El formulario solo se monta cuando tenemos vehicle Y vin confirmado
   useEffect(() => {
-    if (loading || !containerRef.current || !vehicle || !vin) return;
-    const serialNumber = vin;
+    if (loading || !containerRef.current || !vehicle || !vehicle.vin) return;
+
+    const serialNumber = vehicle.vin;
     let cancelled = false;
-
-    /** Process serial field in parent DOM and any accessible iframes */
-    const processSerialField = () => {
-      const root = document.getElementById("hubspot-purchase-form");
-      if (!root) return;
-
-      // Direct DOM children
-      scanAndHide(root, serialNumber);
-
-      // Hide decorative elements (images, richtext, headers)
-      root.querySelectorAll("img, .hs-richtext, .form-columns-0, .header-image-wrapper, .hs-form-header, .sprocket-header").forEach(el => {
-        (el as HTMLElement).style.cssText = "display:none!important";
-      });
-
-      // Scan inside iframes (same-origin only)
-      root.querySelectorAll("iframe").forEach(iframe => {
-        try {
-          const doc = (iframe as HTMLIFrameElement).contentDocument
-            || (iframe as HTMLIFrameElement).contentWindow?.document;
-          if (doc) {
-            scanAndHide(doc, serialNumber);
-            // Inject CSS into iframe head
-            if (!doc.getElementById("jhl-hide-serial")) {
-              const style = doc.createElement("style");
-              style.id = "jhl-hide-serial";
-              style.textContent = `
-                .hs_numero_de_serie,
-                .hs_numero_de_serie__c,
-                .hs_properties_numero_de_serie,
-                [class*="numero_de_serie"] { display: none !important; }
-              `;
-              doc.head.appendChild(style);
-            }
-          }
-        } catch { /* cross-origin iframe, skip */ }
-      });
-    };
-
-    // Set up MutationObserver + polling (independent of HubSpot callbacks)
     let observer: MutationObserver | null = null;
     let interval: ReturnType<typeof setInterval> | null = null;
 
     const startObserving = () => {
       const container = containerRef.current;
       if (!container) return;
-
-      observer = new MutationObserver(() => processSerialField());
+      observer = new MutationObserver(() => injectAndHideVin(serialNumber));
       observer.observe(container, { childList: true, subtree: true });
-
-      // Polling fallback: every 500ms for 15s
-      interval = setInterval(processSerialField, 500);
+      // Polling 500ms por 20 segundos como fallback
+      interval = setInterval(() => injectAndHideVin(serialNumber), 500);
       setTimeout(() => {
         if (interval) clearInterval(interval);
         interval = null;
-      }, 15000);
+      }, 20000);
     };
 
     (async () => {
@@ -166,8 +142,6 @@ export default function PurchaseRequest() {
         await loadHubSpotScript();
         if (cancelled || !window.hbspt || !containerRef.current) return;
         containerRef.current.innerHTML = "";
-
-        // Start observing BEFORE creating the form
         startObserving();
 
         window.hbspt.forms.create({
@@ -175,15 +149,17 @@ export default function PurchaseRequest() {
           portalId: "3393996",
           formId: "9924bd04-591b-4223-91f9-9d024fdf3665",
           target: "#hubspot-purchase-form",
-          // Legacy callbacks kept as additional layer
           onFormReady: () => {
-            processSerialField();
-            setTimeout(processSerialField, 300);
-            setTimeout(processSerialField, 1000);
+            console.log("[JHL] Form ready — VIN:", serialNumber);
+            injectAndHideVin(serialNumber);
+            setTimeout(() => injectAndHideVin(serialNumber), 300);
+            setTimeout(() => injectAndHideVin(serialNumber), 800);
+            setTimeout(() => injectAndHideVin(serialNumber), 1500);
           },
           onFormSubmit: () => {
-            processSerialField();
-            console.log("[JHL] onFormSubmit — serial forced:", serialNumber);
+            // Último intento justo antes de enviar
+            injectAndHideVin(serialNumber);
+            console.log("[JHL] Submit — VIN forzado:", serialNumber);
           },
           onFormSubmitted: () => {
             if (slug) {
@@ -204,7 +180,7 @@ export default function PurchaseRequest() {
       if (interval) clearInterval(interval);
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
-  }, [loading, vehicle, vin]);
+  }, [loading, vehicle]);
 
   if (loading) {
     return (
@@ -267,30 +243,3 @@ export default function PurchaseRequest() {
             <div className="neu-card">
               <div className="p-6 md:p-10">
                 <span className="label-micro block mb-2">Solicitar Compra</span>
-                {vehicle && (
-                  <p className="text-sm md:text-base text-muted-foreground mb-6">
-                    Completa el formulario para solicitar la compra de <strong>{vehicle.name}</strong>.
-                  </p>
-                )}
-                <style>{`
-                  #hubspot-purchase-form .hs-form-private .legal-consent-container { margin-top: 0; }
-                  #hubspot-purchase-form img { display: none !important; }
-                  #hubspot-purchase-form .hs-richtext { display: none !important; }
-                  #hubspot-purchase-form .form-columns-0 { display: none !important; }
-                  #hubspot-purchase-form .header-image-wrapper,
-                  #hubspot-purchase-form .hs-form-header,
-                  #hubspot-purchase-form .sprocket-header { display: none !important; }
-                  #hubspot-purchase-form .hs_numero_de_serie { display: none !important; }
-                  #hubspot-purchase-form .hs_numero_de_serie__c { display: none !important; }
-                  #hubspot-purchase-form .hs_properties_numero_de_serie { display: none !important; }
-                  #hubspot-purchase-form [class*="numero_de_serie"] { display: none !important; }
-                `}</style>
-                <div id="hubspot-purchase-form" ref={containerRef} className="min-h-[300px]" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
