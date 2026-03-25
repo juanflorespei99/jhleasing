@@ -195,7 +195,6 @@ export type Database = {
       }
     }
     Functions: {
-      get_vehicle_vin: { Args: { _slug: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
