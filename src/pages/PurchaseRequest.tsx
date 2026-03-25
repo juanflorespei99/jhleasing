@@ -243,3 +243,15 @@ export default function PurchaseRequest() {
             <div className="neu-card">
               <div className="p-6 md:p-10">
                 <span className="label-micro block mb-2">Solicitar Compra</span>
+                <h1 className="text-xl md:text-2xl font-bold text-foreground mb-6">
+                  Completa tus datos
+                </h1>
+                <div id="hubspot-purchase-form" ref={containerRef} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
