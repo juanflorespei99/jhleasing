@@ -20,7 +20,6 @@ export default function PurchaseRequest() {
   const [vehicle, setVehicle] = useState<VehicleSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Obtener datos del vehículo incluyendo VIN directamente de Supabase
   useEffect(() => {
     if (!slug) return;
     (async () => {
@@ -40,15 +39,6 @@ export default function PurchaseRequest() {
     })();
   }, [slug]);
 
-  // Cargar el script de HubSpot una sola vez
-  useEffect(() => {
-    if (document.querySelector('script[src*="js.hsforms.net/forms/embed/3393996.js"]')) return;
-    const script = document.createElement("script");
-    script.src = "https://js.hsforms.net/forms/embed/3393996.js";
-    script.defer = true;
-    document.head.appendChild(script);
-  }, []);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-6 flex items-center justify-center">
@@ -57,10 +47,10 @@ export default function PurchaseRequest() {
     );
   }
 
-  // El VIN se pasa directamente en data-form-payload — sin manipulación del DOM
-  const formPayload = vehicle?.vin
-    ? JSON.stringify({ fields: { numero_de_serie: vehicle.vin } })
-    : "{}";
+  // URL del formulario HubSpot con el VIN como parámetro en la URL
+  const hubspotUrl = vehicle?.vin
+    ? `https://20qto.share.hsforms.com/2mSS9BFkbQiOR-Z0CT982ZQ?numero_de_serie=${encodeURIComponent(vehicle.vin)}`
+    : `https://20qto.share.hsforms.com/2mSS9BFkbQiOR-Z0CT982ZQ`;
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
@@ -122,37 +112,19 @@ export default function PurchaseRequest() {
             </div>
           )}
 
-          {/* Formulario HubSpot */}
+          {/* Formulario HubSpot como iframe */}
           <div className="flex-1 min-w-0">
-            <div className="neu-card">
-              <div className="p-6 md:p-10">
-                <span className="label-micro block mb-2">Solicitar Compra</span>
-                {vehicle && (
-                  <p className="text-sm text-muted-foreground mb-6">
-                    Completa el formulario para solicitar la compra de{" "}
-                    {vehicle.name}.
-                  </p>
-                )}
-
-                {/*
-                  Método oficial de HubSpot: data-form-payload inyecta el VIN
-                  directamente en el campo oculto numero_de_serie antes de renderizar.
-                  No requiere manipulación del DOM ni callbacks de timing.
-                */}
-                <div
-                  className="hs-form-frame"
-                  data-region="na1"
-                  data-form-id="9924bd04-591b-4223-91f9-9d024fdf3665"
-                  data-portal-id="3393996"
-                  data-form-payload={formPayload}
-                />
-
-                <p className="text-xs text-muted-foreground mt-6 text-center">
-                  Al enviar este formulario aceptas nuestros términos y condiciones.
-                </p>
-              </div>
+            <div className="neu-card overflow-hidden" style={{ minHeight: 600 }}>
+              <iframe
+                src={hubspotUrl}
+                title="Solicitar Compra"
+                className="w-full border-0"
+                style={{ height: 600 }}
+                allow="forms"
+              />
             </div>
           </div>
+
         </div>
       </div>
     </div>
