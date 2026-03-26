@@ -91,7 +91,7 @@ export default function PurchaseRequest() {
         </nav>
 
         {/* LAYOUT DOS COLUMNAS */}
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
 
           {/* Tarjeta del vehículo */}
           {vehicle && (
