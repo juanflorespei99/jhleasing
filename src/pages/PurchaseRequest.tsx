@@ -114,15 +114,17 @@ export default function PurchaseRequest() {
 
           {/* Formulario HubSpot como iframe */}
           <div className="flex-1 min-w-0">
-            <div className="neu-card overflow-hidden" style={{ minHeight: 600 }}>
-              <iframe
-                src={hubspotUrl}
-                title="Solicitar Compra"
-                className="w-full border-0"
-                style={{ height: 600 }}
-                allow="forms"
-              />
-            </div>
+            <iframe
+              src={hubspotUrl}
+              style={{
+                width: "100%",
+                height: "100vh",
+                minHeight: "800px",
+                border: "none",
+                display: "block",
+              }}
+              title="Formulario de solicitud de compra"
+            />
           </div>
 
         </div>
