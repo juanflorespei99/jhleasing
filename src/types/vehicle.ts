@@ -17,6 +17,8 @@ export interface VehicleRow {
   description: string;
   is_public: boolean;
   is_armored: boolean;
+  color: string;
+  plate_state: string;
 }
 
 /** Admin-specific vehicle row with all fields */
