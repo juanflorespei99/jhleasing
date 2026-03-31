@@ -249,6 +249,28 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
             </div>
           </div>
 
+          {/* Color + Estado de Placas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            <div>
+              <Label className="text-xs">Color</Label>
+              <Select value={color} onValueChange={setColor}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar color" /></SelectTrigger>
+                <SelectContent>
+                  {COLORS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Estado de Placas</Label>
+              <Select value={plateState} onValueChange={setPlateState}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar estado" /></SelectTrigger>
+                <SelectContent>
+                  {PLATE_STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           {/* Description */}
           <div>
             <Label className="text-xs">Descripción</Label>
