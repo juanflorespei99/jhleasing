@@ -24,7 +24,7 @@ export default function FooterSection({ logoIcon, logoHorizontal }: Props) {
         </div>
       </div>
       <div className="mt-8 md:mt-12 text-xs text-center text-secondary-foreground/40">
-        © 2026 JH Leasing. All rights reserved.
+        © 2026 JHLeasing. Todos los derechos reservados.
       </div>
     </footer>
   );
