@@ -17,6 +17,8 @@ export interface VehicleRow {
   description: string;
   is_public: boolean;
   is_armored: boolean;
+  color: string;
+  plate_state: string;
 }
 
 /** Admin-specific vehicle row with all fields */
@@ -25,6 +27,8 @@ export interface VehicleAdminRow extends VehicleRow {
   vin: string;
   is_active: boolean;
   is_armored: boolean;
+  color: string;
+  plate_state: string;
   release_at_public: string | null;
   created_at: string;
   created_by: string | null;

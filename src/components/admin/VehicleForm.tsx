@@ -20,6 +20,8 @@ import { toast } from "sonner";
 import type { VehicleAdminRow } from "@/types/vehicle";
 
 const TYPES = ["SUV", "Sedán", "Hatchback", "Pick-up", "Van", "Coupé"];
+const COLORS = ["Negro", "Blanco", "Blanco perla", "Plata", "Gris", "Gris plata", "Azul", "Rojo", "Dorado", "Verde", "Beige", "Café", "Naranja", "Amarillo"];
+const PLATE_STATES = ["CDMX", "JALISCO", "SONORA", "MORELOS", "Estado de México", "Nuevo León", "Puebla", "Querétaro", "Guanajuato", "Veracruz", "Chihuahua", "Yucatán", "Quintana Roo", "Baja California", "Sinaloa", "Coahuila", "Tamaulipas", "Michoacán", "Oaxaca", "Guerrero", "Tabasco", "San Luis Potosí", "Hidalgo", "Aguascalientes", "Nayarit", "Durango", "Zacatecas", "Colima", "Campeche", "Tlaxcala", "Baja California Sur", "Chiapas"];
 
 interface Props {
   open: boolean;
@@ -56,6 +58,8 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
   const [isPublic, setIsPublic] = useState(true);
   const [isActive, setIsActive] = useState(true);
   const [isArmored, setIsArmored] = useState(false);
+  const [color, setColor] = useState("");
+  const [plateState, setPlateState] = useState("");
   const [releaseDate, setReleaseDate] = useState<Date | undefined>();
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -77,13 +81,16 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
       setIsPublic(vehicle.is_public);
       setIsActive(vehicle.is_active);
       setIsArmored(vehicle.is_armored);
+      setColor(vehicle.color || "");
+      setPlateState(vehicle.plate_state || "");
       setReleaseDate(vehicle.release_at_public ? new Date(vehicle.release_at_public) : undefined);
       setExistingImages(vehicle.images || []);
     } else {
       setBrand(""); setName(""); setType(""); setYear(new Date().getFullYear());
       setPricePublic(0); setPriceEmployee(0); setMileage(""); setVin("");
       setLocation(""); setDescription(""); setIsPublic(true); setIsActive(true);
-      setIsArmored(false); setReleaseDate(undefined); setExistingImages([]);
+      setIsArmored(false); setColor(""); setPlateState("");
+      setReleaseDate(undefined); setExistingImages([]);
     }
     setImageFiles([]);
     setError("");
@@ -134,6 +141,8 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
         is_public: isPublic,
         is_active: isActive,
         is_armored: isArmored,
+        color,
+        plate_state: plateState,
         release_at_public: releaseDate?.toISOString() || null,
         img: allImages[0] || "",
         images: allImages,
@@ -237,6 +246,28 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
             <div className="col-span-2 sm:col-span-1">
               <Label className="text-xs">Ubicación</Label>
               <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="CDMX" className="mt-1" />
+            </div>
+          </div>
+
+          {/* Color + Estado de Placas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            <div>
+              <Label className="text-xs">Color</Label>
+              <Select value={color} onValueChange={setColor}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar color" /></SelectTrigger>
+                <SelectContent>
+                  {COLORS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Estado de Placas</Label>
+              <Select value={plateState} onValueChange={setPlateState}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar estado" /></SelectTrigger>
+                <SelectContent>
+                  {PLATE_STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

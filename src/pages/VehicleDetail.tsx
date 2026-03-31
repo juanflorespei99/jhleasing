@@ -74,9 +74,11 @@ export default function VehicleDetail() {
 
   const specs = [
     { label: "Año", value: String(vehicle.year) },
+    { label: "Color", value: vehicle.color || "—" },
     { label: "Kilometraje", value: vehicle.mileage },
     { label: "Tipo", value: vehicle.type },
     { label: "Ubicación", value: vehicle.location },
+    { label: "Placas", value: vehicle.plate_state || "—" },
     { label: "Estatus", value: vehicle.status },
   ];
 
