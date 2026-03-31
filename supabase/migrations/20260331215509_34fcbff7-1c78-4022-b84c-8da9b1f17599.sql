@@ -1,0 +1,1 @@
+UPDATE vehicles SET location = 'Corporativo CDMX';
