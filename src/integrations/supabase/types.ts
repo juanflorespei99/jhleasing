@@ -142,6 +142,84 @@ export type Database = {
       }
     }
     Views: {
+      vehicles_employee: {
+        Row: {
+          brand: string | null
+          color: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string | null
+          images: string[] | null
+          img: string | null
+          is_active: boolean | null
+          is_armored: boolean | null
+          is_public: boolean | null
+          location: string | null
+          mileage: string | null
+          name: string | null
+          plate_state: string | null
+          price_employee: number | null
+          price_public: number | null
+          release_at_public: string | null
+          slug: string | null
+          status: string | null
+          type: string | null
+          vin: string | null
+          year: number | null
+        }
+        Insert: {
+          brand?: string | null
+          color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string | null
+          images?: string[] | null
+          img?: string | null
+          is_active?: boolean | null
+          is_armored?: boolean | null
+          is_public?: boolean | null
+          location?: string | null
+          mileage?: string | null
+          name?: string | null
+          plate_state?: string | null
+          price_employee?: number | null
+          price_public?: number | null
+          release_at_public?: string | null
+          slug?: string | null
+          status?: string | null
+          type?: string | null
+          vin?: string | null
+          year?: number | null
+        }
+        Update: {
+          brand?: string | null
+          color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string | null
+          images?: string[] | null
+          img?: string | null
+          is_active?: boolean | null
+          is_armored?: boolean | null
+          is_public?: boolean | null
+          location?: string | null
+          mileage?: string | null
+          name?: string | null
+          plate_state?: string | null
+          price_employee?: number | null
+          price_public?: number | null
+          release_at_public?: string | null
+          slug?: string | null
+          status?: string | null
+          type?: string | null
+          vin?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
       vehicles_public: {
         Row: {
           brand: string | null
