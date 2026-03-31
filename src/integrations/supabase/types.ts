@@ -54,6 +54,7 @@ export type Database = {
         Row: {
           brand: string
           buyer_name: string | null
+          color: string
           created_at: string
           created_by: string | null
           description: string
@@ -66,6 +67,7 @@ export type Database = {
           location: string
           mileage: string
           name: string
+          plate_state: string
           price_employee: number
           price_public: number
           release_at_public: string | null
@@ -81,6 +83,7 @@ export type Database = {
         Insert: {
           brand: string
           buyer_name?: string | null
+          color?: string
           created_at?: string
           created_by?: string | null
           description?: string
@@ -93,6 +96,7 @@ export type Database = {
           location?: string
           mileage?: string
           name: string
+          plate_state?: string
           price_employee: number
           price_public: number
           release_at_public?: string | null
@@ -108,6 +112,7 @@ export type Database = {
         Update: {
           brand?: string
           buyer_name?: string | null
+          color?: string
           created_at?: string
           created_by?: string | null
           description?: string
@@ -120,6 +125,7 @@ export type Database = {
           location?: string
           mileage?: string
           name?: string
+          plate_state?: string
           price_employee?: number
           price_public?: number
           release_at_public?: string | null
@@ -139,6 +145,7 @@ export type Database = {
       vehicles_public: {
         Row: {
           brand: string | null
+          color: string | null
           created_at: string | null
           description: string | null
           id: string | null
@@ -149,6 +156,7 @@ export type Database = {
           location: string | null
           mileage: string | null
           name: string | null
+          plate_state: string | null
           price_public: number | null
           slug: string | null
           status: string | null
@@ -157,6 +165,7 @@ export type Database = {
         }
         Insert: {
           brand?: string | null
+          color?: string | null
           created_at?: string | null
           description?: string | null
           id?: string | null
@@ -167,6 +176,7 @@ export type Database = {
           location?: string | null
           mileage?: string | null
           name?: string | null
+          plate_state?: string | null
           price_public?: number | null
           slug?: string | null
           status?: string | null
@@ -175,6 +185,7 @@ export type Database = {
         }
         Update: {
           brand?: string | null
+          color?: string | null
           created_at?: string | null
           description?: string | null
           id?: string | null
@@ -185,6 +196,7 @@ export type Database = {
           location?: string | null
           mileage?: string | null
           name?: string | null
+          plate_state?: string | null
           price_public?: number | null
           slug?: string | null
           status?: string | null
