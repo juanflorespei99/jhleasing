@@ -35,7 +35,7 @@ export default function VehicleDetail() {
       setLoading(true);
       try {
         const query = isEmployee
-          ? supabase.from("vehicles").select("*").eq("slug", id).maybeSingle()
+          ? supabase.from("vehicles_employee").select("*").eq("slug", id).maybeSingle()
           : supabase.from("vehicles_public").select("*").eq("slug", id).maybeSingle();
         const { data, error } = await query;
         if (error) throw error;
