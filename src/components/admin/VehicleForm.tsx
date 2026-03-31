@@ -58,6 +58,8 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
   const [isPublic, setIsPublic] = useState(true);
   const [isActive, setIsActive] = useState(true);
   const [isArmored, setIsArmored] = useState(false);
+  const [color, setColor] = useState("");
+  const [plateState, setPlateState] = useState("");
   const [releaseDate, setReleaseDate] = useState<Date | undefined>();
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
