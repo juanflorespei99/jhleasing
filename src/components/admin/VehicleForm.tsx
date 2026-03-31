@@ -141,6 +141,8 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
         is_public: isPublic,
         is_active: isActive,
         is_armored: isArmored,
+        color,
+        plate_state: plateState,
         release_at_public: releaseDate?.toISOString() || null,
         img: allImages[0] || "",
         images: allImages,
