@@ -25,7 +25,7 @@ export default function HeroSection({ heroVideo }: Props) {
           <div className="p-6 md:p-10 h-full flex flex-col justify-between" style={{ minHeight: 200 }}>
             <div>
               <span className="label-micro mb-3 block">Venta Directa</span>
-              <h1 className="heading-xl mb-4 md:mb-6">Vehículos de flotilla a precio preferencial</h1>
+              <h1 className="heading-xl mb-4 md:mb-6" style={{ fontSize: "clamp(28px, 3vw, 40px)", textTransform: "none" }}>Vehículos de flotilla a precio preferencial</h1>
             </div>
             <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))", maxWidth: "48ch" }}>
               Adquiere vehículos usados de flotilla corporativa con precios transparentes y sin intermediarios.
