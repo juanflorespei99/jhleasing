@@ -12,6 +12,7 @@ import Admin from "./pages/Admin";
 import Inventory from "./pages/Inventory";
 import Compare from "./pages/Compare";
 import PurchaseRequest from "./pages/PurchaseRequest";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
