@@ -148,18 +148,6 @@ Deno.serve(async (req) => {
           });
         }
 
-        // Generate password reset link
-        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-          type: "recovery",
-          email: resetEmail,
-          options: {
-            redirectTo: `${req.headers.get("origin") || "https://jhleasing.lovable.app"}/reset-password`,
-          },
-        });
-
-        if (linkError) throw linkError;
-
-        // Send the reset email via Supabase's built-in method
         const { error: resetError } = await adminClient.auth.resetPasswordForEmail(resetEmail, {
           redirectTo: `${req.headers.get("origin") || "https://jhleasing.lovable.app"}/reset-password`,
         });
