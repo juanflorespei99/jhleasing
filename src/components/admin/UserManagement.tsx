@@ -323,6 +323,7 @@ export default function UserManagement() {
                           size="icon"
                           className="h-8 w-8"
                           title="Resetear contraseña"
+                          disabled={resettingEmail === user.email}
                           onClick={() => handleResetPassword(user.email)}
                         >
                           <KeyRound className="h-4 w-4" />
