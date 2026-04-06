@@ -1,36 +1,34 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-
-const isRecoveryFlow = (search: string, hash: string) =>
-  search.includes("type=recovery") ||
-  search.includes("token_hash=") ||
-  hash.includes("type=recovery");
+import {
+  getRecoveryRedirectPath,
+  RECOVERY_PATH,
+  shouldRedirectToRecovery,
+} from "@/lib/auth-recovery";
 
 export default function RecoveryRedirect() {
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (location.pathname === "/reset-password") return;
-    if (!isRecoveryFlow(location.search, location.hash)) return;
+    if (!shouldRedirectToRecovery(location)) return;
 
-    navigate(`/reset-password${location.search}${location.hash}`, {
+    navigate(getRecoveryRedirectPath(location), {
       replace: true,
     });
-  }, [location.hash, location.pathname, location.search, navigate]);
+  }, [location, navigate]);
 
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "PASSWORD_RECOVERY") return;
-      if (window.location.pathname === "/reset-password") return;
+      if (window.location.pathname === RECOVERY_PATH) return;
 
-      navigate(
-        `/reset-password${window.location.search}${window.location.hash}`,
-        { replace: true }
-      );
+      navigate(getRecoveryRedirectPath(window.location), {
+        replace: true,
+      });
     });
 
     return () => subscription.unsubscribe();
