@@ -165,7 +165,6 @@ export type Database = {
           slug: string | null
           status: string | null
           type: string | null
-          vin: string | null
           year: number | null
         }
         Insert: {
@@ -190,7 +189,6 @@ export type Database = {
           slug?: string | null
           status?: string | null
           type?: string | null
-          vin?: string | null
           year?: number | null
         }
         Update: {
@@ -215,7 +213,6 @@ export type Database = {
           slug?: string | null
           status?: string | null
           type?: string | null
-          vin?: string | null
           year?: number | null
         }
         Relationships: []
