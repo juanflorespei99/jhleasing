@@ -8,12 +8,13 @@ import VehicleForm from "@/components/admin/VehicleForm";
 import MarkAsSoldDialog from "@/components/admin/MarkAsSoldDialog";
 import SalesDashboard from "@/components/admin/SalesDashboard";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, Car, Search, BadgeDollarSign } from "lucide-react";
+import { Plus, ArrowLeft, Car, Search, BadgeDollarSign, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import logoIcon from "@/assets/logo-jhl-icon.png";
 import type { VehicleAdminRow } from "@/types/vehicle";
+import UserManagement from "@/components/admin/UserManagement";
 
 function AdminDashboard() {
   const { signOut } = useAuth();
@@ -162,6 +163,10 @@ function AdminDashboard() {
                   Ventas
                   {stats.sold > 0 && <span className="text-[9px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">{stats.sold}</span>}
                 </TabsTrigger>
+                <TabsTrigger value="users" className="rounded-full text-xs px-4 py-1.5 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none gap-1.5">
+                  <Users className="h-3.5 w-3.5" />
+                  Usuarios
+                </TabsTrigger>
               </TabsList>
             </div>
           </div>
@@ -203,6 +208,10 @@ function AdminDashboard() {
             ) : (
               <SalesDashboard vehicles={vehicles} onDelete={handleDelete} />
             )}
+          </TabsContent>
+
+          <TabsContent value="users">
+            <UserManagement />
           </TabsContent>
         </Tabs>
       </main>
