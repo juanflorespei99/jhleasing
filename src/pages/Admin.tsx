@@ -163,6 +163,10 @@ function AdminDashboard() {
                   Ventas
                   {stats.sold > 0 && <span className="text-[9px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full">{stats.sold}</span>}
                 </TabsTrigger>
+                <TabsTrigger value="users" className="rounded-full text-xs px-4 py-1.5 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-none gap-1.5">
+                  <Users className="h-3.5 w-3.5" />
+                  Usuarios
+                </TabsTrigger>
               </TabsList>
             </div>
           </div>
