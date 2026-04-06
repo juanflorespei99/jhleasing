@@ -6,6 +6,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const PASSWORD_RECOVERY_URL =
+  "https://jhleasing.scaletechconsulting.mx/reset-password";
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -148,9 +151,8 @@ Deno.serve(async (req) => {
           });
         }
 
-        const siteUrl = req.headers.get("origin") || "https://jhleasing.scaletechconsulting.mx";
         const { error: resetError } = await adminClient.auth.resetPasswordForEmail(resetEmail, {
-          redirectTo: `${siteUrl}/reset-password`,
+          redirectTo: PASSWORD_RECOVERY_URL,
         });
 
         if (resetError) throw resetError;
