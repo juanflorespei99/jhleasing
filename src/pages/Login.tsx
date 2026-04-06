@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import logoDark from "@/assets/logo-jhl-dark.png";
+import { toast } from "sonner";
 
 export default function Login() {
   const { signIn } = useAuth();
@@ -10,6 +12,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +24,24 @@ export default function Login() {
       setError(error.message);
     } else {
       navigate("/");
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Ingresa tu correo electrónico primero");
+      return;
+    }
+    setResetLoading(true);
+    setError("");
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: "https://jhleasing.scaletechconsulting.mx/reset-password",
+    });
+    setResetLoading(false);
+    if (error) {
+      setError(error.message);
+    } else {
+      toast.success("Correo enviado. Revisa tu bandeja de entrada para restablecer tu contraseña.");
     }
   };
 
@@ -62,6 +83,18 @@ export default function Login() {
                   style={{ boxShadow: "var(--shadow-inset-sm)", background: "hsl(var(--background))" }}
                   placeholder="••••••••"
                 />
+              </div>
+
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={resetLoading}
+                  className="text-xs underline transition-opacity hover:opacity-70 disabled:opacity-50"
+                  style={{ color: "hsl(var(--primary))" }}
+                >
+                  {resetLoading ? "Enviando..." : "¿Olvidaste tu contraseña?"}
+                </button>
               </div>
 
               {error && (
