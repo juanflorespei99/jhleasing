@@ -209,6 +209,10 @@ function AdminDashboard() {
               <SalesDashboard vehicles={vehicles} onDelete={handleDelete} />
             )}
           </TabsContent>
+
+          <TabsContent value="users">
+            <UserManagement />
+          </TabsContent>
         </Tabs>
       </main>
 

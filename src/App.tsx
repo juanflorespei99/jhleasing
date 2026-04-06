@@ -33,6 +33,7 @@ const App = () => (
             <Route path="/comparar" element={<Compare />} />
             <Route path="/solicitar-compra/:slug" element={<PurchaseRequest />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
