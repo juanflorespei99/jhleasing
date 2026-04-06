@@ -14,6 +14,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import logoIcon from "@/assets/logo-jhl-icon.png";
 import type { VehicleAdminRow } from "@/types/vehicle";
+import UserManagement from "@/components/admin/UserManagement";
 
 function AdminDashboard() {
   const { signOut } = useAuth();
