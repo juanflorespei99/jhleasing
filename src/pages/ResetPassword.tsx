@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
-import { KeyRound, CheckCircle } from "lucide-react";
+import { KeyRound, CheckCircle, AlertTriangle } from "lucide-react";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -13,9 +13,39 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Listen for the PASSWORD_RECOVERY event from the auth state change
+    // Check URL for error params (e.g. expired token)
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.replace("#", ""));
+    const errorCode = params.get("error_code");
+    const errorDesc = params.get("error_description");
+
+    if (errorCode || errorDesc) {
+      setError(
+        errorCode === "otp_expired"
+          ? "El enlace ha expirado. Solicita un nuevo correo de recuperación desde el panel de administración."
+          : errorDesc?.replace(/\+/g, " ") || "Error en el enlace de recuperación."
+      );
+      return;
+    }
+
+    // Also check query params (Supabase PKCE flow)
+    const searchParams = new URLSearchParams(window.location.search);
+    const searchError = searchParams.get("error_code");
+    const searchDesc = searchParams.get("error_description");
+
+    if (searchError || searchDesc) {
+      setError(
+        searchError === "otp_expired"
+          ? "El enlace ha expirado. Solicita un nuevo correo de recuperación desde el panel de administración."
+          : searchDesc?.replace(/\+/g, " ") || "Error en el enlace de recuperación."
+      );
+      return;
+    }
+
+    // Listen for the PASSWORD_RECOVERY event
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event) => {
         if (event === "PASSWORD_RECOVERY") {
@@ -24,7 +54,7 @@ export default function ResetPassword() {
       }
     );
 
-    // Also check if we already have a session (user clicked the link)
+    // Also check if we already have a session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) setSessionReady(true);
     });
@@ -66,6 +96,27 @@ export default function ResetPassword() {
           </h1>
           <p className="text-muted-foreground">
             Tu contraseña ha sido cambiada exitosamente.
+          </p>
+          <Link to="/login">
+            <Button className="w-full rounded-full">
+              Ir a Iniciar Sesión
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="w-full max-w-sm text-center space-y-6">
+          <AlertTriangle className="h-16 w-16 text-amber-500 mx-auto" />
+          <h1 className="text-2xl font-bold text-foreground">
+            Enlace Inválido
+          </h1>
+          <p className="text-muted-foreground">
+            {error}
           </p>
           <Link to="/login">
             <Button className="w-full rounded-full">

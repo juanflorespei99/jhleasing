@@ -148,8 +148,9 @@ Deno.serve(async (req) => {
           });
         }
 
+        const siteUrl = req.headers.get("origin") || "https://jhleasing.scaletechconsulting.mx";
         const { error: resetError } = await adminClient.auth.resetPasswordForEmail(resetEmail, {
-          redirectTo: `${req.headers.get("origin") || "https://jhleasing.lovable.app"}/reset-password`,
+          redirectTo: `${siteUrl}/reset-password`,
         });
 
         if (resetError) throw resetError;
