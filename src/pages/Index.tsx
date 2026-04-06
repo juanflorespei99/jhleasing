@@ -66,9 +66,9 @@ export default function Index() {
                     Admin
                   </Link>
                 )}
-                {isEmployee && (
+                {isEmployee && role && (
                   <span className="text-[9px] md:text-[10px] uppercase tracking-widest font-bold px-2 md:px-3 py-1 rounded-full bg-primary text-primary-foreground">
-                    Empleado
+                    {role === "admin" ? "Admin" : role === "employee" ? "Empleado" : "Usuario"}
                   </span>
                 )}
                 <button

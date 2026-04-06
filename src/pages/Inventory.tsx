@@ -64,9 +64,9 @@ export default function Inventory() {
                   Admin
                 </Link>
               )}
-              {isEmployee && (
+              {isEmployee && role && (
                 <span className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-primary text-primary-foreground">
-                  Empleado
+                  {role === "admin" ? "Admin" : role === "employee" ? "Empleado" : "Usuario"}
                 </span>
               )}
               <button
