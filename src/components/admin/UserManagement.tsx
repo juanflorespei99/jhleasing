@@ -62,6 +62,7 @@ export default function UserManagement() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [resettingEmail, setResettingEmail] = useState<string | null>(null);
 
   // Create dialog
   const [createOpen, setCreateOpen] = useState(false);
@@ -121,12 +122,15 @@ export default function UserManagement() {
   };
 
   const handleResetPassword = async (email: string) => {
+    if (resettingEmail) return;
+    setResettingEmail(email);
     try {
       await invokeManageUsers({ action: "reset_password", email });
       toast.success(`Correo de recuperación enviado a ${email}`);
     } catch (err: any) {
       toast.error(err.message || "Error enviando correo de recuperación");
     }
+    setTimeout(() => setResettingEmail(null), 5000);
   };
 
   const handleUpdateRole = async () => {
@@ -319,6 +323,7 @@ export default function UserManagement() {
                           size="icon"
                           className="h-8 w-8"
                           title="Resetear contraseña"
+                          disabled={resettingEmail === user.email}
                           onClick={() => handleResetPassword(user.email)}
                         >
                           <KeyRound className="h-4 w-4" />
