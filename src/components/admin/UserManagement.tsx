@@ -122,12 +122,15 @@ export default function UserManagement() {
   };
 
   const handleResetPassword = async (email: string) => {
+    if (resettingEmail) return;
+    setResettingEmail(email);
     try {
       await invokeManageUsers({ action: "reset_password", email });
       toast.success(`Correo de recuperación enviado a ${email}`);
     } catch (err: any) {
       toast.error(err.message || "Error enviando correo de recuperación");
     }
+    setTimeout(() => setResettingEmail(null), 5000);
   };
 
   const handleUpdateRole = async () => {
