@@ -8,7 +8,7 @@ import VehicleForm from "@/components/admin/VehicleForm";
 import MarkAsSoldDialog from "@/components/admin/MarkAsSoldDialog";
 import SalesDashboard from "@/components/admin/SalesDashboard";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, Car, Search, BadgeDollarSign } from "lucide-react";
+import { Plus, ArrowLeft, Car, Search, BadgeDollarSign, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
