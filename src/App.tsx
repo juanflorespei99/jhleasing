@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import RecoveryRedirect from "@/components/auth/RecoveryRedirect";
 import Index from "./pages/Index";
 import VehicleDetail from "./pages/VehicleDetail";
 import Login from "./pages/Login";
@@ -24,6 +25,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <RecoveryRedirect />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/vehiculo/:id" element={<VehicleDetail />} />
