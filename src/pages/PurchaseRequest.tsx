@@ -11,27 +11,32 @@ interface VehicleSummary {
   img: string;
   year: number;
   price_public: number;
-  vin: string;
 }
 
 export default function PurchaseRequest() {
   const { slug } = useParams<{ slug: string }>();
   const { user, signOut } = useAuth();
   const [vehicle, setVehicle] = useState<VehicleSummary | null>(null);
+  const [vin, setVin] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!slug) return;
     (async () => {
       try {
+        // Fetch vehicle summary (no VIN exposed)
         const { data, error } = await supabase
-          .from("vehicles")
-          .select("name, img, year, price_public, vin")
+          .from("vehicles_public")
+          .select("name, img, year, price_public")
           .eq("slug", slug)
           .maybeSingle();
         if (error) throw error;
         if (data) setVehicle(data);
         else toast.error("Vehículo no encontrado");
+
+        // Fetch VIN via secure RPC (SECURITY DEFINER) — never shown in UI
+        const { data: vinData } = await supabase.rpc("get_vehicle_vin", { _slug: slug });
+        if (vinData) setVin(vinData);
       } catch {
         toast.error("Error cargando datos del vehículo");
       }
@@ -47,9 +52,9 @@ export default function PurchaseRequest() {
     );
   }
 
-  // URL del formulario HubSpot con el VIN como parámetro en la URL
-  const hubspotUrl = vehicle?.vin
-    ? `https://20qto.share.hsforms.com/2mSS9BFkbQiOR-Z0CT982ZQ?numero_de_serie=${encodeURIComponent(vehicle.vin)}`
+  // VIN se envía al formulario HubSpot pero nunca se muestra en la UI
+  const hubspotUrl = vin
+    ? `https://20qto.share.hsforms.com/2mSS9BFkbQiOR-Z0CT982ZQ?numero_de_serie=${encodeURIComponent(vin)}`
     : `https://20qto.share.hsforms.com/2mSS9BFkbQiOR-Z0CT982ZQ`;
 
   return (
