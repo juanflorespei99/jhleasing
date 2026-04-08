@@ -86,8 +86,8 @@ export default function UserManagement() {
       const data = await invokeManageUsers({ action: "list" });
       setUsers(data.users || []);
     } catch (err) {
-      toast.error("Error cargando usuarios");
-      console.error(err);
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      toast.error(`Error cargando usuarios: ${message}`);
     }
     setLoading(false);
   }, []);
@@ -115,8 +115,9 @@ export default function UserManagement() {
       setNewPassword("");
       setNewRole("employee");
       fetchUsers();
-    } catch (err: any) {
-      toast.error(err.message || "Error creando usuario");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error creando usuario";
+      toast.error(message);
     }
     setCreating(false);
   };
@@ -127,8 +128,9 @@ export default function UserManagement() {
     try {
       await invokeManageUsers({ action: "reset_password", email });
       toast.success(`Correo de recuperación enviado a ${email}`);
-    } catch (err: any) {
-      toast.error(err.message || "Error enviando correo de recuperación");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error enviando correo de recuperación";
+      toast.error(message);
     }
     setTimeout(() => setResettingEmail(null), 5000);
   };
@@ -144,8 +146,9 @@ export default function UserManagement() {
       toast.success("Rol actualizado");
       setRoleDialogOpen(false);
       fetchUsers();
-    } catch (err: any) {
-      toast.error(err.message || "Error actualizando rol");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error actualizando rol";
+      toast.error(message);
     }
   };
 
@@ -156,8 +159,9 @@ export default function UserManagement() {
       toast.success("Usuario eliminado");
       setDeleteDialogOpen(false);
       fetchUsers();
-    } catch (err: any) {
-      toast.error(err.message || "Error eliminando usuario");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error eliminando usuario";
+      toast.error(message);
     }
   };
 
