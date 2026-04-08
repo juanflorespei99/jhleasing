@@ -16,12 +16,9 @@ import { fmtMXN } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { BRANDS } from "@/data/brands";
+import { VEHICLE_TYPES as TYPES, VEHICLE_COLORS as COLORS, PLATE_STATES } from "@/data/vehicleOptions";
 import { toast } from "sonner";
 import type { VehicleAdminRow } from "@/types/vehicle";
-
-const TYPES = ["SUV", "Sedán", "Hatchback", "Pick-up", "Van", "Coupé"];
-const COLORS = ["Negro", "Blanco", "Blanco perla", "Plata", "Gris", "Gris plata", "Azul", "Rojo", "Dorado", "Verde", "Beige", "Café", "Naranja", "Amarillo"];
-const PLATE_STATES = ["CDMX", "JALISCO", "SONORA", "MORELOS", "Estado de México", "Nuevo León", "Puebla", "Querétaro", "Guanajuato", "Veracruz", "Chihuahua", "Yucatán", "Quintana Roo", "Baja California", "Sinaloa", "Coahuila", "Tamaulipas", "Michoacán", "Oaxaca", "Guerrero", "Tabasco", "San Luis Potosí", "Hidalgo", "Aguascalientes", "Nayarit", "Durango", "Zacatecas", "Colima", "Campeche", "Tlaxcala", "Baja California Sur", "Chiapas"];
 
 interface Props {
   open: boolean;

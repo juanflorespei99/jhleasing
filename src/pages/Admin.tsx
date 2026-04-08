@@ -6,8 +6,10 @@ import VehicleTable from "@/components/admin/VehicleTable";
 import VehicleForm from "@/components/admin/VehicleForm";
 import MarkAsSoldDialog from "@/components/admin/MarkAsSoldDialog";
 import SalesDashboard from "@/components/admin/SalesDashboard";
+import BulkUploadDialog from "@/components/admin/BulkUploadDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, Car, Search, BadgeDollarSign, Users } from "lucide-react";
+import { Plus, ArrowLeft, Car, Search, BadgeDollarSign, Users, Download, Upload } from "lucide-react";
+import { downloadVehicleTemplate } from "@/lib/vehicleExcel";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
@@ -23,6 +25,7 @@ function AdminDashboard() {
   const [editVehicle, setEditVehicle] = useState<VehicleAdminRow | null>(null);
   const [soldDialogOpen, setSoldDialogOpen] = useState(false);
   const [soldVehicle, setSoldVehicle] = useState<VehicleAdminRow | null>(null);
+  const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
   const [search, setSearch] = useState("");
 
   const fetchVehicles = useCallback(async () => {
@@ -181,9 +184,29 @@ function AdminDashboard() {
                   className="pl-9 rounded-full"
                 />
               </div>
-              <Button onClick={handleNew} className="rounded-full flex-shrink-0">
-                <Plus className="h-4 w-4 mr-1" /> Nuevo Vehículo
-              </Button>
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  variant="outline"
+                  onClick={() => downloadVehicleTemplate()}
+                  className="rounded-full"
+                  title="Descargar plantilla Excel vacía"
+                >
+                  <Download className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">Plantilla</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setBulkUploadOpen(true)}
+                  className="rounded-full"
+                  title="Subir plantilla llena con varios vehículos"
+                >
+                  <Upload className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">Carga masiva</span>
+                </Button>
+                <Button onClick={handleNew} className="rounded-full">
+                  <Plus className="h-4 w-4 mr-1" /> Nuevo Vehículo
+                </Button>
+              </div>
             </div>
 
             {/* Vehicle Cards */}
@@ -226,6 +249,12 @@ function AdminDashboard() {
         onOpenChange={setSoldDialogOpen}
         vehicle={soldVehicle}
         onSaved={fetchVehicles}
+      />
+
+      <BulkUploadDialog
+        open={bulkUploadOpen}
+        onOpenChange={setBulkUploadOpen}
+        onUploaded={fetchVehicles}
       />
     </div>
   );
