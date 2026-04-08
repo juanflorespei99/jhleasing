@@ -17,6 +17,12 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
+    const trimmedEmail = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmedEmail)) {
+      setError("Por favor ingresa un correo válido");
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden");
       return;
@@ -27,7 +33,7 @@ export default function Register() {
     }
 
     setLoading(true);
-    const { error } = await signUp(email, password);
+    const { error } = await signUp(trimmedEmail, password);
     setLoading(false);
 
     if (error) {
