@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { fmt } from "@/lib/format";
+import { fmtMXN } from "@/lib/format";
 import { toast } from "sonner";
 import logoDark from "@/assets/logo-jhl-dark.png";
 
@@ -11,11 +11,13 @@ interface VehicleSummary {
   img: string;
   year: number;
   price_public: number;
+  /** Only present when the user is an employee and we read from vehicles_employee. */
+  price_employee?: number;
 }
 
 export default function PurchaseRequest() {
   const { slug } = useParams<{ slug: string }>();
-  const { user, signOut } = useAuth();
+  const { user, isEmployee, signOut } = useAuth();
   const [vehicle, setVehicle] = useState<VehicleSummary | null>(null);
   const [vin, setVin] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,14 +26,25 @@ export default function PurchaseRequest() {
     if (!slug) return;
     (async () => {
       try {
-        // Fetch vehicle summary (no VIN exposed)
-        const { data, error } = await supabase
-          .from("vehicles_public")
-          .select("name, img, year, price_public")
-          .eq("slug", slug)
-          .maybeSingle();
+        // Pick the right view based on the caller's role. Employees can see
+        // their preferential price via `vehicles_employee`; everyone else
+        // only ever sees `vehicles_public` (which omits price_employee).
+        // This matches the pattern used by VehicleDetail.tsx so the price
+        // shown here is identical to the one the user just clicked on.
+        const query = isEmployee
+          ? supabase
+              .from("vehicles_employee")
+              .select("name, img, year, price_public, price_employee")
+              .eq("slug", slug)
+              .maybeSingle()
+          : supabase
+              .from("vehicles_public")
+              .select("name, img, year, price_public")
+              .eq("slug", slug)
+              .maybeSingle();
+        const { data, error } = await query;
         if (error) throw error;
-        if (data) setVehicle(data);
+        if (data) setVehicle(data as VehicleSummary);
         else toast.error("Vehículo no encontrado");
 
         // Fetch VIN via secure RPC (SECURITY DEFINER) — never shown in UI
@@ -42,7 +55,7 @@ export default function PurchaseRequest() {
       }
       setLoading(false);
     })();
-  }, [slug]);
+  }, [slug, isEmployee]);
 
   if (loading) {
     return (
@@ -109,9 +122,24 @@ export default function PurchaseRequest() {
                 />
                 <div className="p-5">
                   <h2 className="text-base md:text-lg font-bold text-foreground">{vehicle.name}</h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {vehicle.year} · ${fmt(vehicle.price_public)} MXN
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">{vehicle.year}</p>
+                  {isEmployee && vehicle.price_employee ? (
+                    <div className="mt-2">
+                      <p className="text-[10px] uppercase tracking-widest text-primary font-semibold">
+                        Precio preferencial
+                      </p>
+                      <p className="text-lg font-bold text-foreground">
+                        {fmtMXN(vehicle.price_employee)}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-through">
+                        {fmtMXN(vehicle.price_public)}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-lg font-bold text-foreground mt-2">
+                      {fmtMXN(vehicle.price_public)}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
