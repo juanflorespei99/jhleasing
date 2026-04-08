@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import AdminGuard from "@/components/admin/AdminGuard";
 import VehicleTable from "@/components/admin/VehicleTable";
 import VehicleForm from "@/components/admin/VehicleForm";
 import MarkAsSoldDialog from "@/components/admin/MarkAsSoldDialog";
@@ -234,9 +233,7 @@ function AdminDashboard() {
 }
 
 export default function Admin() {
-  return (
-    <AdminGuard>
-      <AdminDashboard />
-    </AdminGuard>
-  );
+  // Note: route-level <AdminGuard> wraps this in App.tsx, so we don't need to
+  // wrap again here. Keeping the import out avoids confusion.
+  return <AdminDashboard />;
 }

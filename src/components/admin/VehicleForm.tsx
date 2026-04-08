@@ -99,24 +99,63 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
   const margin = pricePublic - priceEmployee;
   const marginPct = pricePublic > 0 ? ((margin / pricePublic) * 100).toFixed(1) : "0";
 
+  const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+  const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) setImageFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+    const files = Array.from(e.target.files || []);
+    const valid: File[] = [];
+    for (const f of files) {
+      if (!ALLOWED_IMAGE_TYPES.includes(f.type)) {
+        toast.error(`"${f.name}": tipo no permitido. Usa JPG, PNG o WebP.`);
+        continue;
+      }
+      if (f.size > MAX_IMAGE_BYTES) {
+        toast.error(`"${f.name}": supera el límite de 5 MB.`);
+        continue;
+      }
+      valid.push(f);
+    }
+    if (valid.length > 0) setImageFiles((prev) => [...prev, ...valid]);
+    // Reset the input so the same file can be re-selected after rejection
+    e.target.value = "";
   };
 
   const removeNewImage = (i: number) => setImageFiles(prev => prev.filter((_, idx) => idx !== i));
   const removeExistingImage = (i: number) => setExistingImages(prev => prev.filter((_, idx) => idx !== i));
 
+  /**
+   * Uploads all selected images in parallel. Reports any per-file failures
+   * via toast and returns only the successfully uploaded URLs, so a partial
+   * failure does not abort the whole save flow.
+   */
   const uploadImages = async (): Promise<string[]> => {
-    const urls: string[] = [];
-    for (const file of imageFiles) {
-      const ext = file.name.split(".").pop();
-      const path = `${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from("vehicle-images").upload(path, file);
-      if (error) throw error;
-      const { data } = supabase.storage.from("vehicle-images").getPublicUrl(path);
-      urls.push(data.publicUrl);
+    if (imageFiles.length === 0) return [];
+
+    const results = await Promise.allSettled(
+      imageFiles.map(async (file) => {
+        const ext = file.name.split(".").pop() || "jpg";
+        const path = `${crypto.randomUUID()}.${ext}`;
+        const { error } = await supabase.storage
+          .from("vehicle-images")
+          .upload(path, file, { contentType: file.type, upsert: false });
+        if (error) throw new Error(`${file.name}: ${error.message}`);
+        const { data } = supabase.storage.from("vehicle-images").getPublicUrl(path);
+        return data.publicUrl;
+      }),
+    );
+
+    const failed = results.filter((r) => r.status === "rejected");
+    if (failed.length > 0) {
+      const messages = failed
+        .map((r) => (r as PromiseRejectedResult).reason?.message ?? "error desconocido")
+        .join("; ");
+      toast.error(`No se pudieron subir ${failed.length} imagen(es): ${messages}`);
     }
-    return urls;
+
+    return results
+      .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
+      .map((r) => r.value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
