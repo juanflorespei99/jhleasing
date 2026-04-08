@@ -34,8 +34,7 @@ function AdminDashboard() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast.error("Error cargando inventario");
-      console.error(error);
+      toast.error(`Error cargando inventario: ${error.message}`);
     } else {
       setVehicles((data as unknown as VehicleAdminRow[]) || []);
     }

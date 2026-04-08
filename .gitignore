@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Environment variables (never commit real secrets)
+.env
+.env.local
+.env.*.local
+
+# Lovable internal scratch files
+.lovable/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

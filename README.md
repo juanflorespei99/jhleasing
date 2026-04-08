@@ -1,73 +1,103 @@
-# Welcome to your Lovable project
+# JH Leasing
 
-## Project info
+Plataforma web para la gestión y exhibición del inventario de vehículos de JH Leasing, con un panel administrativo para empleados y precios diferenciados (público vs. empleado).
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Stack
 
-## How can I edit this code?
+- **Vite** + **React 18** + **TypeScript**
+- **Tailwind CSS** + **shadcn/ui** (componentes basados en Radix)
+- **React Router** para navegación
+- **TanStack Query** para data fetching y caché
+- **Supabase** para autenticación, base de datos y storage
+- **Vitest** + **Testing Library** para pruebas
 
-There are several ways of editing your application.
+## Características principales
 
-**Use Lovable**
+- Catálogo público de vehículos con filtros (marca, año, tipo de carrocería, etc.)
+- Detalle de vehículo con galería de imágenes y lightbox
+- Comparador de vehículos lado a lado
+- Solicitud de compra
+- Autenticación con roles: `user`, `employee`, `admin`
+- Panel administrativo (`/admin`):
+  - Alta, edición y marcado como vendido del inventario
+  - Gestión de usuarios y roles
+  - Dashboard de ventas
+- Precios diferenciados: público vs. empleado (vista `vehicles_employee`)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Requisitos
 
-Changes made via Lovable will be committed automatically to this repo.
+- Node.js 18+ (recomendado 20+)
+- Una cuenta de Supabase con el proyecto provisionado (ver carpeta `supabase/`)
 
-**Use your preferred IDE**
+## Configuración
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. Clona el repositorio:
+   ```sh
+   git clone https://github.com/juanflorespei99/jhleasing.git
+   cd jhleasing
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+2. Instala dependencias:
+   ```sh
+   npm install
+   ```
 
-Follow these steps:
+3. Copia el archivo de variables de entorno y rellénalo con los valores de tu proyecto Supabase:
+   ```sh
+   cp .env.example .env
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+   Edita `.env` con tus credenciales:
+   ```env
+   VITE_SUPABASE_PROJECT_ID="..."
+   VITE_SUPABASE_URL="https://xxxxx.supabase.co"
+   VITE_SUPABASE_PUBLISHABLE_KEY="eyJ..."
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+   > La `PUBLISHABLE_KEY` es la clave **anon/public** de Supabase. Es segura para exponer en el cliente porque las tablas están protegidas por Row Level Security (RLS).
 
-# Step 3: Install the necessary dependencies.
-npm i
+4. Levanta el servidor de desarrollo:
+   ```sh
+   npm run dev
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+## Scripts disponibles
+
+| Comando | Descripción |
+|---|---|
+| `npm run dev` | Servidor de desarrollo con HMR |
+| `npm run build` | Build de producción |
+| `npm run build:dev` | Build en modo desarrollo |
+| `npm run preview` | Previsualizar el build de producción |
+| `npm run lint` | Ejecutar ESLint |
+| `npm run test` | Correr tests con Vitest |
+| `npm run test:watch` | Tests en modo watch |
+
+## Estructura del proyecto
+
+```
+src/
+├── assets/              # Imágenes y recursos estáticos
+├── components/          # Componentes React
+│   ├── admin/           # Componentes del panel admin
+│   ├── auth/            # Componentes de autenticación
+│   └── ui/              # Componentes shadcn/ui
+├── data/                # Datos estáticos (marcas, etc.)
+├── hooks/               # Custom hooks (useAuth, useVehicles, ...)
+├── integrations/
+│   └── supabase/        # Cliente Supabase y tipos generados
+├── lib/                 # Utilidades (formato, recovery, ...)
+├── pages/               # Páginas de rutas
+├── test/                # Setup y ejemplos de tests
+└── types/               # Tipos TypeScript compartidos
+
+supabase/                # Migraciones y funciones edge
 ```
 
-**Edit a file directly in GitHub**
+## Despliegue
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+El proyecto está conectado a Lovable. Los cambios pueden hacerse desde:
+- La interfaz de Lovable (sincroniza automáticamente con este repo)
+- Tu IDE local (haz push y Lovable lo refleja)
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Para publicar: en Lovable → **Share → Publish**.
