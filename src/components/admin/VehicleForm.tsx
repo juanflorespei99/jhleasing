@@ -208,12 +208,17 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[calc(100vw-1.5rem)] max-h-[90vh] overflow-y-auto p-4 md:p-6 rounded-2xl">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl w-[calc(100vw-1.5rem)] max-h-[90vh] p-0 rounded-2xl flex flex-col gap-0">
+        <DialogHeader className="px-4 md:px-6 pt-4 md:pt-6 pb-3 shrink-0 border-b border-border/30">
           <DialogTitle className="text-base md:text-lg">{isEdit ? "Editar Vehículo" : "Nuevo Vehículo"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col flex-1 min-h-0"
+        >
+          {/* Scrollable body — header and footer stay outside this area */}
+          <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-5 space-y-5">
           {/* Brand + Type */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             <div>
@@ -374,10 +379,11 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
             </div>
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-sm text-destructive">{error}</p>}
+          </div>
 
-          {/* Footer buttons */}
-          <div className="flex gap-2 md:gap-3 justify-end sticky bottom-0 bg-background pt-3 pb-1 -mx-4 px-4 md:-mx-6 md:px-6 border-t border-border/30">
+          {/* Footer — sibling of the scrollable area, never overlapped */}
+          <div className="shrink-0 flex items-center gap-2 md:gap-3 justify-end px-4 md:px-6 py-3 border-t border-border/30 bg-background rounded-b-2xl">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="text-xs md:text-sm">
               Cancelar
             </Button>
