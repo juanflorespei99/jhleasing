@@ -12,9 +12,12 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // 1. Require Authorization header
+    // 1. Check for authorization: either header or internal API key
     const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
+    const internalKey = req.headers.get("x-internal-key");
+    const clientKey = Deno.env.get("CLIENT_KEY");
+
+    if (!authHeader && !internalKey) {
       return new Response(JSON.stringify({ error: "No autorizado" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -27,9 +30,9 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    // 2. Allow service-role key for automated/internal uploads (e.g. from CI or tooling)
-    const token = authHeader.replace(/^Bearer\s+/i, "");
-    const isServiceRole = token === serviceRoleKey;
+    // 2. Allow internal key or service-role key for automated uploads
+    const token = authHeader?.replace(/^Bearer\s+/i, "") ?? "";
+    const isInternal = (internalKey && clientKey && internalKey === clientKey) || token === serviceRoleKey;
 
     if (!isServiceRole) {
       // Verify the JWT and resolve the calling user
