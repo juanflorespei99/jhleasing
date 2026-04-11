@@ -97,7 +97,8 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
   const marginPct = pricePublic > 0 ? ((margin / pricePublic) * 100).toFixed(1) : "0";
 
   const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-  const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
+  const MAX_IMAGE_BYTES = 100 * 1024 * 1024; // 100 MB
+  const MAX_IMAGE_MB = 100;
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
