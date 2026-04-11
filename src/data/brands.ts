@@ -1,25 +1,17 @@
-import audiLogo from "@/assets/brands/audi.svg";
-import bmwLogo from "@/assets/brands/bmw.svg";
-import chevroletLogo from "@/assets/brands/chevrolet.svg";
-import chireyLogo from "@/assets/brands/chirey.svg";
-import chryslerLogo from "@/assets/brands/chrysler.svg";
-import dodgeLogo from "@/assets/brands/dodge.svg";
-import fordLogo from "@/assets/brands/ford.svg";
-import gmcLogo from "@/assets/brands/gmc.svg";
-import hondaLogo from "@/assets/brands/honda.svg";
-import hyundaiLogo from "@/assets/brands/hyundai.svg";
-import jacLogo from "@/assets/brands/jac.svg";
-import kiaLogo from "@/assets/brands/kia.svg";
-import landRoverLogo from "@/assets/brands/land-rover.svg";
-import mazdaLogo from "@/assets/brands/mazda.svg";
-import mercedesLogo from "@/assets/brands/mercedes.svg";
-import mgLogo from "@/assets/brands/mg.svg";
-import nissanLogo from "@/assets/brands/nissan.svg";
-import renaultLogo from "@/assets/brands/renault.svg";
-import suzukiLogo from "@/assets/brands/suzuki.svg";
-import toyotaLogo from "@/assets/brands/toyota.svg";
-import volkswagenLogo from "@/assets/brands/volkswagen.svg";
-import volvoLogo from "@/assets/brands/volvo.svg";
+/**
+ * Brand catalog with official logos via Clearbit Logo API.
+ *
+ * Clearbit serves real company logos as PNGs at:
+ *   https://logo.clearbit.com/{domain}?size={px}
+ *
+ * These replace the previous AI-generated SVGs that were not the
+ * official brand logos. If Clearbit ever becomes unavailable, replace
+ * the URLs with locally-hosted PNGs in src/assets/brands/.
+ */
+
+/** Helper to build a Clearbit logo URL at a consistent size. */
+const cb = (domain: string, size = 128): string =>
+  `https://logo.clearbit.com/${domain}?size=${size}`;
 
 /** All supported brands, sorted alphabetically */
 export const BRANDS = [
@@ -31,28 +23,28 @@ export const BRANDS = [
 
 export type Brand = (typeof BRANDS)[number];
 
-/** Brand name → SVG logo mapping */
+/** Brand name → logo URL mapping */
 export const brandLogos: Record<string, string> = {
-  Audi: audiLogo,
-  BMW: bmwLogo,
-  Chevrolet: chevroletLogo,
-  Chirey: chireyLogo,
-  Chrysler: chryslerLogo,
-  Dodge: dodgeLogo,
-  Ford: fordLogo,
-  GMC: gmcLogo,
-  Honda: hondaLogo,
-  Hyundai: hyundaiLogo,
-  JAC: jacLogo,
-  KIA: kiaLogo,
-  "Land Rover": landRoverLogo,
-  Mazda: mazdaLogo,
-  Mercedes: mercedesLogo,
-  MG: mgLogo,
-  Nissan: nissanLogo,
-  Renault: renaultLogo,
-  Suzuki: suzukiLogo,
-  Toyota: toyotaLogo,
-  Volkswagen: volkswagenLogo,
-  Volvo: volvoLogo,
+  Audi: cb("audi.com"),
+  BMW: cb("bmw.com"),
+  Chevrolet: cb("chevrolet.com"),
+  Chirey: cb("chirey.mx"),
+  Chrysler: cb("chrysler.com"),
+  Dodge: cb("dodge.com"),
+  Ford: cb("ford.com"),
+  GMC: cb("gmc.com"),
+  Honda: cb("honda.com"),
+  Hyundai: cb("hyundai.com"),
+  JAC: cb("jacmexico.com.mx"),
+  KIA: cb("kia.com"),
+  "Land Rover": cb("landrover.com"),
+  Mazda: cb("mazda.com"),
+  Mercedes: cb("mercedes-benz.com"),
+  MG: cb("mgmotor.com"),
+  Nissan: cb("nissan.com"),
+  Renault: cb("renault.com"),
+  Suzuki: cb("suzuki.com"),
+  Toyota: cb("toyota.com"),
+  Volkswagen: cb("volkswagen.com"),
+  Volvo: cb("volvo.com"),
 };
