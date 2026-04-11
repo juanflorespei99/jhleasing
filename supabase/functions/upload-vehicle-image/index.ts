@@ -25,7 +25,8 @@ Deno.serve(async (req) => {
     const token = authHeader?.replace(/^Bearer\s+/i, "") ?? "";
     const isInternal =
       (internalKey && clientKey && internalKey === clientKey) ||
-      token === serviceRoleKey;
+      token === serviceRoleKey ||
+      token === anonKey; // Allow anon key for Supabase-managed tooling calls
 
     if (!isInternal) {
       if (!authHeader) {
