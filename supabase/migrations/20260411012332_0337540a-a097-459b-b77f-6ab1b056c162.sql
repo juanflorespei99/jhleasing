@@ -1,0 +1,1 @@
+UPDATE vehicles SET mileage = '70,000 km' WHERE slug = 'mg-hs-excite-2022';
