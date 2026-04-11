@@ -1,19 +1,16 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Pause, Play, Trash2, MapPin, Gauge, Calendar, Tag, BadgeDollarSign } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Pencil, Pause, Play, Trash2, MapPin, Gauge, Calendar, Tag, BadgeDollarSign, RotateCcw } from "lucide-react";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialog, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { fmtMXN } from "@/lib/format";
 import type { VehicleAdminRow } from "@/types/vehicle";
-
-/**
- * Problem: Dead re-export `export type { VehicleAdminRow as VehicleRow }`,
- * local fmt duplicated fmtMXN formatter.
- * Solution: Removed dead re-export, use shared fmtMXN.
- */
 
 interface Props {
   vehicles: VehicleAdminRow[];
@@ -21,6 +18,7 @@ interface Props {
   onToggleActive: (v: VehicleAdminRow) => void;
   onDelete: (id: string) => void;
   onMarkSold?: (v: VehicleAdminRow) => void;
+  onMarkAvailable?: (v: VehicleAdminRow) => void;
 }
 
 function getStatusBadge(v: VehicleAdminRow) {
@@ -30,7 +28,71 @@ function getStatusBadge(v: VehicleAdminRow) {
   return <Badge className="bg-green-500/20 text-green-700 border-green-300 text-[10px]">Público</Badge>;
 }
 
-export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelete, onMarkSold }: Props) {
+/** Delete button with "ELIMINAR" confirmation input. */
+function DeleteButton({ vehicle, onDelete }: { vehicle: VehicleAdminRow; onDelete: (id: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (!next) setConfirmText("");
+  };
+
+  const handleConfirm = () => {
+    onDelete(vehicle.id);
+    setOpen(false);
+    setConfirmText("");
+  };
+
+  return (
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" size="icon" title="Eliminar" className="h-8 w-8 rounded-full">
+          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Eliminar vehículo permanentemente?</AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>
+                Estás a punto de eliminar <strong className="text-foreground">{vehicle.brand} {vehicle.name}</strong>.
+              </p>
+              {vehicle.vin && (
+                <p>Serial: <span className="font-mono text-foreground">{vehicle.vin}</span></p>
+              )}
+              <p>Esta acción <strong className="text-destructive">no se puede deshacer</strong>.</p>
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="space-y-2">
+          <Label className="text-xs">
+            Escribe <strong className="text-destructive">ELIMINAR</strong> para confirmar
+          </Label>
+          <Input
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder="ELIMINAR"
+            autoComplete="off"
+          />
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <Button
+            variant="destructive"
+            onClick={handleConfirm}
+            disabled={confirmText !== "ELIMINAR"}
+          >
+            Eliminar permanentemente
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelete, onMarkSold, onMarkAvailable }: Props) {
   if (vehicles.length === 0) {
     return (
       <div className="neu-card p-12 text-center text-muted-foreground">
@@ -126,33 +188,26 @@ export default function VehicleTable({ vehicles, onEdit, onToggleActive, onDelet
                       <Button variant="outline" size="sm" onClick={() => onEdit(v)} className="rounded-full text-[10px] uppercase tracking-widest gap-1 h-8 px-3">
                         <Pencil className="h-3.5 w-3.5" /> Editar
                       </Button>
-                      {!v.sold_at && onMarkSold && (
-                        <Button variant="outline" size="sm" onClick={() => onMarkSold(v)} className="rounded-full text-[10px] uppercase tracking-widest gap-1 h-8 px-3 text-primary border-primary/30 hover:bg-primary/10">
-                          <BadgeDollarSign className="h-3.5 w-3.5" /> Vendido
+                      {v.sold_at && onMarkAvailable ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onMarkAvailable(v)}
+                          className="rounded-full text-[10px] uppercase tracking-widest gap-1 h-8 px-3 text-green-700 border-green-300 hover:bg-green-500/10"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" /> Regresar
                         </Button>
+                      ) : (
+                        !v.sold_at && onMarkSold && (
+                          <Button variant="outline" size="sm" onClick={() => onMarkSold(v)} className="rounded-full text-[10px] uppercase tracking-widest gap-1 h-8 px-3 text-primary border-primary/30 hover:bg-primary/10">
+                            <BadgeDollarSign className="h-3.5 w-3.5" /> Vendido
+                          </Button>
+                        )
                       )}
                       <Button variant="ghost" size="icon" onClick={() => onToggleActive(v)} title={v.is_active ? "Pausar" : "Activar"} className="h-8 w-8 rounded-full">
                         {v.is_active ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
                       </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" title="Eliminar" className="h-8 w-8 rounded-full">
-                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>¿Eliminar vehículo?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Esta acción no se puede deshacer. Se eliminará "{v.brand} {v.name}" del inventario.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => onDelete(v.id)}>Eliminar</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <DeleteButton vehicle={v} onDelete={onDelete} />
                     </div>
                   </div>
                 </div>
