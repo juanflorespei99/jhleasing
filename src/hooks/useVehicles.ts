@@ -24,7 +24,8 @@ export function useVehicles(isEmployee: boolean, isLoading: boolean) {
 
       const { data, error } = await query;
       if (error) throw error;
-      setVehicles(((data as VehicleRow[] | null) ?? []).map(withVehicleImageFallback));
+      const rows = ((data as VehicleRow[] | null) ?? []).map((vehicle) => withVehicleImageFallback(vehicle));
+      setVehicles(rows);
     } catch {
       toast.error("Error cargando inventario");
     }
