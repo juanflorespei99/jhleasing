@@ -25,35 +25,42 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // 2. Verify the JWT and resolve the calling user
-    const callerClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: { user: caller } } = await callerClient.auth.getUser();
-    if (!caller) {
-      return new Response(JSON.stringify({ error: "No autorizado" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // 3. Check that the caller has the admin role (or employee, if you want to allow staff)
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
-    const { data: roleRow } = await adminClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", caller.id)
-      .in("role", ["admin", "employee"])
-      .maybeSingle();
 
-    if (!roleRow) {
-      return new Response(
-        JSON.stringify({ error: "Solo administradores o empleados pueden subir imágenes" }),
-        {
-          status: 403,
+    // 2. Allow service-role key for automated/internal uploads (e.g. from CI or tooling)
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    const isServiceRole = token === serviceRoleKey;
+
+    if (!isServiceRole) {
+      // Verify the JWT and resolve the calling user
+      const callerClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user: caller } } = await callerClient.auth.getUser();
+      if (!caller) {
+        return new Response(JSON.stringify({ error: "No autorizado" }), {
+          status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+        });
+      }
+
+      // 3. Check that the caller has the admin role
+      const { data: roleRow } = await adminClient
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", caller.id)
+        .in("role", ["admin", "employee"])
+        .maybeSingle();
+
+      if (!roleRow) {
+        return new Response(
+          JSON.stringify({ error: "Solo administradores o empleados pueden subir imágenes" }),
+          {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
     }
 
     // 4. Parse and validate body
