@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { VehicleRow } from "@/types/vehicle";
+import { withVehicleImageFallback } from "@/lib/vehicleImages";
 
 /**
  * Shared hook for fetching vehicles from Supabase.
  * Problem: fetchVehicles was duplicated in Index.tsx, Inventory.tsx, and Compare.tsx
  * with identical logic. useEffect deps included `isLoading` causing double-fetch on mount.
- * Solution: Single hook with stable fetch, correct deps, and toast error handling.
+ * Solution: Single hook with stable fetch, correct deps, toast error handling,
+ * and fallback images for vehicles missing stored URLs.
  */
 export function useVehicles(isEmployee: boolean, isLoading: boolean) {
   const [vehicles, setVehicles] = useState<VehicleRow[]>([]);
@@ -22,7 +24,7 @@ export function useVehicles(isEmployee: boolean, isLoading: boolean) {
 
       const { data, error } = await query;
       if (error) throw error;
-      setVehicles((data as VehicleRow[]) ?? []);
+      setVehicles(((data as VehicleRow[] | null) ?? []).map(withVehicleImageFallback));
     } catch {
       toast.error("Error cargando inventario");
     }
