@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-internal-key",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -12,55 +12,53 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // 1. Require Authorization header
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "No autorizado" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const clientKey = Deno.env.get("CLIENT_KEY");
 
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
-
-    // Auth check: internal key, service-role bearer, or admin/employee JWT
-    const authHeader = req.headers.get("authorization");
-    const internalKey = req.headers.get("x-internal-key");
-    const token = authHeader?.replace(/^Bearer\s+/i, "") ?? "";
-    const isInternal =
-      (internalKey && clientKey && internalKey === clientKey) ||
-      token === serviceRoleKey ||
-      token === anonKey; // Allow anon key for Supabase-managed tooling calls
-
-    if (!isInternal) {
-      if (!authHeader) {
-        return new Response(JSON.stringify({ error: "No autorizado" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const callerClient = createClient(supabaseUrl, anonKey, {
-        global: { headers: { Authorization: authHeader } },
+    // 2. Verify the JWT and resolve the calling user
+    const callerClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user: caller } } = await callerClient.auth.getUser();
+    if (!caller) {
+      return new Response(JSON.stringify({ error: "No autorizado" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
-      const { data: { user: caller } } = await callerClient.auth.getUser();
-      if (!caller) {
-        return new Response(JSON.stringify({ error: "No autorizado" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const { data: roleRow } = await adminClient
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", caller.id)
-        .in("role", ["admin", "employee"])
-        .maybeSingle();
-      if (!roleRow) {
-        return new Response(
-          JSON.stringify({ error: "Solo administradores o empleados pueden subir imágenes" }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
-      }
     }
 
-    // Parse and validate body
+    // 3. Check that the caller has the admin role (or employee, if you want to allow staff)
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    const { data: roleRow } = await adminClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", caller.id)
+      .in("role", ["admin", "employee"])
+      .maybeSingle();
+
+    if (!roleRow) {
+      return new Response(
+        JSON.stringify({ error: "Solo administradores o empleados pueden subir imágenes" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    // 4. Parse and validate body
     const { path, imageBase64, contentType } = await req.json();
+
     if (!path || !imageBase64) {
       return new Response(JSON.stringify({ error: "path e imageBase64 son requeridos" }), {
         status: 400,
@@ -72,7 +70,10 @@ Deno.serve(async (req) => {
     if (!ALLOWED_MIME_TYPES.includes(mime)) {
       return new Response(
         JSON.stringify({ error: `Tipo de archivo no permitido: ${mime}` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -80,10 +81,14 @@ Deno.serve(async (req) => {
     if (bytes.byteLength > MAX_BYTES) {
       return new Response(
         JSON.stringify({ error: `El archivo supera el límite de ${MAX_BYTES / (1024 * 1024)} MB` }),
-        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 413,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
+    // 5. Upload using the admin client (still service-role; we already verified the caller)
     const { error } = await adminClient.storage
       .from("vehicle-images")
       .upload(path, bytes, { contentType: mime, upsert: true });
