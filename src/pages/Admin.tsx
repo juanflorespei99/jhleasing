@@ -76,7 +76,27 @@ function AdminDashboard() {
     const { error } = await supabase.from("vehicles").delete().eq("id", id);
     if (error) toast.error("Error eliminando vehículo");
     else {
-      toast.success("Vehículo eliminado");
+      toast.success("Vehículo eliminado permanentemente");
+      fetchVehicles();
+    }
+  };
+
+  const handleMarkAvailable = async (v: VehicleAdminRow) => {
+    const { error } = await supabase
+      .from("vehicles")
+      .update({
+        sold_at: null,
+        sold_price: null,
+        buyer_name: "",
+        sale_notes: "",
+        status: "Disponible",
+        is_active: true,
+      })
+      .eq("id", v.id);
+    if (error) {
+      toast.error("Error regresando vehículo al catálogo");
+    } else {
+      toast.success(`${v.brand} ${v.name} regresado al catálogo`);
       fetchVehicles();
     }
   };
@@ -219,6 +239,7 @@ function AdminDashboard() {
                 onToggleActive={handleToggleActive}
                 onDelete={handleDelete}
                 onMarkSold={handleMarkSold}
+                onMarkAvailable={handleMarkAvailable}
               />
             )}
           </TabsContent>
@@ -227,7 +248,7 @@ function AdminDashboard() {
             {loading ? (
               <div className="text-center py-20 text-muted-foreground">Cargando ventas...</div>
             ) : (
-              <SalesDashboard vehicles={vehicles} onDelete={handleDelete} />
+              <SalesDashboard vehicles={vehicles} onDelete={handleDelete} onMarkAvailable={handleMarkAvailable} />
             )}
           </TabsContent>
 

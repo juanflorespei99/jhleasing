@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BadgeDollarSign, User, Calendar, FileText, Tag, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { BadgeDollarSign, User, Calendar, FileText, Tag, Trash2, RotateCcw } from "lucide-react";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialog, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
@@ -12,13 +15,74 @@ import type { VehicleAdminRow } from "@/types/vehicle";
 interface Props {
   vehicles: VehicleAdminRow[];
   onDelete: (id: string) => void;
+  onMarkAvailable?: (v: VehicleAdminRow) => void;
 }
 
-/**
- * Problem: Local fmtMXN duplicated from VehicleTable.
- * Solution: Use shared fmtMXN from lib/format.
- */
-export default function SalesDashboard({ vehicles, onDelete }: Props) {
+/** Delete button with "ELIMINAR" confirmation input. */
+function DeleteButton({ vehicle, onDelete }: { vehicle: VehicleAdminRow; onDelete: (id: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (!next) setConfirmText("");
+  };
+
+  const handleConfirm = () => {
+    onDelete(vehicle.id);
+    setOpen(false);
+    setConfirmText("");
+  };
+
+  return (
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" size="icon" title="Eliminar" className="h-8 w-8 rounded-full">
+          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Eliminar vehículo permanentemente?</AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>
+                Estás a punto de eliminar <strong className="text-foreground">{vehicle.brand} {vehicle.name}</strong>.
+              </p>
+              {vehicle.vin && (
+                <p>Serial: <span className="font-mono text-foreground">{vehicle.vin}</span></p>
+              )}
+              <p>Esta acción <strong className="text-destructive">no se puede deshacer</strong>.</p>
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="space-y-2">
+          <Label className="text-xs">
+            Escribe <strong className="text-destructive">ELIMINAR</strong> para confirmar
+          </Label>
+          <Input
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder="ELIMINAR"
+            autoComplete="off"
+          />
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <Button
+            variant="destructive"
+            onClick={handleConfirm}
+            disabled={confirmText !== "ELIMINAR"}
+          >
+            Eliminar permanentemente
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+export default function SalesDashboard({ vehicles, onDelete, onMarkAvailable }: Props) {
   const soldVehicles = vehicles
     .filter(v => v.sold_at)
     .sort((a, b) => new Date(b.sold_at!).getTime() - new Date(a.sold_at!).getTime());
@@ -119,25 +183,19 @@ export default function SalesDashboard({ vehicles, onDelete }: Props) {
                           </span>
                         )}
                       </div>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" title="Eliminar" className="h-8 w-8 rounded-full">
-                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      <div className="flex items-center gap-1">
+                        {onMarkAvailable && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onMarkAvailable(v)}
+                            className="rounded-full text-[10px] uppercase tracking-widest gap-1 h-8 px-3 text-green-700 border-green-300 hover:bg-green-500/10"
+                          >
+                            <RotateCcw className="h-3.5 w-3.5" /> Regresar al catálogo
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>¿Eliminar vehículo vendido?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Esta acción no se puede deshacer. Se eliminará "{v.brand} {v.name}" del registro de ventas.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => onDelete(v.id)}>Eliminar</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                        )}
+                        <DeleteButton vehicle={v} onDelete={onDelete} />
+                      </div>
                     </div>
                   </div>
                 </div>
