@@ -5,8 +5,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { fmtMXN } from "@/lib/format";
 import { toast } from "sonner";
 import logoDark from "@/assets/logo-jhl-dark.png";
+import { withVehicleImageFallback } from "@/lib/vehicleImages";
 
 interface VehicleSummary {
+  slug: string;
   name: string;
   img: string;
   year: number;
@@ -34,17 +36,17 @@ export default function PurchaseRequest() {
         const query = isEmployee
           ? supabase
               .from("vehicles_employee")
-              .select("name, img, year, price_public, price_employee")
+              .select("slug, name, img, year, price_public, price_employee")
               .eq("slug", slug)
               .maybeSingle()
           : supabase
               .from("vehicles_public")
-              .select("name, img, year, price_public")
+              .select("slug, name, img, year, price_public")
               .eq("slug", slug)
               .maybeSingle();
         const { data, error } = await query;
         if (error) throw error;
-        if (data) setVehicle(data as VehicleSummary);
+        if (data) setVehicle(withVehicleImageFallback(data as VehicleSummary) ?? null);
         else toast.error("Vehículo no encontrado");
 
         // Fetch VIN via secure RPC (SECURITY DEFINER) — never shown in UI

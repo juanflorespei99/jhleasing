@@ -7,11 +7,13 @@ import type { VehicleRow } from "@/types/vehicle";
 import logoDark from "@/assets/logo-jhl-dark.png";
 import ImageLightbox from "@/components/ImageLightbox";
 import { toast } from "sonner";
+import { withVehicleImageFallback } from "@/lib/vehicleImages";
 
 /**
  * Problem: `as unknown as VehicleRow` casts, console.error without user feedback,
  * redundant inline fontFamily.
- * Solution: Proper typing via Supabase view, toast on error, removed inline font.
+ * Solution: Proper typing via Supabase view, toast on error, removed inline font,
+ * and fallback imagery when a vehicle is missing stored URLs.
  */
 export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +32,10 @@ export default function VehicleDetail() {
   }, [vehicle?.images]);
 
   useEffect(() => {
+    setActiveImage(0);
+  }, [vehicle?.slug]);
+
+  useEffect(() => {
     if (!id) return;
     const fetchVehicle = async () => {
       setLoading(true);
@@ -39,7 +45,7 @@ export default function VehicleDetail() {
           : supabase.from("vehicles_public").select("*").eq("slug", id).maybeSingle();
         const { data, error } = await query;
         if (error) throw error;
-        setVehicle(data as VehicleRow | null);
+        setVehicle(withVehicleImageFallback(data as VehicleRow | null) ?? null);
       } catch {
         toast.error("Error cargando vehículo");
       }
