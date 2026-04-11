@@ -97,7 +97,8 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
   const marginPct = pricePublic > 0 ? ((margin / pricePublic) * 100).toFixed(1) : "0";
 
   const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-  const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
+  const MAX_IMAGE_BYTES = 100 * 1024 * 1024; // 100 MB
+  const MAX_IMAGE_MB = 100;
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -108,7 +109,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
         continue;
       }
       if (f.size > MAX_IMAGE_BYTES) {
-        toast.error(`"${f.name}": supera el límite de 5 MB.`);
+        toast.error(`"${f.name}": supera el límite de ${MAX_IMAGE_MB} MB.`);
         continue;
       }
       valid.push(f);
@@ -377,6 +378,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
                 <input type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
               </label>
             </div>
+            <p className="text-[10px] text-muted-foreground mt-1">JPG, PNG o WebP · Máximo {MAX_IMAGE_MB} MB por imagen</p>
           </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}
