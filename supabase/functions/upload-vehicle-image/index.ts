@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
     const token = authHeader?.replace(/^Bearer\s+/i, "") ?? "";
     const isInternal = (internalKey && clientKey && internalKey === clientKey) || token === serviceRoleKey;
 
-    if (!isServiceRole) {
+    if (!isInternal) {
       // Verify the JWT and resolve the calling user
       const callerClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
