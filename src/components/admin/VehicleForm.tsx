@@ -109,7 +109,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
         continue;
       }
       if (f.size > MAX_IMAGE_BYTES) {
-        toast.error(`"${f.name}": supera el límite de 5 MB.`);
+        toast.error(`"${f.name}": supera el límite de ${MAX_IMAGE_MB} MB.`);
         continue;
       }
       valid.push(f);
@@ -378,6 +378,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
                 <input type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
               </label>
             </div>
+            <p className="text-[10px] text-muted-foreground mt-1">JPG, PNG o WebP · Máximo {MAX_IMAGE_MB} MB por imagen</p>
           </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}

@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_BYTES = 100 * 1024 * 1024; // 100 MB
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
