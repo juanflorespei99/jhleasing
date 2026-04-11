@@ -32,6 +32,10 @@ export default function VehicleDetail() {
   }, [vehicle?.images]);
 
   useEffect(() => {
+    setActiveImage(0);
+  }, [vehicle?.slug]);
+
+  useEffect(() => {
     if (!id) return;
     const fetchVehicle = async () => {
       setLoading(true);
