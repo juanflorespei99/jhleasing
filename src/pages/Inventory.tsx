@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useVehicles } from "@/hooks/useVehicles";
 import { fmt, getDisplayPrice } from "@/lib/format";
 import VehicleCard from "@/components/VehicleCard";
-import { brandLogos } from "@/data/brands";
+import { useCustomBrandLogos } from "@/hooks/useCustomBrandLogos";
 import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
 
 const typeFilters = ["Todos", "Sedán", "SUV", "Blindados"];
@@ -17,6 +17,7 @@ const typeFilters = ["Todos", "Sedán", "SUV", "Blindados"];
 export default function Inventory() {
   const { user, role, isEmployee, isLoading, signOut } = useAuth();
   const { vehicles, loading: loadingVehicles } = useVehicles(isEmployee, isLoading);
+  const { allBrandLogos: brandLogos } = useCustomBrandLogos();
 
   const [activeType, setActiveType] = useState("Todos");
   const [activeBrand, setActiveBrand] = useState<string[]>([]);

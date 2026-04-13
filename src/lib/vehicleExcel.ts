@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
-import { BRANDS, type Brand } from "@/data/brands";
+import { BRANDS } from "@/data/brands";
 import {
   VEHICLE_TYPES,
   VEHICLE_COLORS,
@@ -51,7 +51,7 @@ type TemplateHeader = (typeof VEHICLE_TEMPLATE_HEADERS)[number];
 export interface ParsedVehicleRow {
   /** 1-indexed row number from the original spreadsheet, used for error reporting. */
   excelRow: number;
-  brand: Brand;
+  brand: string;
   name: string;
   type: string;
   year: number;
@@ -329,14 +329,9 @@ export async function parseVehicleExcel(file: File): Promise<ParseResult> {
     if (!brand) {
       errors.push({ excelRow, field: "Marca", message: "La marca es obligatoria." });
       hasFatalError = true;
-    } else if (!validBrands.has(brand)) {
-      errors.push({
-        excelRow,
-        field: "Marca",
-        message: `Marca no permitida: "${brand}". Revisa la hoja "Instrucciones" del template para ver las marcas válidas.`,
-      });
-      hasFatalError = true;
     }
+    // Custom brands are allowed — they just won't have a predefined logo
+    // unless the admin uploads one via the brand logo uploader.
 
     if (!name) {
       errors.push({ excelRow, field: "Modelo", message: "El modelo es obligatorio." });
@@ -428,7 +423,7 @@ export async function parseVehicleExcel(file: File): Promise<ParseResult> {
 
     rows.push({
       excelRow,
-      brand: brand as Brand,
+      brand,
       name,
       type,
       year,

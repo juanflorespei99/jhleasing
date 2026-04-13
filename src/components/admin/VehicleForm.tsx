@@ -15,8 +15,11 @@ import { cn } from "@/lib/utils";
 import { fmtMXN } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { BRANDS } from "@/data/brands";
+import { isKnownBrand } from "@/data/brands";
 import { VEHICLE_TYPES as TYPES, VEHICLE_COLORS as COLORS, PLATE_STATES } from "@/data/vehicleOptions";
+import { useCustomBrandLogos } from "@/hooks/useCustomBrandLogos";
+import BrandCombobox from "@/components/admin/BrandCombobox";
+import BrandLogoUpload from "@/components/admin/BrandLogoUpload";
 import { toast } from "sonner";
 import type { VehicleAdminRow } from "@/types/vehicle";
 
@@ -40,9 +43,11 @@ function slugify(text: string) {
  */
 export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Props) {
   const { user } = useAuth();
+  const { customBrands, refetch: refetchLogos } = useCustomBrandLogos();
   const isEdit = !!vehicle;
 
   const [brand, setBrand] = useState("");
+  const isCustomBrand = brand.length > 0 && !isKnownBrand(brand);
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [year, setYear] = useState(new Date().getFullYear());
@@ -224,12 +229,17 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             <div>
               <Label className="text-xs">Marca *</Label>
-              <Select value={brand} onValueChange={setBrand}>
-                <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
-                <SelectContent>
-                  {BRANDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <BrandCombobox
+                value={brand}
+                onChange={setBrand}
+                customBrands={customBrands}
+              />
+              {isCustomBrand && (
+                <BrandLogoUpload
+                  brandName={brand}
+                  onUploaded={refetchLogos}
+                />
+              )}
             </div>
             <div>
               <Label className="text-xs">Tipo *</Label>
