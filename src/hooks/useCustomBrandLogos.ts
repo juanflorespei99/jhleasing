@@ -23,11 +23,11 @@ export function useCustomBrandLogos() {
   const [loading, setLoading] = useState(true);
 
   const fetchCustomLogos = useCallback(async () => {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("brand_logos")
       .select("brand_name, logo_url");
     if (!error && data) {
-      setCustomLogos(data);
+      setCustomLogos(data as CustomBrandLogo[]);
     }
     setLoading(false);
   }, []);
