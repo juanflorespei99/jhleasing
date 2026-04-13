@@ -11,6 +11,7 @@ import HeroSection from "@/components/HeroSection";
 import VehicleFilters from "@/components/VehicleFilters";
 import VehicleCard from "@/components/VehicleCard";
 import FooterSection from "@/components/FooterSection";
+import { useCustomBrandLogos } from "@/hooks/useCustomBrandLogos";
 
 /**
  * Problem: fetchVehicles duplicated, displayPrice duplicated, fmt imported from
@@ -22,6 +23,7 @@ import FooterSection from "@/components/FooterSection";
 export default function Index() {
   const { user, role, isEmployee, isLoading, signOut } = useAuth();
   const { vehicles, loading: loadingVehicles } = useVehicles(isEmployee, isLoading);
+  const { allBrandLogos } = useCustomBrandLogos();
 
   const [activeType, setActiveType] = useState("Todos");
   const [activeBrand, setActiveBrand] = useState<string[]>([]);
@@ -110,6 +112,7 @@ export default function Index() {
             <VehicleFilters
               typeFilters={typeFilters}
               brandFilters={brandFilters}
+              brandLogos={allBrandLogos}
               activeType={activeType}
               setActiveType={setActiveType}
               activeBrand={activeBrand}

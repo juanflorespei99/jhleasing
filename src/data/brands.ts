@@ -64,3 +64,8 @@ export const brandLogos: Record<string, string> = {
   Volkswagen: volkswagenLogo,
   Volvo: volvoLogo,
 };
+
+/** Type guard: check if a string is one of the 26 predefined brands. */
+export function isKnownBrand(brand: string): brand is Brand {
+  return (BRANDS as readonly string[]).includes(brand);
+}

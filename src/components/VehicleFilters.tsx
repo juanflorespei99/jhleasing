@@ -1,11 +1,11 @@
 import { fmt, getDisplayPrice } from "@/lib/format";
 import type { VehicleRow } from "@/types/vehicle";
-import { brandLogos } from "@/data/brands";
 import MiniCompare from "@/components/MiniCompare";
 
 interface Props {
   typeFilters: string[];
   brandFilters: string[];
+  brandLogos: Record<string, string>;
   activeType: string;
   setActiveType: (t: string) => void;
   activeBrand: string[];
@@ -23,7 +23,7 @@ interface Props {
  * Solution: Import from lib/format.
  */
 export default function VehicleFilters({
-  typeFilters, brandFilters, activeType, setActiveType,
+  typeFilters, brandFilters, brandLogos, activeType, setActiveType,
   activeBrand, toggleBrand, maxPrice, setMaxPrice,
   priceMin, priceMax, vehicles, isEmployee,
 }: Props) {
