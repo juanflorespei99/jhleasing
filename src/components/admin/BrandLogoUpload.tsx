@@ -60,7 +60,7 @@ export default function BrandLogoUpload({ brandName, onUploaded }: Props) {
       const logoUrl = urlData.publicUrl;
 
       // Upsert into brand_logos table.
-      const { error: dbError } = await supabase
+      const { error: dbError } = await (supabase as any)
         .from("brand_logos")
         .upsert(
           {
