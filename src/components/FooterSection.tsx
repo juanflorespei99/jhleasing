@@ -23,14 +23,25 @@ export default function FooterSection({ logoIcon, logoHorizontal }: Props) {
         </div>
       </div>
       <div className="mt-8 md:mt-12 flex flex-col items-center gap-2 text-xs text-secondary-foreground/40">
-        <a
-          href="https://www.jhl.mx/aviso-de-privacidad"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-primary transition-colors underline underline-offset-2"
-        >
-          Aviso de Privacidad
-        </a>
+        <div className="flex items-center gap-3">
+          <a
+            href="https://www.jhl.mx/aviso-de-privacidad#tab-1"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary transition-colors underline underline-offset-2"
+          >
+            Aviso de Privacidad
+          </a>
+          <span className="text-secondary-foreground/20">|</span>
+          <a
+            href="https://www.jhl.mx/aviso-de-privacidad#tab-2"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary transition-colors underline underline-offset-2"
+          >
+            Política de Privacidad
+          </a>
+        </div>
         <span>© 2026 JHLeasing. Todos los derechos reservados.</span>
       </div>
     </footer>
