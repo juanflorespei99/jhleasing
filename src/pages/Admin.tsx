@@ -207,7 +207,7 @@ function AdminDashboard() {
               <div className="flex gap-2 flex-shrink-0">
                 <Button
                   variant="outline"
-                  onClick={() => downloadVehicleTemplate()}
+                  onClick={() => void downloadVehicleTemplate()}
                   className="rounded-full"
                   title="Descargar plantilla Excel vacía"
                 >

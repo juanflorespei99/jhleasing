@@ -147,7 +147,7 @@ export default function BulkUploadDialog({ open, onOpenChange, onUploaded }: Pro
                 variant="outline"
                 size="sm"
                 className="rounded-full"
-                onClick={() => downloadVehicleTemplate()}
+                onClick={() => void downloadVehicleTemplate()}
               >
                 <Download className="h-3.5 w-3.5 mr-1.5" />
                 Descargar plantilla vacía
