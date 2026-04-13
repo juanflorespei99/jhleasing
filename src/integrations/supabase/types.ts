@@ -32,6 +32,30 @@ export type Database = {
         }
         Relationships: []
       }
+      brand_logos: {
+        Row: {
+          brand_name: string
+          created_at: string
+          created_by: string | null
+          id: string
+          logo_url: string
+        }
+        Insert: {
+          brand_name: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          logo_url: string
+        }
+        Update: {
+          brand_name?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          logo_url?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
