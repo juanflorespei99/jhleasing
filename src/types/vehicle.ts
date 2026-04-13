@@ -38,10 +38,5 @@ export interface VehicleAdminRow extends VehicleRow {
   sale_notes: string;
 }
 
-/**
- * Re-export formatting utilities for backward compatibility.
- * Problem: fmt was defined here, creating coupling between types and formatting.
- * Solution: Canonical source is now src/lib/format.ts; re-export kept to avoid
- * breaking imports during migration.
- */
+/** Re-export formatting utilities for backward compatibility. */
 export { fmt, fmtMXN, getDisplayPrice } from "@/lib/format";

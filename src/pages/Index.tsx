@@ -13,13 +13,6 @@ import VehicleCard from "@/components/VehicleCard";
 import FooterSection from "@/components/FooterSection";
 import { useCustomBrandLogos } from "@/hooks/useCustomBrandLogos";
 
-/**
- * Problem: fetchVehicles duplicated, displayPrice duplicated, fmt imported from
- * data/vehicles.ts (dead re-export), useEffect deps [isEmployee, isLoading]
- * caused double-fetch, inline fontFamily duplicated body CSS.
- * Solution: useVehicles hook, getDisplayPrice util, removed dead imports,
- * removed redundant fontFamily inline style.
- */
 export default function Index() {
   const { user, role, isEmployee, isLoading, signOut } = useAuth();
   const { vehicles, loading: loadingVehicles } = useVehicles(isEmployee, isLoading);

@@ -104,10 +104,6 @@ function MiniSelector({
   );
 }
 
-/**
- * Problem: getPrice duplicated from parent pages, fmt imported from dead re-export.
- * Solution: Use shared getDisplayPrice and fmt from lib/format.
- */
 export default function MiniCompare({ vehicles, isEmployee }: Props) {
   const [slugA, setSlugA] = useState<string | null>(null);
   const [slugB, setSlugB] = useState<string | null>(null);

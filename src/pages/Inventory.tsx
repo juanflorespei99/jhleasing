@@ -9,11 +9,6 @@ import logoHorizontal from "@/assets/logo-jhl-horizontal.png";
 
 const typeFilters = ["Todos", "Sedán", "SUV", "Blindados"];
 
-/**
- * Problem: fetchVehicles duplicated from Index.tsx, displayPrice duplicated,
- * useEffect deps caused double-fetch, unused `useEffect` import.
- * Solution: useVehicles hook, getDisplayPrice util, removed dead imports.
- */
 export default function Inventory() {
   const { user, role, isEmployee, isLoading, signOut } = useAuth();
   const { vehicles, loading: loadingVehicles } = useVehicles(isEmployee, isLoading);

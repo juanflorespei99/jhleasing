@@ -4,13 +4,7 @@ import { toast } from "sonner";
 import type { VehicleRow } from "@/types/vehicle";
 import { withVehicleImageFallback } from "@/lib/vehicleImages";
 
-/**
- * Shared hook for fetching vehicles from Supabase.
- * Problem: fetchVehicles was duplicated in Index.tsx, Inventory.tsx, and Compare.tsx
- * with identical logic. useEffect deps included `isLoading` causing double-fetch on mount.
- * Solution: Single hook with stable fetch, correct deps, toast error handling,
- * and fallback images for vehicles missing stored URLs.
- */
+/** Shared hook for fetching vehicles from Supabase. */
 export function useVehicles(isEmployee: boolean, isLoading: boolean) {
   const [vehicles, setVehicles] = useState<VehicleRow[]>([]);
   const [loading, setLoading] = useState(true);

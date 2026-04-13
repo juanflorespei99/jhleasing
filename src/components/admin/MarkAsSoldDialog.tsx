@@ -19,10 +19,6 @@ interface Props {
   onSaved: () => void;
 }
 
-/**
- * Problem: Local fmt duplicated, `as any` cast on update payload.
- * Solution: Use shared fmtMXN, removed `as any` (payload matches table schema).
- */
 export default function MarkAsSoldDialog({ open, onOpenChange, vehicle, onSaved }: Props) {
   const [soldPrice, setSoldPrice] = useState("");
   const [buyerName, setBuyerName] = useState("");

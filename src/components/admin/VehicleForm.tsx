@@ -34,13 +34,6 @@ function slugify(text: string) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-/**
- * Problem: `(vehicle as any).is_armored` cast, `as any` on insert payload,
- * local Intl.NumberFormat inline instead of shared formatter, error only shown
- * in form text instead of toast.
- * Solution: is_armored is now in VehicleAdminRow interface, removed all `as any`,
- * use fmtMXN, toast on error.
- */
 export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Props) {
   const { user } = useAuth();
   const { customBrands, refetch: refetchLogos } = useCustomBrandLogos();
