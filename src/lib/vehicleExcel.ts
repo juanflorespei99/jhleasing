@@ -85,135 +85,134 @@ export interface ParseResult {
 // ---------- DOWNLOAD ----------
 
 /**
- * Generates an .xlsx template with ExcelJS (which properly supports
- * data validation / dropdown menus, unlike SheetJS community edition).
+ * Builds a comma-separated inline list for Excel data validation.
+ * Format: `"Item1,Item2,Item3"` (with enclosing double quotes).
+ * If the resulting string exceeds 255 chars (Excel limit for inline
+ * lists), returns null — the caller should fall back to a sheet reference.
+ */
+function inlineList(values: readonly string[]): string | null {
+  const joined = values.join(",");
+  // Excel inline validation limit is 255 chars INCLUDING the quotes.
+  if (joined.length > 253) return null;
+  return `"${joined}"`;
+}
+
+/**
+ * Generates an .xlsx template using ExcelJS with working dropdown menus.
  *
- * Three sheets:
- *  1. "_Listas" (hidden) — structured columns with valid enum values,
- *     referenced by dropdown menus in the Vehículos sheet.
- *  2. "Vehículos" — headers + 2 example rows + data validation dropdowns.
- *  3. "Instrucciones" — human-readable reference of valid values.
+ * Uses inline comma-separated lists for short option lists (Marca, Tipo,
+ * Color, Sí/No) and a hidden helper sheet for longer lists (Estados de
+ * Placas) that exceed Excel's 255-char inline limit.
  */
 async function buildVehicleTemplateAsync(): Promise<Blob> {
   const wb = new ExcelJS.Workbook();
 
-  const MAX_DATA_ROWS = 500;
-  const siNo = ["Sí", "No"];
+  const VALIDATED_ROWS = 100; // rows 2-101 get dropdowns
+  const siNo = ["Sí", "No"] as const;
 
-  // --- Sheet 1 (hidden): _Listas ---
-  const wsLists = wb.addWorksheet("_Listas", { state: "hidden" });
-  const listsHeaders = ["Marcas", "Tipos", "Colores", "Estados de Placas", "Sí/No"];
-  wsLists.addRow(listsHeaders);
-  const maxLen = Math.max(
-    BRANDS.length, VEHICLE_TYPES.length, VEHICLE_COLORS.length,
-    PLATE_STATES.length, siNo.length,
-  );
-  for (let i = 0; i < maxLen; i++) {
-    wsLists.addRow([
-      BRANDS[i] ?? "",
-      VEHICLE_TYPES[i] ?? "",
-      VEHICLE_COLORS[i] ?? "",
-      PLATE_STATES[i] ?? "",
-      siNo[i] ?? "",
-    ]);
+  // --- Hidden helper sheet for long lists (Estados de Placas) ---
+  const wsHelper = wb.addWorksheet("_Datos", { state: "veryHidden" });
+  for (let i = 0; i < PLATE_STATES.length; i++) {
+    wsHelper.getCell(i + 1, 1).value = PLATE_STATES[i];
   }
-  wsLists.columns = [
-    { width: 18 }, { width: 14 }, { width: 18 }, { width: 24 }, { width: 10 },
-  ];
+  const statesFormula = `_Datos!$A$1:$A$${PLATE_STATES.length}`;
 
-  // --- Sheet 2: Vehículos ---
-  const wsVehicles = wb.addWorksheet("Vehículos");
+  // --- Vehículos sheet ---
+  const ws = wb.addWorksheet("Vehículos");
 
-  // Headers
-  wsVehicles.addRow([...VEHICLE_TEMPLATE_HEADERS]);
-  // Bold + background on header row
-  const headerRow = wsVehicles.getRow(1);
-  headerRow.font = { bold: true, size: 11 };
-  headerRow.eachCell((cell) => {
+  // Header row
+  const headers = [...VEHICLE_TEMPLATE_HEADERS];
+  ws.addRow(headers);
+  const hRow = ws.getRow(1);
+  hRow.font = { bold: true, size: 11 };
+  hRow.eachCell((cell) => {
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE8E4DF" } };
+    cell.border = { bottom: { style: "thin", color: { argb: "FFCCCCCC" } } };
   });
 
   // Example rows
   const examples = [
     ["Chevrolet", "Aveo LT", "Sedán", 2024, 250000, 200000, "25,000 km",
      "LSGHD52H2ND158903", "Blanco", "CDMX", "CDMX",
-     "Vehículo en excelente estado, único dueño.", "No", "Sí", "Sí", ""],
+     "Vehículo en excelente estado.", "No", "Sí", "Sí", ""],
     ["Hyundai", "Tucson Limited", "SUV", 2023, 580000, 480000, "15,000 km",
      "", "Negro", "Estado de México", "CDMX", "", "No", "Sí", "Sí", "2026-05-01"],
   ];
-  for (const row of examples) wsVehicles.addRow(row);
+  for (const row of examples) ws.addRow(row);
 
   // Column widths
-  wsVehicles.columns = VEHICLE_TEMPLATE_HEADERS.map((h) => ({
-    width: Math.max(15, h.length + 3),
-  }));
+  ws.columns = headers.map((h) => ({ width: Math.max(15, h.length + 3) }));
 
-  // --- Data validation (dropdown menus) ---
-  // Helper: build an ExcelJS-compatible list range reference to _Listas.
-  const listRef = (col: string, count: number) =>
-    `'_Listas'!$${col}$2:$${col}$${count + 1}`;
+  // --- Dropdown definitions ---
+  // Build inline formulae for lists that fit; use sheet ref for long ones.
+  const brandsList = inlineList(BRANDS);
+  const typesList = inlineList(VEHICLE_TYPES);
+  const colorsList = inlineList(VEHICLE_COLORS);
+  const siNoList = inlineList(siNo);
 
-  // Mapping: header name → _Listas column letter + count
-  const dropdowns: { header: TemplateHeader; listCol: string; count: number }[] = [
-    { header: "Marca", listCol: "A", count: BRANDS.length },
-    { header: "Tipo", listCol: "B", count: VEHICLE_TYPES.length },
-    { header: "Color", listCol: "C", count: VEHICLE_COLORS.length },
-    { header: "Estado de Placas", listCol: "D", count: PLATE_STATES.length },
-    { header: "Blindado", listCol: "E", count: siNo.length },
-    { header: "Público", listCol: "E", count: siNo.length },
-    { header: "Activo", listCol: "E", count: siNo.length },
+  interface DropdownDef {
+    header: TemplateHeader;
+    formulae: string;
+  }
+
+  const dropdowns: DropdownDef[] = [
+    { header: "Marca", formulae: brandsList ?? statesFormula /* fallback, shouldn't happen */ },
+    { header: "Tipo", formulae: typesList! },
+    { header: "Color", formulae: colorsList! },
+    { header: "Estado de Placas", formulae: statesFormula },
+    { header: "Blindado", formulae: siNoList! },
+    { header: "Público", formulae: siNoList! },
+    { header: "Activo", formulae: siNoList! },
   ];
 
+  // Apply data validation to each dropdown column, rows 2 through VALIDATED_ROWS+1.
   for (const dd of dropdowns) {
-    const colIndex = VEHICLE_TEMPLATE_HEADERS.indexOf(dd.header) + 1; // 1-indexed
-    // Apply to rows 2 through MAX_DATA_ROWS+1
-    for (let row = 2; row <= MAX_DATA_ROWS + 1; row++) {
-      wsVehicles.getCell(row, colIndex).dataValidation = {
+    const colIdx = headers.indexOf(dd.header) + 1; // ExcelJS is 1-indexed
+    for (let r = 2; r <= VALIDATED_ROWS + 1; r++) {
+      ws.getCell(r, colIdx).dataValidation = {
         type: "list",
         allowBlank: true,
-        formulae: [listRef(dd.listCol, dd.count)],
+        formulae: [dd.formulae],
         showErrorMessage: true,
         errorTitle: "Valor no válido",
-        error: `Selecciona un valor de la lista para "${dd.header}".`,
+        error: `Elige un valor de la lista para "${dd.header}".`,
       };
     }
   }
 
-  // --- Sheet 3: Instrucciones ---
+  // --- Instrucciones sheet ---
   const wsInst = wb.addWorksheet("Instrucciones");
-  const instrLines: string[][] = [
+  const lines: string[][] = [
     ["INSTRUCCIONES PARA LLENAR LA PLANTILLA"],
     [""],
     ["Campos obligatorios: Marca, Modelo, Tipo."],
-    ["El resto son opcionales y se pueden completar después editando el vehículo."],
+    ["El resto son opcionales — se pueden completar después editando el vehículo."],
     [""],
-    ["Las columnas con menú desplegable (Marca, Tipo, Color, Estado de Placas,"],
-    ["Blindado, Público, Activo) solo aceptan los valores de la lista."],
-    ["Haz clic en la celda y usa la flechita ▼ para ver las opciones."],
+    ["Las columnas Marca, Tipo, Color, Estado de Placas, Blindado, Público y Activo"],
+    ["tienen menú desplegable. Haz clic en la celda y usa la flechita ▼."],
     [""],
-    ["Para precios usa solo números enteros (sin $ ni comas). Ej: 250000"],
+    ["Para precios usa números enteros sin $ ni comas. Ej: 250000"],
     ["Para fechas usa formato YYYY-MM-DD. Ej: 2026-05-01. Deja vacío si no aplica."],
     [""],
-    ["VALORES VÁLIDOS DE REFERENCIA:"],
+    ["VALORES VÁLIDOS:"],
     [""],
-    ["Marcas válidas:"],
+    ["— Marcas:"],
     ...BRANDS.map((b) => [b]),
     [""],
-    ["Tipos válidos:"],
+    ["— Tipos:"],
     ...VEHICLE_TYPES.map((t) => [t]),
     [""],
-    ["Colores válidos:"],
+    ["— Colores:"],
     ...VEHICLE_COLORS.map((c) => [c]),
     [""],
-    ["Estados de Placas válidos:"],
+    ["— Estados de Placas:"],
     ...PLATE_STATES.map((s) => [s]),
   ];
-  for (const line of instrLines) wsInst.addRow(line);
+  for (const l of lines) wsInst.addRow(l);
   wsInst.getColumn(1).width = 34;
-  // Bold title
   wsInst.getRow(1).font = { bold: true, size: 13 };
 
-  // --- Write to Blob ---
+  // --- Write ---
   const buffer = await wb.xlsx.writeBuffer();
   return new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
