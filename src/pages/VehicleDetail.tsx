@@ -9,12 +9,6 @@ import ImageLightbox from "@/components/ImageLightbox";
 import { toast } from "sonner";
 import { withVehicleImageFallback } from "@/lib/vehicleImages";
 
-/**
- * Problem: `as unknown as VehicleRow` casts, console.error without user feedback,
- * redundant inline fontFamily.
- * Solution: Proper typing via Supabase view, toast on error, removed inline font,
- * and fallback imagery when a vehicle is missing stored URLs.
- */
 export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();

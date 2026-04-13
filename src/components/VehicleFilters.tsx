@@ -18,10 +18,6 @@ interface Props {
   isEmployee: boolean;
 }
 
-/**
- * Problem: fmt imported from data/vehicles (dead re-export).
- * Solution: Import from lib/format.
- */
 export default function VehicleFilters({
   typeFilters, brandFilters, brandLogos, activeType, setActiveType,
   activeBrand, toggleBrand, maxPrice, setMaxPrice,

@@ -38,7 +38,7 @@ function AdminDashboard() {
     if (error) {
       toast.error(`Error cargando inventario: ${error.message}`);
     } else {
-      setVehicles((data as unknown as VehicleAdminRow[]) || []);
+      setVehicles((data ?? []) as VehicleAdminRow[]);
     }
     setLoading(false);
   }, []);
@@ -125,7 +125,7 @@ function AdminDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-background" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 backdrop-blur-xl border-b border-border/50 px-3 md:px-6 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">

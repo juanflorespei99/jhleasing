@@ -151,12 +151,9 @@ export default function PurchaseRequest() {
           <div className="flex-1 min-w-0">
             <iframe
               src={hubspotUrl}
+              className="w-full border-none block"
               style={{
-                width: "100%",
-                height: "100vh",
-                minHeight: "800px",
-                border: "none",
-                display: "block",
+                height: "clamp(500px, 100vh, 1200px)",
               }}
               title="Formulario de solicitud de compra"
             />

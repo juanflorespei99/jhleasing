@@ -12,10 +12,6 @@ function parseMileage(m: string): number | null {
   return match ? parseInt(match[1], 10) : null;
 }
 
-/**
- * Problem: fetchVehicles duplicated, getPrice duplicated, supabase imported directly.
- * Solution: useVehicles hook, getDisplayPrice util.
- */
 export default function Compare() {
   const [params, setParams] = useSearchParams();
   const { isEmployee, user, signOut, isLoading } = useAuth();

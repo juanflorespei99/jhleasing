@@ -46,7 +46,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6 flex items-center justify-center" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
+    <div className="min-h-screen bg-background p-6 flex items-center justify-center">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-10">
           <Link to="/">
