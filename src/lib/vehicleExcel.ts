@@ -284,7 +284,32 @@ function trimString(raw: unknown): string {
 export async function parseVehicleExcel(file: File): Promise<ParseResult> {
   const buffer = await file.arrayBuffer();
   const wb = XLSX.read(buffer, { type: "array", cellDates: true });
-  const sheetName = wb.SheetNames[0];
+
+  // Find the "Vehículos" sheet explicitly. The template also ships with a
+  // hidden "_Datos" sheet (for dropdown references) and an "Instrucciones"
+  // sheet — we must NOT try to parse those. If the user renamed the sheet
+  // or uploaded a non-template file, fall back to the first sheet that
+  // actually contains our expected header "Marca" in row 1.
+  const pickSheetName = (): string | undefined => {
+    // Prefer exact match (case-insensitive, handles accents).
+    const exact = wb.SheetNames.find(
+      (n) => n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() === "vehiculos",
+    );
+    if (exact) return exact;
+    // Fallback: any sheet whose first row contains the "Marca" header.
+    for (const n of wb.SheetNames) {
+      const firstRow = XLSX.utils.sheet_to_json<Record<string, unknown>>(
+        wb.Sheets[n],
+        { header: 1, range: 0, defval: "" },
+      )[0] as unknown[] | undefined;
+      if (firstRow && firstRow.map((c) => String(c).trim()).includes("Marca")) {
+        return n;
+      }
+    }
+    return wb.SheetNames[0];
+  };
+
+  const sheetName = pickSheetName();
   if (!sheetName) {
     return {
       rows: [],
