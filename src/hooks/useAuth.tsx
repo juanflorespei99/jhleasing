@@ -21,44 +21,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const fetchRole = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .maybeSingle();
-    setRole((data?.role as AppRole) ?? "user");
-  };
+  const [sessionReady, setSessionReady] = useState(false);
+  const [roleReady, setRoleReady] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        if (session?.user) {
-          setTimeout(() => fetchRole(session.user.id), 0);
-        } else {
-          setRole(null);
-        }
-        setIsLoading(false);
+        setSessionReady(true);
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchRole(session.user.id);
-      } else {
-        setRole(null);
-      }
-      setIsLoading(false);
+      setSessionReady(true);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Fetch role keyed on user id; cleanup cancels in-flight requests so a
+  // stale response from a prior user cannot overwrite the current role.
+  const userId = user?.id;
+  useEffect(() => {
+    if (!userId) {
+      setRole(null);
+      setRoleReady(true);
+      return;
+    }
+    setRoleReady(false);
+    let cancelled = false;
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setRole((data?.role as AppRole) ?? "user");
+        setRoleReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -78,7 +86,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
-  const isEmployee = !!user;
+  const isEmployee = role === "employee" || role === "admin";
+  const isLoading = !sessionReady || (!!user && !roleReady);
 
   return (
     <AuthContext.Provider
