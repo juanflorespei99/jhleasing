@@ -272,6 +272,11 @@ function parseNumber(raw: unknown): number | null {
   return isNaN(n) ? null : n;
 }
 
+function parseInteger(raw: unknown): number | null {
+  const value = parseNumber(raw);
+  return value === null ? null : Math.round(value);
+}
+
 function trimString(raw: unknown): string {
   if (raw === undefined || raw === null) return "";
   return String(raw).trim();
@@ -397,7 +402,7 @@ export async function parseVehicleExcel(file: File): Promise<ParseResult> {
     }
 
     // Numeric fields: tolerate empty (default to 0 or current year).
-    const yearParsed = parseNumber(row["Año"]);
+    const yearParsed = parseInteger(row["Año"]);
     let year = currentYear;
     if (yearParsed !== null) {
       if (yearParsed < 1980 || yearParsed > currentYear + 2) {
@@ -412,7 +417,7 @@ export async function parseVehicleExcel(file: File): Promise<ParseResult> {
       }
     }
 
-    const pricePublic = parseNumber(row["Precio Público"]) ?? 0;
+    const pricePublic = parseInteger(row["Precio Público"]) ?? 0;
     if (pricePublic < 0) {
       errors.push({
         excelRow,
@@ -422,7 +427,7 @@ export async function parseVehicleExcel(file: File): Promise<ParseResult> {
       hasFatalError = true;
     }
 
-    const priceEmployee = parseNumber(row["Precio Empleado"]) ?? 0;
+    const priceEmployee = parseInteger(row["Precio Empleado"]) ?? 0;
     if (priceEmployee < 0) {
       errors.push({
         excelRow,
