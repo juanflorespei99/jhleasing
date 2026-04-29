@@ -298,10 +298,10 @@ export async function parseVehicleExcel(file: File): Promise<ParseResult> {
     if (exact) return exact;
     // Fallback: any sheet whose first row contains the "Marca" header.
     for (const n of wb.SheetNames) {
-      const firstRow = XLSX.utils.sheet_to_json<Record<string, unknown>>(
+      const firstRow = XLSX.utils.sheet_to_json<unknown[]>(
         wb.Sheets[n],
         { header: 1, range: 0, defval: "" },
-      )[0] as unknown[] | undefined;
+      )[0];
       if (firstRow && firstRow.map((c) => String(c).trim()).includes("Marca")) {
         return n;
       }
