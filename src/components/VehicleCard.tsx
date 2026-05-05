@@ -39,19 +39,6 @@ export default function VehicleCard({ vehicle: v, isEmployee, displayPrice }: Pr
         <h3 className="text-lg md:text-2xl font-normal uppercase mb-1">{v.name}</h3>
         <p className="text-xs mb-3 md:mb-4 text-muted-foreground">{v.year}</p>
 
-        <div
-          className="relative rounded-2xl md:rounded-3xl mb-2 overflow-hidden"
-          style={{ minHeight: 140, maxHeight: 220, boxShadow: "inset 0 0 20px rgba(0,0,0,0.05)" }}
-        >
-          <img src={v.img} alt={v.name} className="w-full h-full object-cover" />
-          <span className="absolute top-2 left-2 text-[9px] uppercase tracking-widest font-bold px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm text-foreground">
-            Referencia
-          </span>
-        </div>
-        <p className="text-[10px] italic text-muted-foreground mb-4 md:mb-5 px-1 leading-snug">
-          Imagen de referencia · Agenda una cita para ver la unidad real
-        </p>
-
         <div className="grid grid-cols-2 gap-3 md:gap-4 border-t border-border/20 mt-auto pt-4 md:pt-5">
           <div>
             {v.price_employee ? (
