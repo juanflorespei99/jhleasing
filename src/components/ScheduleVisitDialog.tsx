@@ -50,17 +50,18 @@ Gracias.`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto bg-background border-none neu-card">
-        <DialogHeader>
-          <DialogTitle className="heading-md">Agenda una cita para conocer este vehículo</DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground pt-2">
-            Sigue estos 3 pasos para solicitar tu visita en Corporativo CDMX. Hemos preparado todo el correo por ti — solo cópialo y envíalo desde tu correo personal.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-2xl w-[calc(100vw-2rem)] sm:w-[92vw] max-h-[calc(100dvh-2rem)] overflow-hidden bg-background border-none rounded-[2rem] p-0 shadow-[var(--shadow-raised)]">
+        <div className="max-h-[calc(100dvh-2rem)] overflow-y-auto p-5 pr-10 sm:p-6 sm:pr-12">
+          <DialogHeader>
+            <DialogTitle className="heading-md">Agenda una cita para conocer este vehículo</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground pt-2">
+              Sigue estos 3 pasos para solicitar tu visita en Corporativo CDMX. Hemos preparado todo el correo por ti — solo cópialo y envíalo desde tu correo personal.
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="flex flex-col gap-5 mt-2">
+          <div className="flex flex-col gap-4 mt-4">
           {/* Paso 1: Destinatario */}
-          <div className="neu-inset-sm p-5 rounded-2xl">
+          <div className="neu-inset-sm p-4 rounded-2xl">
             <div className="flex items-center gap-3 mb-3">
               <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</span>
               <span className="label-micro">Destinatario</span>
@@ -79,7 +80,7 @@ Gracias.`;
           </div>
 
           {/* Paso 2: Asunto */}
-          <div className="neu-inset-sm p-5 rounded-2xl">
+          <div className="neu-inset-sm p-4 rounded-2xl">
             <div className="flex items-center gap-3 mb-3">
               <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</span>
               <span className="label-micro">Asunto</span>
@@ -96,7 +97,7 @@ Gracias.`;
           </div>
 
           {/* Paso 3: Mensaje */}
-          <div className="neu-inset-sm p-5 rounded-2xl">
+          <div className="neu-inset-sm p-4 rounded-2xl">
             <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
               <div className="flex items-center gap-3">
                 <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">3</span>
@@ -109,13 +110,13 @@ Gracias.`;
                 {copiedField === "body" ? "✓ Copiado" : "Copiar mensaje"}
               </button>
             </div>
-            <pre className="text-xs leading-relaxed text-foreground whitespace-pre-wrap font-sans bg-background/50 p-4 rounded-xl border border-border/30">
+            <pre className="text-xs leading-relaxed text-foreground whitespace-pre-wrap font-sans bg-background/50 p-3 rounded-xl border border-border/30">
 {body}
             </pre>
           </div>
 
           {/* Acciones rápidas */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row gap-3 pt-1">
             <button
               onClick={() => copy(`Para: ${RECIPIENT}\nAsunto: ${subject}\n\n${body}`, "all")}
               className="flex-1 py-4 rounded-full text-xs uppercase tracking-widest font-bold transition-all hover:opacity-90 bg-secondary text-secondary-foreground"
@@ -130,9 +131,10 @@ Gracias.`;
             </a>
           </div>
 
-          <p className="text-[11px] text-muted-foreground text-center pt-2">
+          <p className="text-[11px] text-muted-foreground text-center pt-1">
             Te responderemos a la brevedad para coordinar fecha y hora de tu visita.
           </p>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
