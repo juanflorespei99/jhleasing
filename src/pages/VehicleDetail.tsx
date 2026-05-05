@@ -6,6 +6,7 @@ import { fmt } from "@/lib/format";
 import type { VehicleRow } from "@/types/vehicle";
 import logoDark from "@/assets/logo-jhl-dark.png";
 import ImageLightbox from "@/components/ImageLightbox";
+import ScheduleVisitDialog from "@/components/ScheduleVisitDialog";
 import { toast } from "sonner";
 import { withVehicleImageFallback } from "@/lib/vehicleImages";
 
