@@ -70,9 +70,14 @@ export default function ImageLightbox({ images, initialIndex, alt, onClose }: Pr
     >
       {/* Top bar */}
       <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-5 z-10">
-        <span className="text-white/70 text-xs uppercase tracking-widest font-bold">
-          {current + 1} / {images.length}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-white/70 text-xs uppercase tracking-widest font-bold">
+            {current + 1} / {images.length}
+          </span>
+          <span className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm text-white/90">
+            Imagen de Referencia
+          </span>
+        </div>
         <div className="flex gap-3">
           <button
             onClick={(e) => { e.stopPropagation(); resetZoom(); }}
