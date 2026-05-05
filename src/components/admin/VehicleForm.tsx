@@ -86,7 +86,7 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
       setExistingImages(vehicle.images || []);
     } else {
       setBrand(""); setName(""); setType(""); setYear(new Date().getFullYear());
-      setPricePublic(0); setPriceEmployee(0); setMileage(""); setVin("");
+      setPricePublic(0); setDiscountPct(20); setMileage(""); setVin("");
       setLocation(""); setDescription(""); setIsPublic(true); setIsActive(true);
       setIsArmored(false); setColor(""); setPlateState("");
       setReleaseDate(undefined); setExistingImages([]);
@@ -268,16 +268,24 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
               <Input type="number" value={pricePublic} onChange={e => setPricePublic(Number(e.target.value))} className="mt-1" />
             </div>
             <div>
-              <Label className="text-xs">Precio Empleado</Label>
-              <Input type="number" value={priceEmployee} onChange={e => setPriceEmployee(Number(e.target.value))} className="mt-1" />
+              <Label className="text-xs">Descuento (%)</Label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                step={1}
+                value={discountPct}
+                onChange={e => setDiscountPct(Math.max(0, Math.min(100, Number(e.target.value))))}
+                className="mt-1"
+              />
             </div>
             <div className="col-span-2 sm:col-span-1">
-              <Label className="text-xs">Margen</Label>
+              <Label className="text-xs">Precio Empleado</Label>
               <div className="h-10 flex items-center px-3 rounded-md border bg-muted/30 mt-1">
                 <span className="text-primary font-bold text-sm">
-                  {fmtMXN(margin)}
+                  {fmtMXN(priceEmployee)}
                 </span>
-                <span className="text-[10px] text-muted-foreground ml-1">({marginPct}%)</span>
+                <span className="text-[10px] text-muted-foreground ml-1">(ahorro {fmtMXN(margin)})</span>
               </div>
             </div>
           </div>
