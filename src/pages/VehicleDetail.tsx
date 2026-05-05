@@ -163,6 +163,26 @@ export default function VehicleDetail() {
               ))}
             </div>
 
+            {/* Aviso de imágenes de referencia */}
+            <div className="neu-card">
+              <div className="p-8 flex gap-5 items-start">
+                <div className="flex-shrink-0 w-11 h-11 rounded-full bg-accent/15 flex items-center justify-center text-accent">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 16v-4M12 8h.01" />
+                  </svg>
+                </div>
+                <div>
+                  <span className="label-micro block mb-2">Sobre las imágenes</span>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Las imágenes mostradas son únicamente <strong className="text-foreground font-semibold">de referencia</strong> y no corresponden necesariamente a la unidad física en inventario. El estado real, color exacto, equipamiento y detalles cosméticos pueden variar respecto a las fotografías. Si deseas conocer la unidad en persona antes de tomar tu decisión, puedes agendar una cita para una inspección presencial en Corporativo CDMX escribiéndonos a{" "}
+                    <span className="text-foreground font-semibold">info@jhl.mx</span> o llamándonos al{" "}
+                    <span className="text-foreground font-semibold">+52 55 5004 8424</span>.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Description */}
             <div className="neu-card">
               <div className="p-10">
