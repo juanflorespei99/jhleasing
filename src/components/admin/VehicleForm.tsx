@@ -45,7 +45,8 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
   const [type, setType] = useState("");
   const [year, setYear] = useState(new Date().getFullYear());
   const [pricePublic, setPricePublic] = useState(0);
-  const [priceEmployee, setPriceEmployee] = useState(0);
+  const [discountPct, setDiscountPct] = useState(20);
+  const priceEmployee = Math.round(pricePublic * (1 - discountPct / 100));
   const [mileage, setMileage] = useState("");
   const [vin, setVin] = useState("");
   const [location, setLocation] = useState("");
