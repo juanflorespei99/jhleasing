@@ -17,7 +17,7 @@ export default function VehicleCard({ vehicle: v, isEmployee, displayPrice }: Pr
         className="w-full h-48 md:h-56 object-cover"
         loading="lazy"
       />
-      <div className="p-5 md:p-8 h-full flex flex-col" style={{ minHeight: 320 }}>
+      <div className="p-5 md:p-8 flex flex-col">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <span className="label-micro">{v.type}</span>
