@@ -259,9 +259,16 @@ export default function VehicleDetail() {
             </div>
 
             {/* Agendar visita */}
-            <a
-              href={`mailto:mmascote@jhl.mx?subject=${encodeURIComponent(`Quiero conocer el ${vehicle.name} ${vehicle.year}`)}&body=${encodeURIComponent(`Hola,\n\nMe interesa conocer físicamente la siguiente unidad:\n\n• Vehículo: ${vehicle.name}\n• Año: ${vehicle.year}\n\nMe gustaría agendar una cita para verla en Corporativo CDMX. Quedo atento(a) a sus indicaciones para coordinar fecha y hora.\n\nGracias.`)}`}
-              className="neu-accent block transition-all duration-200 hover:opacity-95 hover:scale-[1.01]"
+            <button
+              type="button"
+              onClick={() => {
+                const subject = `Quiero conocer el ${vehicle.name} ${vehicle.year}`;
+                const body = `Hola,\n\nMe interesa conocer físicamente la siguiente unidad:\n\n• Vehículo: ${vehicle.name}\n• Año: ${vehicle.year}\n\nMe gustaría agendar una cita para verla en Corporativo CDMX. Quedo atento(a) a sus indicaciones para coordinar fecha y hora.\n\nGracias.`;
+                const mailto = `mailto:mmascote@jhl.mx?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                window.open(mailto, "_blank");
+                window.location.href = mailto;
+              }}
+              className="neu-accent block w-full text-left transition-all duration-200 hover:opacity-95 hover:scale-[1.01] cursor-pointer"
             >
               <div className="p-10 flex flex-col items-center justify-center text-center gap-4" style={{ minHeight: 200 }}>
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -274,7 +281,7 @@ export default function VehicleDetail() {
                 <span className="heading-md">Quiero conocer este vehículo</span>
                 <span className="text-xs opacity-90 mt-1">Te responderemos para coordinar tu visita en Corporativo CDMX</span>
               </div>
-            </a>
+            </button>
           </div>
         </div>
       </div>
