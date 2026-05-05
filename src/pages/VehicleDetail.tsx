@@ -176,8 +176,7 @@ export default function VehicleDetail() {
                   <span className="label-micro block mb-2">Sobre las imágenes</span>
                   <p className="text-sm leading-relaxed text-muted-foreground">
                     Las imágenes mostradas son únicamente <strong className="text-foreground font-semibold">de referencia</strong> y no corresponden necesariamente a la unidad física en inventario. El estado real, color exacto, equipamiento y detalles cosméticos pueden variar respecto a las fotografías. Si deseas conocer la unidad en persona antes de tomar tu decisión, puedes agendar una cita para una inspección presencial en Corporativo CDMX escribiéndonos a{" "}
-                    <span className="text-foreground font-semibold">info@jhl.mx</span> o llamándonos al{" "}
-                    <span className="text-foreground font-semibold">+52 55 5004 8424</span>.
+                    <a href="mailto:mmascote@jhl.mx" className="text-foreground font-semibold underline-offset-2 hover:underline">mmascote@jhl.mx</a>.
                   </p>
                 </div>
               </div>
