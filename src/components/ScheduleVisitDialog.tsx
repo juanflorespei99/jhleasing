@@ -50,7 +50,7 @@ Gracias.`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[95vw] max-h-[95vh] overflow-y-auto bg-background border-none neu-card top-[2.5vh] translate-y-0 sm:top-[50%] sm:translate-y-[-50%] sm:max-h-[90vh]">
+      <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto bg-background border-none neu-card">
         <DialogHeader>
           <DialogTitle className="heading-md">Agenda una cita para conocer este vehículo</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground pt-2">
