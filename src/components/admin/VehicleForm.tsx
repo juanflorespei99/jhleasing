@@ -69,7 +69,10 @@ export default function VehicleForm({ open, onOpenChange, vehicle, onSaved }: Pr
       setType(vehicle.type);
       setYear(vehicle.year);
       setPricePublic(vehicle.price_public);
-      setPriceEmployee(vehicle.price_employee);
+      const pct = vehicle.price_public > 0 && vehicle.price_employee
+        ? Math.round(((vehicle.price_public - vehicle.price_employee) / vehicle.price_public) * 100)
+        : 20;
+      setDiscountPct(pct);
       setMileage(vehicle.mileage);
       setVin(vehicle.vin);
       setLocation(vehicle.location);
