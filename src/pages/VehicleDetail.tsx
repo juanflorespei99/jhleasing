@@ -263,13 +263,7 @@ export default function VehicleDetail() {
             {/* Agendar visita */}
             <button
               type="button"
-              onClick={() => {
-                const subject = `Quiero conocer el ${vehicle.name} ${vehicle.year}`;
-                const body = `Hola,\n\nMe interesa conocer físicamente la siguiente unidad:\n\n• Vehículo: ${vehicle.name}\n• Año: ${vehicle.year}\n\nMe gustaría agendar una cita para verla en Corporativo CDMX. Quedo atento(a) a sus indicaciones para coordinar fecha y hora.\n\nGracias.`;
-                const mailto = `mailto:mmascote@jhl.mx?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                window.open(mailto, "_blank");
-                window.location.href = mailto;
-              }}
+              onClick={() => setScheduleOpen(true)}
               className="neu-accent block w-full text-left transition-all duration-200 hover:opacity-95 hover:scale-[1.01] cursor-pointer"
             >
               <div className="p-10 flex flex-col items-center justify-center text-center gap-4" style={{ minHeight: 200 }}>
@@ -281,7 +275,7 @@ export default function VehicleDetail() {
                 </svg>
                 <span className="text-xs uppercase tracking-widest font-bold">Agenda una cita</span>
                 <span className="heading-md">Quiero conocer este vehículo</span>
-                <span className="text-xs opacity-90 mt-1">Te responderemos para coordinar tu visita en Corporativo CDMX</span>
+                <span className="text-xs opacity-90 mt-1">Te mostramos cómo enviarnos tu solicitud en segundos</span>
               </div>
             </button>
           </div>
@@ -296,6 +290,13 @@ export default function VehicleDetail() {
           onClose={() => setLightboxOpen(false)}
         />
       )}
+
+      <ScheduleVisitDialog
+        open={scheduleOpen}
+        onOpenChange={setScheduleOpen}
+        vehicleName={vehicle.name}
+        vehicleYear={vehicle.year}
+      />
 
     </div>
   );
