@@ -10,8 +10,14 @@ interface Props {
 
 export default function VehicleCard({ vehicle: v, isEmployee, displayPrice }: Props) {
   return (
-    <Link to={`/vehiculo/${v.slug}`} className="neu-card transition-transform duration-300 hover:-translate-y-2 cursor-pointer block max-w-sm w-full">
-      <div className="p-5 md:p-8 h-full flex flex-col" style={{ minHeight: 380 }}>
+    <Link to={`/vehiculo/${v.slug}`} className="neu-card transition-transform duration-300 hover:-translate-y-2 cursor-pointer block max-w-sm w-full overflow-hidden">
+      <img
+        src={v.img}
+        alt={v.name}
+        className="w-full h-48 md:h-56 object-cover"
+        loading="lazy"
+      />
+      <div className="p-5 md:p-8 h-full flex flex-col" style={{ minHeight: 320 }}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <span className="label-micro">{v.type}</span>
