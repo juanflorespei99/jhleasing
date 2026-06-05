@@ -11,5 +11,5 @@ export const fmtMXN = (n: number): string =>
     maximumFractionDigits: 0,
   }).format(n);
 
-export const getDisplayPrice = (v: VehicleRow, isEmployee: boolean): number =>
-  isEmployee && v.price_employee ? v.price_employee : v.price_public;
+export const getDisplayPrice = (v: VehicleRow, _isEmployee?: boolean): number =>
+  v.price_employee ? v.price_employee : v.price_public;

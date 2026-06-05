@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Columns2 } from "lucide-react";
-import { fmt, getDisplayPrice } from "@/lib/format";
+import { fmt } from "@/lib/format";
 import type { VehicleRow } from "@/types/vehicle";
 
 interface Props {
@@ -111,9 +111,11 @@ export default function MiniCompare({ vehicles, isEmployee }: Props) {
   const vA = vehicles.find((v) => v.slug === slugA);
   const vB = vehicles.find((v) => v.slug === slugB);
 
+  const hasPref = vA && vB && (vA.price_employee || vB.price_employee);
   const rows = vA && vB
     ? [
-        { label: "Precio", a: `$${fmt(getDisplayPrice(vA, isEmployee))}`, b: `$${fmt(getDisplayPrice(vB, isEmployee))}` },
+        { label: "Precio Público", a: `$${fmt(vA.price_public)}`, b: `$${fmt(vB.price_public)}` },
+        ...(hasPref ? [{ label: "Pref.*", a: vA.price_employee ? `$${fmt(vA.price_employee)}` : "—", b: vB.price_employee ? `$${fmt(vB.price_employee)}` : "—" }] : []),
         { label: "Año", a: String(vA.year), b: String(vB.year) },
         { label: "Km", a: vA.mileage, b: vB.mileage },
       ]
@@ -144,25 +146,30 @@ export default function MiniCompare({ vehicles, isEmployee }: Props) {
       </div>
 
       {rows && (
-        <div className="rounded-xl overflow-hidden mb-4 bg-card">
-          <table className="w-full text-[10px]">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="p-2 text-left text-muted-foreground font-medium"></th>
-                <th className="p-2 text-center font-bold uppercase tracking-wider text-foreground">A</th>
-                <th className="p-2 text-center font-bold uppercase tracking-wider text-foreground">B</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.label} className="border-b border-border last:border-0">
-                  <td className="p-2 text-muted-foreground font-medium uppercase tracking-wider">{r.label}</td>
-                  <td className="p-2 text-center font-semibold text-foreground">{r.a}</td>
-                  <td className="p-2 text-center font-semibold text-foreground">{r.b}</td>
+        <div className="mb-4">
+          <div className="rounded-xl overflow-hidden bg-card">
+            <table className="w-full text-[10px]">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="p-2 text-left text-muted-foreground font-medium"></th>
+                  <th className="p-2 text-center font-bold uppercase tracking-wider text-foreground">A</th>
+                  <th className="p-2 text-center font-bold uppercase tracking-wider text-foreground">B</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.label} className="border-b border-border last:border-0">
+                    <td className="p-2 text-muted-foreground font-medium uppercase tracking-wider">{r.label}</td>
+                    <td className="p-2 text-center font-semibold text-foreground">{r.a}</td>
+                    <td className="p-2 text-center font-semibold text-foreground">{r.b}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {hasPref && (
+            <p className="text-[8px] text-muted-foreground mt-1.5 px-1">* Precio preferencial — sujeto a validación de elegibilidad</p>
+          )}
         </div>
       )}
 

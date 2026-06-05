@@ -41,7 +41,7 @@ export default function PurchaseRequest() {
               .maybeSingle()
           : supabase
               .from("vehicles_public")
-              .select("slug, name, img, year, price_public")
+              .select("slug, name, img, year, price_public, price_employee")
               .eq("slug", slug)
               .maybeSingle();
         const { data, error } = await query;
@@ -125,10 +125,10 @@ export default function PurchaseRequest() {
                 <div className="p-5">
                   <h2 className="text-base md:text-lg font-bold text-foreground">{vehicle.name}</h2>
                   <p className="text-sm text-muted-foreground mt-1">{vehicle.year}</p>
-                  {isEmployee && vehicle.price_employee ? (
+                  {vehicle.price_employee ? (
                     <div className="mt-2">
                       <p className="text-[10px] uppercase tracking-widest text-primary font-semibold">
-                        Precio preferencial
+                        Precio preferencial — sujeto a validación de elegibilidad
                       </p>
                       <p className="text-lg font-bold text-foreground">
                         {fmtMXN(vehicle.price_employee)}

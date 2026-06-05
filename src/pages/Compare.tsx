@@ -76,8 +76,10 @@ export default function Compare() {
 
   const specRows = useMemo(() => {
     if (!vehicleA || !vehicleB) return [];
+    const hasPref = vehicleA.price_employee || vehicleB.price_employee;
     return [
-      { label: "Precio", a: `$${fmt(getDisplayPrice(vehicleA, isEmployee))}`, b: `$${fmt(getDisplayPrice(vehicleB, isEmployee))}` },
+      { label: "Precio Público", a: `$${fmt(vehicleA.price_public)}`, b: `$${fmt(vehicleB.price_public)}` },
+      ...(hasPref ? [{ label: "Precio Preferencial*", a: vehicleA.price_employee ? `$${fmt(vehicleA.price_employee)}` : "—", b: vehicleB.price_employee ? `$${fmt(vehicleB.price_employee)}` : "—" }] : []),
       { label: "Año", a: String(vehicleA.year), b: String(vehicleB.year) },
       { label: "Kilometraje", a: vehicleA.mileage, b: vehicleB.mileage },
       { label: "Tipo", a: vehicleA.type, b: vehicleB.type },
@@ -85,7 +87,7 @@ export default function Compare() {
       { label: "Ubicación", a: vehicleA.location, b: vehicleB.location },
       { label: "Estatus", a: vehicleA.status, b: vehicleB.status },
     ];
-  }, [vehicleA, vehicleB, isEmployee]);
+  }, [vehicleA, vehicleB]);
 
   return (
     <div className="min-h-screen bg-background px-4 py-5 md:p-6">
@@ -164,6 +166,9 @@ export default function Compare() {
                         </div>
                       ))}
                     </div>
+                    {(vehicleA.price_employee || vehicleB.price_employee) && (
+                      <p className="text-[9px] md:text-[10px] text-muted-foreground mt-4">* Precio preferencial — sujeto a validación de elegibilidad</p>
+                    )}
                   </div>
                 </div>
 

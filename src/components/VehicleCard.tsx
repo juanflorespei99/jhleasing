@@ -48,9 +48,9 @@ export default function VehicleCard({ vehicle: v, isEmployee, displayPrice }: Pr
 
         <div className="grid grid-cols-2 gap-3 md:gap-4 border-t border-border/20 mt-auto pt-4 md:pt-5">
           <div>
-            {isEmployee && v.price_employee ? (
+            {v.price_employee ? (
               <>
-                <span className="label-micro text-primary">Precio Preferencial</span>
+                <span className="label-micro text-primary">Precio preferencial — sujeto a validación de elegibilidad</span>
                 <p className="text-xl md:text-2xl font-light">${fmt(v.price_employee)}</p>
                 {v.is_public && (
                   <p className="text-xs line-through text-muted-foreground">

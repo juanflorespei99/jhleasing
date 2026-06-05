@@ -191,9 +191,9 @@ export default function VehicleDetail() {
                 <h1 className="heading-xl mb-1">{vehicle.name}</h1>
                 <p className="text-sm mb-8 text-muted-foreground">{vehicle.year}</p>
 
-                {isEmployee && vehicle.price_employee ? (
+                {vehicle.price_employee ? (
                   <div className="mb-8">
-                    <span className="label-micro block mb-1 text-primary">Precio Preferencial</span>
+                    <span className="label-micro block mb-1 text-primary">Precio preferencial — sujeto a validación de elegibilidad</span>
                     <p className="text-4xl font-light">${fmt(vehicle.price_employee)}</p>
                     {vehicle.is_public && (
                       <p className="text-sm line-through mt-1 text-muted-foreground">Precio público: ${fmt(vehicle.price_public)}</p>
