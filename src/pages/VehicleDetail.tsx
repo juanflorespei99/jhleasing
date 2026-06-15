@@ -216,12 +216,16 @@ export default function VehicleDetail() {
                 <p className="text-sm mb-8 text-muted-foreground">{vehicle.year}</p>
 
                 {vehicle.price_employee ? (
-                  <div className="mb-8">
-                    <span className="label-micro block mb-1 text-primary">Precio preferencial — sujeto a validación de elegibilidad</span>
-                    <p className="text-4xl font-light">${fmt(vehicle.price_employee)}</p>
-                    {vehicle.is_public && (
-                      <p className="text-sm line-through mt-1 text-muted-foreground">Precio público: ${fmt(vehicle.price_public)}</p>
-                    )}
+                  <div className="mb-8 space-y-3">
+                    <div>
+                      <span className="label-micro block mb-1">Precio Público</span>
+                      <p className="text-4xl font-light">${fmt(vehicle.price_public)}</p>
+                    </div>
+                    <div>
+                      <span className="label-micro block mb-1 text-primary">Precio Preferencial*</span>
+                      <p className="text-4xl font-light">${fmt(vehicle.price_employee)}</p>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">* Sujeto a validación de elegibilidad</p>
                   </div>
                 ) : (
                   <div className="mb-8">

@@ -126,16 +126,15 @@ export default function PurchaseRequest() {
                   <h2 className="text-base md:text-lg font-bold text-foreground">{vehicle.name}</h2>
                   <p className="text-sm text-muted-foreground mt-1">{vehicle.year}</p>
                   {vehicle.price_employee ? (
-                    <div className="mt-2">
-                      <p className="text-[10px] uppercase tracking-widest text-primary font-semibold">
-                        Precio preferencial — sujeto a validación de elegibilidad
-                      </p>
-                      <p className="text-lg font-bold text-foreground">
-                        {fmtMXN(vehicle.price_employee)}
-                      </p>
-                      <p className="text-xs text-muted-foreground line-through">
-                        {fmtMXN(vehicle.price_public)}
-                      </p>
+                    <div className="mt-2 space-y-1">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Precio Público</p>
+                        <p className="text-lg font-bold text-foreground">{fmtMXN(vehicle.price_public)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest text-primary font-semibold">Precio Preferencial*</p>
+                        <p className="text-lg font-bold text-foreground">{fmtMXN(vehicle.price_employee)}</p>
+                      </div>
                     </div>
                   ) : (
                     <p className="text-lg font-bold text-foreground mt-2">
